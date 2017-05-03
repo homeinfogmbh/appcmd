@@ -4,7 +4,7 @@ from distutils.core import setup
 
 
 setup(
-    name='appapi',
+    name='appcmd',
     version='latest',
     author='Richard Neumann',
     requires=[
@@ -13,6 +13,6 @@ setup(
         'homeinfo.lib',
         'homeinfo.crm',
         'openimmo'],
-    packages=['appapi'],
+    packages=['appcmd'],
     data_files=[('/usr/local/share/appcmd', ['files/appcmd.wsgi'])],
     description='Digital Sigange Flash Application communication interface')

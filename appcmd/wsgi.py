@@ -8,111 +8,70 @@
 ################################################################
 
 from json import loads
-from datetime import datetime
-from traceback import format_exc
 
-from homeinfo.lib.wsgi import Error, OK, WsgiApp, RequestHandler
-from homeinfo.lib.mail import Mailer, EMail
+from wsgilib import Error, ResourceHandler
 
+from .mail import ContactFormMailer
 
-SENDER = 'automailer@homeinfo.de'
-EMAIL_TEMP = '''Kontaktformular vom {datum}:
------------------------------------------------
-
-Objekt:                        {objektnr}
-Name:                          {name}
-Telefon:                       {telefon}
-Email:                         {email}
-Nachricht:                     {freitext}
-Rückruf erbeten:               {rueckruf}
-Besichtigungstermin erwünscht: {besichtigungstermin}
-Objektbeschreibung:            {objektbeschreibung}
-'''
+__all__ = ['AppcmdHandler']
 
 
-def bool2lang(b, true='ja', false='nein'):
-    """Converts a boolean value into natural language words"""
+class AppcmdHandler(ResourceHandler):
+    """Handles posted data for legacy mode"""
 
-    return true if b else false
-
-
-class MailingHandler(RequestHandler):
-    """Handles posted mail"""
-
-    def __init__(self, *args, logger=None, **kwargs):
-        super().__init__(*args, logger=logger, **kwargs)
-        self.mailer = Mailer(
-            'mail.homeinfo.de', 25, 'web0p6',
-            '307U~x3]m7E8', logger=logger)
-
-    def post(self):
-        """Handles POST requests"""
+    @property
+    def json(self):
+        """Returns the appropriate JSON dictionary"""
         try:
             text = self.data.decode()
         except AttributeError:
-            raise Error('No data provided') from None
+            raise Error('No data provided.') from None
         except UnicodeDecodeError:
-            self.logger.error('Non-unicode data received:\n{}'.format(
-                self.data))
-            raise Error('Non-unicode string received') from None
+            error = 'Non-unicode data received'
+            self.logger.error('{}:\n{}'.format(error, self.data))
+            raise Error('{}.'.format(error)) from None
         else:
             try:
-                dictionary = loads(text)
+                return loads(text)
             except ValueError:
-                self.logger.error('Non-JSON text received:\n{}'.format(text))
-                raise Error('Non-JSON data received') from None
+                error = 'Non-JSON text received'
+                self.logger.error('{}:\n{}'.format(error, text))
+                raise Error('{}.'.format(error)) from None
+
+    def post(self):
+        """Handles POST requests"""
+        dictionary = self.json
+
+        if self.resource is None:
+            try:
+                command = dictionary['command']
+            except KeyError:
+                error = 'No command provided.'
+                self.logger.error(error)
+                raise Error(error) from None
             else:
-                try:
-                    command = dictionary['command']
-                except KeyError:
-                    raise Error('No command provided') from None
+                if command == 2:
+                    return self._mail(dictionary)
+                elif command == 3:
+                    return self._rec_cleaning(dictionary)
+                elif command == 5:
+                    return self._rec_statistics(dictionary)
                 else:
-                    if command == 2:
-                        return self._mail(dictionary)
-                    elif command == 3:
-                        return self._rec_clean(dictionary)
-                    elif command == 5:
-                        return self._rec_stat(dictionary)
-                    else:
-                        raise Error('Unknown command: {}'.format(
-                            command)) from None
-
-    def _mail(self, dictionary):
-        """Sends contact form emails"""
-        subject = 'Kontaktanfrage vom Immobiliendisplay'
-        text = EMAIL_TEMP.format(
-            datum=datetime.strftime(datetime.now(), '%d.%m.%Y %H:%M:%S'),
-            objektnr=dictionary.get('objektnummer', 'unbekannt'),
-            name=dictionary.get('name'),
-            telefon=dictionary.get('telefon', 'nicht angegeben'),
-            email=dictionary.get('email', 'nicht angegeben'),
-            freitext=dictionary.get('freitext'),
-            rueckruf=bool2lang(dictionary.get('rueckruf')),
-            besichtigungstermin=bool2lang(
-                dictionary.get('besichtigungstermin')),
-            objektbeschreibung=bool2lang(
-                dictionary.get('objektbeschreibung')))
-        self.logger.debug('Rendered text:\n{}'.format(text))
-        recipient = dictionary.get('empfaenger')
-        self.logger.debug('Recipient is: {}'.format(recipient))
-        email = EMail(subject, SENDER, recipient, plain=text)
-        reply_to = dictionary.get('email')
-
-        if reply_to:
-            email['Reply-To'] = reply_to
-            self.logger.debug('Reply to: {}'.format(reply_to))
-
-        try:
-            self.mailer.send([email])
-        except Exception:
-            msg = 'Error while sending email'
-            self.logger.error(msg)
-            print(format_exc(), flush=True)
-            raise Error(msg)
+                    error = 'Unknown command: {}.'.format(command)
+                    self.logger.error(error)
+                    raise Error(error) from None
+        elif self.resource == 'contactform':
+            return self._contact_mail(dictionary)
+        elif self.resource == 'cleaning_log':
+            return self._rec_cleaning(dictionary)
+        elif self.resource == 'statistics':
+            return self._rec_statistics(dictionary)
         else:
-            msg = 'Sent email to: {}'.format(recipient)
-            return OK(msg)
+            error = 'Invalid operation: {}'.format(self.resource)
+            self.logger.error('{}.'.format(error))
+            raise Error('{}.'.format(error)) from None
 
-
-application = WsgiApp(MailingHandler, debug=True)
-
+    def _contact_mail(self, dictionary):
+        """Sends contact form emails"""
+        mailer = ContactFormMailer(logger=self.logger)
+        return mailer.send(dictionary)
