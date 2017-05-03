@@ -15,6 +15,6 @@ setup(
         'openimmo'],
     packages=['appcmd'],
     data_files=[
-        ('/usr/local/share/appcmd', ['files/appcmd.wsgi']),
+        ('/usr/local/share', ['files/appcmd.wsgi']),
         ('/etc/uwsgi/apps-available', ['files/appcmd.ini'])],
     description='Digital Sigange Flash Application communication interface')
