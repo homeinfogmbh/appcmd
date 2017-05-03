@@ -8,11 +8,13 @@ setup(
     version='latest',
     author='Richard Neumann',
     requires=[
-        'docopt',
+        'wsgilib',
         'setproctitle',
         'homeinfo.lib',
         'homeinfo.crm',
         'openimmo'],
     packages=['appcmd'],
-    data_files=[('/usr/local/share/appcmd', ['files/appcmd.wsgi'])],
+    data_files=[
+        ('/usr/local/share/appcmd', ['files/appcmd.wsgi']),
+        ('/etc/uwsgi/apps-available', ['files/appcmd.ini'])],
     description='Digital Sigange Flash Application communication interface')
