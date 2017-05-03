@@ -1,0 +1,10 @@
+build
+.installed_files.txt
+*.pyc
+*~
+*.egg-info
+*.swp
+setup.cfg
+dist
+files/etc/homie.conf
+__pycache__
