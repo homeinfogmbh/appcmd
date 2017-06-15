@@ -7,71 +7,164 @@
 #
 ################################################################
 
-from json import loads
+from peewee import DoesNotExist
 
-from wsgilib import Error, ResourceHandler
+from homeinfo.crm import Customer
+from homeinfo.terminals.orm import Terminal
+from wsgilib import CachedJSONHandler, OK
 
+from .orm import TenantMessage, Command
 from .mail import ContactFormMailer
 
-__all__ = ['AppcmdHandler']
+__all__ = ['PrivateHandler', 'PublicHandler']
 
 
-class AppcmdHandler(ResourceHandler):
-    """Handles posted data for legacy mode"""
+class CachedTerminalHandler(CachedJSONHandler):
+    """Caches also terminals and customers"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._customer = None
+        self._terminal = None
 
     @property
-    def json(self):
-        """Returns the appropriate JSON dictionary"""
-        try:
-            text = self.data.decode()
-        except AttributeError:
-            raise Error('No data provided.') from None
-        except UnicodeDecodeError:
-            error = 'Non-unicode data received'
-            self.logger.error('{}:\n{}'.format(error, self.data))
-            raise Error('{}.'.format(error)) from None
-        else:
+    def customer(self):
+        """Returns the customer"""
+        if self._customer is None:
             try:
-                return loads(text)
-            except ValueError:
-                error = 'Non-JSON text received'
-                self.logger.error('{}:\n{}'.format(error, text))
-                raise Error('{}.'.format(error)) from None
+                cid = self.dictionary['cid']
+            except KeyError:
+                self.lograise('No CID provided.')
+            else:
+                try:
+                    self._customer = Customer.find(cid)
+                except DoesNotExist:
+                    self.lograise('No such customer.')
+
+        return self._customer
+
+    @property
+    def terminal(self):
+        """Returns the terminal"""
+        if self._terminal is None:
+            try:
+                tid = self.dictionary['tid']
+            except KeyError:
+                self.lograise('No TID provided.')
+            else:
+                try:
+                    return int(tid)
+                except TypeError:
+                    self.lograise('TID must not be null.')
+                except ValueError:
+                    self.lograise('TID is not an integer.')
+                else:
+                    try:
+                        self._terminal = Terminal.get(
+                            (Terminal.customer == self.customer) &
+                            (Terminal.tid == tid))
+                    except DoesNotExist:
+                        self.lograise('No such terminal.')
+
+        return self._terminal
+
+
+class PrivateHandler(CachedTerminalHandler):
+    """Handles posted data for legacy mode"""
 
     def post(self):
         """Handles POST requests"""
-        dictionary = self.json
-
-        if self.resource is None:
-            try:
-                command = dictionary['command']
-            except KeyError:
-                error = 'No command provided.'
-                self.logger.error(error)
-                raise Error(error) from None
-            else:
-                if command == 2:
-                    return self._mail(dictionary)
-                elif command == 3:
-                    return self._rec_cleaning(dictionary)
-                elif command == 5:
-                    return self._rec_statistics(dictionary)
-                else:
-                    error = 'Unknown command: {}.'.format(command)
-                    self.logger.error(error)
-                    raise Error(error) from None
-        elif self.resource == 'contactform':
-            return self._contact_mail(dictionary)
-        elif self.resource == 'cleaning_log':
-            return self._rec_cleaning(dictionary)
-        elif self.resource == 'statistics':
-            return self._rec_statistics(dictionary)
+        if self.resource == 'contactform':
+            return self._contact_mail()
+        elif self.resource == 'tenant2tenant':
+            return self._tenant2tenant()
         else:
-            error = 'Invalid operation: {}'.format(self.resource)
-            self.logger.error('{}.'.format(error))
-            raise Error('{}.'.format(error)) from None
+            self.lograise('Invalid operation.')
 
-    def _contact_mail(self, dictionary):
+    def _contact_mail(self):
         """Sends contact form emails"""
         mailer = ContactFormMailer(logger=self.logger)
-        return mailer.send(dictionary)
+        return mailer.send(self.dictionary)
+
+    def _tenant2tenant(self, maxlen=2048):
+        """Stores tenant info"""
+        try:
+            message = self.dictionary['message']
+        except KeyError:
+            self.lograise('No message provided.')
+        else:
+            if message is None:
+                self.lograise('Message must not be None.')
+            elif len(message) > maxlen:
+                self.lograise('Maximum text length exceeded.')
+            else:
+                TenantMessage.add(self.terminal, message)
+                return OK()
+
+
+class PublicHandler(CachedTerminalHandler):
+    """Public services handler"""
+
+    def get(self):
+        """Handles GET requests"""
+        if self.resource == 'command':
+            return self._list_commands()
+        elif self.resource == 'controller':
+            return self._get_controller_ip()
+        elif self.resource == 'cleaning':
+            return self._get_cleanings()
+        else:
+            self.lograise('Invalid operation.')
+
+    def post(self):
+        """Handles POST requests"""
+        if self.resource == 'command':
+            return self._complete_command()
+        elif self.resource == 'statistics':
+            return self._add_statistics()
+        elif self.resource == 'controller':
+            return self._update_controller()
+        elif self.resource == 'cleaning':
+            return self._add_cleaning()
+        else:
+            self.lograise('Invalid operation.')
+
+    @property
+    def vid(self):
+        """Returns the respective VID"""
+        try:
+            vid = self.dictionary['vid']
+        except KeyError:
+            self.lograise('No VID specified.')
+        else:
+            try:
+                return int(vid)
+            except TypeError:
+                self.lograise('VID must not be null.')
+            except ValueError:
+                self.lograise('VID is not an integer.')
+
+    @property
+    def task(self):
+        """Returns the respective task"""
+        try:
+            return self.dictionary['task']
+        except KeyError:
+            self.lograise('No task specified.')
+
+    def _list_commands(self):
+        """Lists commands for the respective terminal"""
+        # TODO: implement
+
+    def _complete_command(self):
+        """Completes the provided command"""
+        try:
+            command = Command.get(
+                (Command.customer == self.customer) &
+                (Command.vid == self.vid) &
+                (Command.task == self.task))
+        except DoesNotExist:
+            self.lograise('No such command on record.')
+        else:
+            command.complete()
+            return OK()
