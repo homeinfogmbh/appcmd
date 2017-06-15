@@ -9,7 +9,7 @@ from homeinfo.terminals.orm import Terminal
 from peeweeplus import MySQLDatabase
 
 
-database = MySQLDatabase()
+database = MySQLDatabase('application')
 
 
 class ApplicationModel(Model):
