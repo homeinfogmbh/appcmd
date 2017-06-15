@@ -6,10 +6,10 @@ from peewee import DoesNotExist, Model, PrimaryKeyField, ForeignKeyField, \
 
 from homeinfo.crm import Customer
 from homeinfo.terminals.orm import Terminal
-from peeweeplus import MySQLdatabase
+from peeweeplus import MySQLDatabase
 
 
-database = MySQLdatabase()
+database = MySQLDatabase()
 
 
 class ApplicationModel(Model):
