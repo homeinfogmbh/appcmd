@@ -1,3 +1,3 @@
 """Communication and control interface for
-the Digital Signayge Flash Application
+the Digital Signage Flash Application
 """
