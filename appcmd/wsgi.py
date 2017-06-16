@@ -9,11 +9,11 @@
 
 from peewee import DoesNotExist
 
+from homeinfo.applicationdb import TenantMessage, Command, Cleaning
 from homeinfo.crm import Customer
 from homeinfo.terminals.orm import Terminal
-from wsgilib import CachedJSONHandler, OK
+from wsgilib import ResourceHandler, CachedJSONHandler, OK, JSON
 
-from .orm import TenantMessage, Command
 from .mail import ContactFormMailer
 
 __all__ = ['PrivateHandler', 'PublicHandler']
@@ -102,8 +102,74 @@ class PrivateHandler(CachedTerminalHandler):
                 return OK()
 
 
-class PublicHandler(CachedTerminalHandler):
+class PublicHandler(ResourceHandler):
     """Public services handler"""
+
+    @property
+    def cid(self):
+        """Returns the customer ID"""
+        try:
+            return int(self.query['cid'])
+        except KeyError:
+            self.lograise('No CID specified.')
+        except TypeError:
+            self.lograise('CID must not be null.')
+        except ValueError:
+            self.lograise('CID must be an integer.')
+
+    @property
+    def vid(self):
+        """Returns the presentation ID"""
+        try:
+            return int(self.query['vid'])
+        except KeyError:
+            self.lograise('No VID specified.')
+        except TypeError:
+            self.lograise('VID must not be null.')
+        except ValueError:
+            self.lograise('VID must be an integer.')
+
+    @property
+    def tid(self):
+        """Returns the presentation ID"""
+        try:
+            return int(self.query['tid'])
+        except KeyError:
+            self.lograise('No TID specified.')
+        except TypeError:
+            self.lograise('TID must not be null.')
+        except ValueError:
+            self.lograise('TID must be an integer.')
+
+    @property
+    def customer(self):
+        """Returns the respective customer"""
+        try:
+            return Customer.find(self.cid)
+        except DoesNotExist:
+            self.lograise('No such customer: {}.'.format(self.cid))
+
+    @property
+    def terminal(self):
+        """Returns the respective customer"""
+        try:
+            return Terminal.by_ids(self.cid, self.tid)
+        except DoesNotExist:
+            self.lograise('No such terminal: {}.{}.'.format(
+                self.tid, self.cid))
+
+    @property
+    def task(self):
+        """Returns the respective task"""
+        try:
+            task = self.query['task']
+        except KeyError:
+            self.lograise('No task specified.')
+        else:
+            if task is None:
+                self.lograise('Task must not be null.')
+            else:
+                return task
 
     def get(self):
         """Handles GET requests"""
@@ -112,7 +178,7 @@ class PublicHandler(CachedTerminalHandler):
         elif self.resource == 'controller':
             return self._get_controller_ip()
         elif self.resource == 'cleaning':
-            return self._get_cleanings()
+            return self._list_cleanings()
         else:
             self.lograise('Invalid operation.')
 
@@ -129,42 +195,43 @@ class PublicHandler(CachedTerminalHandler):
         else:
             self.lograise('Invalid operation.')
 
-    @property
-    def vid(self):
-        """Returns the respective VID"""
-        try:
-            vid = self.dictionary['vid']
-        except KeyError:
-            self.lograise('No VID specified.')
-        else:
-            try:
-                return int(vid)
-            except TypeError:
-                self.lograise('VID must not be null.')
-            except ValueError:
-                self.lograise('VID is not an integer.')
-
-    @property
-    def task(self):
-        """Returns the respective task"""
-        try:
-            return self.dictionary['task']
-        except KeyError:
-            self.lograise('No task specified.')
-
     def _list_commands(self):
         """Lists commands for the respective terminal"""
-        # TODO: implement
+        customer = self.customer
+        vid = self.vid
+        tasks = []
+
+        for command in Command.select().where(
+                (Command.customer == customer) &
+                (Command.vid == vid) &
+                (Command.completed >> None)):
+            tasks.append(command.task)
+
+        return JSON(tasks)
+
+    def _list_cleanings(self):
+        """Lists cleaning entries for the respective terminal"""
+        cleanings = []
+
+        for cleaning in Cleaning.select().where(
+                Cleaning.terminal == self.terminal):
+            cleanings.append(cleaning.to_dict())
+
+        return JSON(cleanings)
 
     def _complete_command(self):
         """Completes the provided command"""
-        try:
-            command = Command.get(
-                (Command.customer == self.customer) &
-                (Command.vid == self.vid) &
-                (Command.task == self.task))
-        except DoesNotExist:
-            self.lograise('No such command on record.')
-        else:
+        customer = self.customer
+        vid = self.vid
+        task = self.task
+        result = False
+
+        for command in Command.select().where(
+                (Command.customer == customer) &
+                (Command.vid == vid) &
+                (Command.task == task) &
+                (Command.completed >> None)):
             command.complete()
-            return OK()
+            result = True
+
+        return OK('1' if result else '0')
