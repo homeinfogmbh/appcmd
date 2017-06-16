@@ -7,70 +7,58 @@
 #
 ################################################################
 
+from json import loads
 from peewee import DoesNotExist
 
 from homeinfo.applicationdb import Command, Statistic, CleaningUser, Cleaning,\
     TenantMessage
 from homeinfo.crm import Customer
 from homeinfo.terminals.orm import Terminal
-from wsgilib import ResourceHandler, CachedJSONHandler, OK, JSON
+from wsgilib import ResourceHandler, OK, JSON
 
 from .mail import ContactFormMailer
 
 __all__ = ['PrivateHandler', 'PublicHandler']
 
 
-class CachedTerminalHandler(CachedJSONHandler):
+class CommonBasicHandler(ResourceHandler):
     """Caches also terminals and customers"""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._customer = None
-        self._terminal = None
+    @property
+    def cid(self):
+        """Returns the customer ID"""
+        try:
+            return int(self.query['cid'])
+        except KeyError:
+            return self.logerr('No CID specified.')
+        except TypeError:
+            return self.logerr('CID must not be null.')
+        except ValueError:
+            return self.logerr('CID must be an integer.')
 
     @property
-    def customer(self):
-        """Returns the customer"""
-        if self._customer is None:
-            try:
-                cid = self.dictionary['cid']
-            except KeyError:
-                self.lograise('No CID provided.')
-            else:
-                try:
-                    self._customer = Customer.find(cid)
-                except DoesNotExist:
-                    self.lograise('No such customer.')
-
-        return self._customer
+    def tid(self):
+        """Returns the presentation ID"""
+        try:
+            return int(self.query['tid'])
+        except KeyError:
+            return self.logerr('No TID specified.')
+        except TypeError:
+            return self.logerr('TID must not be null.')
+        except ValueError:
+            return self.logerr('TID must be an integer.')
 
     @property
     def terminal(self):
-        """Returns the terminal"""
-        if self._terminal is None:
-            try:
-                tid = self.dictionary['tid']
-            except KeyError:
-                self.lograise('No TID provided.')
-            else:
-                try:
-                    return int(tid)
-                except TypeError:
-                    self.lograise('TID must not be null.')
-                except ValueError:
-                    self.lograise('TID is not an integer.')
-                else:
-                    try:
-                        self._terminal = Terminal.get(
-                            (Terminal.customer == self.customer) &
-                            (Terminal.tid == tid))
-                    except DoesNotExist:
-                        self.lograise('No such terminal.')
-
-        return self._terminal
+        """Returns the respective customer"""
+        try:
+            return Terminal.by_ids(self.cid, self.tid)
+        except DoesNotExist:
+            return self.logerr('No such terminal: {}.{}.'.format(
+                self.tid, self.cid))
 
 
-class PrivateHandler(CachedTerminalHandler):
+class PrivateHandler(CommonBasicHandler):
     """Handles posted data for legacy mode"""
 
     def post(self):
@@ -80,43 +68,38 @@ class PrivateHandler(CachedTerminalHandler):
         elif self.resource == 'tenant2tenant':
             return self._tenant2tenant()
         else:
-            self.lograise('Invalid operation.')
+            return self.logerr('Invalid operation.')
 
     def _contact_mail(self):
         """Sends contact form emails"""
-        mailer = ContactFormMailer(logger=self.logger)
-        return mailer.send(self.dictionary)
+        try:
+            dictionary = loads(self.data.decode())
+        except AttributeError:
+            return self.logerr('No data provided.')
+        except ValueError:
+            return self.logerr('Data is not UTF-8 encoded JSON.')
+        else:
+            mailer = ContactFormMailer(logger=self.logger)
+            return mailer.send(dictionary)
 
     def _tenant2tenant(self, maxlen=2048):
         """Stores tenant info"""
         try:
-            message = self.dictionary['message']
-        except KeyError:
-            self.lograise('No message provided.')
+            message = self.data.decode()
+        except AttributeError:
+            return self.logerr('No message provided.')
+        except ValueError:
+            return self.logerr('Data is not UTF-8 text.')
         else:
-            if message is None:
-                self.lograise('Message must not be None.')
-            elif len(message) > maxlen:
-                self.lograise('Maximum text length exceeded.')
+            if len(message) > maxlen:
+                return self.logerr('Maximum text length exceeded.')
             else:
                 TenantMessage.add(self.terminal, message)
                 return OK()
 
 
-class PublicHandler(ResourceHandler):
+class PublicHandler(CommonBasicHandler):
     """Public services handler"""
-
-    @property
-    def cid(self):
-        """Returns the customer ID"""
-        try:
-            return int(self.query['cid'])
-        except KeyError:
-            self.lograise('No CID specified.')
-        except TypeError:
-            self.lograise('CID must not be null.')
-        except ValueError:
-            self.lograise('CID must be an integer.')
 
     @property
     def vid(self):
@@ -124,23 +107,11 @@ class PublicHandler(ResourceHandler):
         try:
             return int(self.query['vid'])
         except KeyError:
-            self.lograise('No VID specified.')
+            return self.logerr('No VID specified.')
         except TypeError:
-            self.lograise('VID must not be null.')
+            return self.logerr('VID must not be null.')
         except ValueError:
-            self.lograise('VID must be an integer.')
-
-    @property
-    def tid(self):
-        """Returns the presentation ID"""
-        try:
-            return int(self.query['tid'])
-        except KeyError:
-            self.lograise('No TID specified.')
-        except TypeError:
-            self.lograise('TID must not be null.')
-        except ValueError:
-            self.lograise('TID must be an integer.')
+            return self.logerr('VID must be an integer.')
 
     @property
     def customer(self):
@@ -148,16 +119,7 @@ class PublicHandler(ResourceHandler):
         try:
             return Customer.find(self.cid)
         except DoesNotExist:
-            self.lograise('No such customer: {}.'.format(self.cid))
-
-    @property
-    def terminal(self):
-        """Returns the respective customer"""
-        try:
-            return Terminal.by_ids(self.cid, self.tid)
-        except DoesNotExist:
-            self.lograise('No such terminal: {}.{}.'.format(
-                self.tid, self.cid))
+            return self.logerr('No such customer: {}.'.format(self.cid))
 
     @property
     def task(self):
@@ -165,10 +127,10 @@ class PublicHandler(ResourceHandler):
         try:
             task = self.query['task']
         except KeyError:
-            self.lograise('No task specified.')
+            return self.logerr('No task specified.')
         else:
             if task is None:
-                self.lograise('Task must not be null.')
+                return self.logerr('Task must not be null.')
             else:
                 return task
 
@@ -179,7 +141,7 @@ class PublicHandler(ResourceHandler):
         elif self.resource == 'cleaning':
             return self._list_cleanings()
         else:
-            self.lograise('Invalid operation.')
+            return self.logerr('Invalid operation.')
 
     def post(self):
         """Handles POST requests"""
@@ -190,7 +152,7 @@ class PublicHandler(ResourceHandler):
         elif self.resource == 'cleaning':
             return self._add_cleaning()
         else:
-            self.lograise('Invalid operation.')
+            return self.logerr('Invalid operation.')
 
     def _list_commands(self):
         """Lists commands for the respective terminal"""
@@ -243,17 +205,17 @@ class PublicHandler(ResourceHandler):
         except KeyError:
             tid = None
         except ValueError:
-            self.lograise('TID must be an integer')
+            return self.logerr('TID must be an integer')
         except TypeError:
             tid = None
 
         try:
             document = self.query['document']
         except KeyError:
-            self.lograise('Document must not be null.')
+            return self.logerr('Document must not be null.')
         else:
             if document is None:
-                self.lograise('Document must not be null.')
+                return self.logerr('Document must not be null.')
 
         Statistic.add(customer, vid, tid, document)
         return OK()
@@ -263,29 +225,29 @@ class PublicHandler(ResourceHandler):
         try:
             name = self.query['user']
         except KeyError:
-            self.lograise('No user name specified.')
+            return self.logerr('No user name specified.')
         else:
             if name is None:
-                self.lograise('User name must not be null.')
+                return self.logerr('User name must not be null.')
 
         try:
             pin = int(self.query['pin'])
         except KeyError:
-            self.lograise('No PIN provided.')
+            return self.logerr('No PIN provided.')
         except TypeError:
-            self.lograise('PIN must not be null.')
+            return self.logerr('PIN must not be null.')
         except ValueError:
-            self.lograise('PIN must be an integer.')
+            return self.logerr('PIN must be an integer.')
 
         try:
             user = CleaningUser.get(
                 (CleaningUser.name == name)
                 (CleaningUser.customer == self.customer))
         except DoesNotExist:
-            self.lograise('No such user.')
+            return self.logerr('No such user.')
         else:
             if user.pin == pin:
                 Cleaning.add(user, self.terminal.location.address)
                 return OK()
             else:
-                self.lograise('Invalid PIN.')
+                return self.logerr('Invalid PIN.')
