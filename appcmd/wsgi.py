@@ -1,11 +1,4 @@
-#! /usr/bin/env python3
-#
-# HOMEINFO mailer backend for Digital
-# Signage Application contact forms
-#
-# 01.11.2016: Richard Neumann <r.neumann@homeinfo.de>
-#
-################################################################
+"""WSGI handlers for appcmd"""
 
 from json import loads
 from peewee import DoesNotExist
