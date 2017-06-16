@@ -9,7 +9,8 @@
 
 from peewee import DoesNotExist
 
-from homeinfo.applicationdb import TenantMessage, Command, Cleaning
+from homeinfo.applicationdb import Command, Statistic, CleaningUser, Cleaning,\
+    TenantMessage
 from homeinfo.crm import Customer
 from homeinfo.terminals.orm import Terminal
 from wsgilib import ResourceHandler, CachedJSONHandler, OK, JSON
@@ -235,3 +236,60 @@ class PublicHandler(ResourceHandler):
             result = True
 
         return OK('1' if result else '0')
+
+    def _add_statistics(self):
+        """Adds a new statistics entry"""
+        customer = self.customer
+        vid = self.vid
+
+        try:
+            tid = int(self.query['tid'])
+        except KeyError:
+            tid = None
+        except ValueError:
+            self.lograise('TID must be an integer')
+        except TypeError:
+            tid = None
+
+        try:
+            document = self.query['document']
+        except KeyError:
+            self.lograise('Document must not be null.')
+        else:
+            if document is None:
+                self.lograise('Document must not be null.')
+
+        Statistic.add(customer, vid, tid, document)
+        return OK()
+
+    def _add_cleaning(self):
+        """Adds a cleaning entry"""
+        try:
+            name = self.query['user']
+        except KeyError:
+            self.lograise('No user name specified.')
+        else:
+            if name is None:
+                self.lograise('User name must not be null.')
+
+        try:
+            pin = int(self.query['pin'])
+        except KeyError:
+            self.lograise('No PIN provided.')
+        except TypeError:
+            self.lograise('PIN must not be null.')
+        except ValueError:
+            self.lograise('PIN must be an integer.')
+
+        try:
+            user = CleaningUser.get(
+                (CleaningUser.name == name)
+                (CleaningUser.customer == self.customer))
+        except DoesNotExist:
+            self.lograise('No such user.')
+        else:
+            if user.pin == pin:
+                Cleaning.add(user, self.terminal.location.address)
+                return OK()
+            else:
+                self.lograise('Invalid PIN.')
