@@ -176,8 +176,6 @@ class PublicHandler(ResourceHandler):
         """Handles GET requests"""
         if self.resource == 'command':
             return self._list_commands()
-        elif self.resource == 'controller':
-            return self._get_controller_ip()
         elif self.resource == 'cleaning':
             return self._list_cleanings()
         else:
@@ -189,8 +187,6 @@ class PublicHandler(ResourceHandler):
             return self._complete_command()
         elif self.resource == 'statistics':
             return self._add_statistics()
-        elif self.resource == 'controller':
-            return self._update_controller()
         elif self.resource == 'cleaning':
             return self._add_cleaning()
         else:
