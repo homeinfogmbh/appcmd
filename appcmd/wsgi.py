@@ -232,7 +232,7 @@ class PublicHandler(CommonBasicHandler):
             try:
                 address = self.terminal.location.address
             except AttributeError:
-                self.logerr('Terminal has no address.')
+                return self.logerr('Terminal has no address.')
             else:
                 Cleaning.add(user, address)
                 return OK()
