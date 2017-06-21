@@ -216,14 +216,6 @@ class PublicHandler(CommonBasicHandler):
     def _add_cleaning(self):
         """Adds a cleaning entry"""
         try:
-            name = self.query['user']
-        except KeyError:
-            return self.logerr('No user name specified.')
-        else:
-            if name is None:
-                return self.logerr('User name must not be null.')
-
-        try:
             pin = int(self.query['pin'])
         except KeyError:
             return self.logerr('No PIN provided.')
@@ -233,14 +225,9 @@ class PublicHandler(CommonBasicHandler):
             return self.logerr('PIN must be an integer.')
 
         try:
-            user = CleaningUser.get(
-                (CleaningUser.name == name)
-                (CleaningUser.customer == self.customer))
+            user = CleaningUser.get(CleaningUser.pin == pin)
         except DoesNotExist:
-            return self.logerr('No such user.')
+            return self.logerr('Invalid PIN.', status=403)
         else:
-            if user.pin == pin:
-                Cleaning.add(user, self.terminal.location.address)
-                return OK()
-            else:
-                return self.logerr('Invalid PIN.')
+            Cleaning.add(user, self.terminal.location.address)
+            return OK()
