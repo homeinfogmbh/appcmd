@@ -229,5 +229,10 @@ class PublicHandler(CommonBasicHandler):
         except DoesNotExist:
             return self.logerr('Invalid PIN.', status=403)
         else:
-            Cleaning.add(user, self.terminal.location.address)
-            return OK()
+            try:
+                address = self.terminal.location.address
+            except AttributeError:
+                self.logerr('Terminal has no address.')
+            else:
+                Cleaning.add(user, address)
+                return OK()
