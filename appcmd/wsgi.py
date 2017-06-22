@@ -233,16 +233,20 @@ class PublicHandler(CommonBasicHandler):
             raise self.logerr('PIN must not be null.') from None
         except ValueError:
             raise self.logerr('PIN must be an integer.') from None
-
-        try:
-            user = CleaningUser.get(CleaningUser.pin == pin)
-        except DoesNotExist:
-            raise self.logerr('Invalid PIN.', status=403) from None
         else:
+            terminal = self.terminal
+
             try:
-                address = self.terminal.location.address
-            except AttributeError:
-                raise self.logerr('Terminal has no address.') from None
+                user = CleaningUser.get(
+                    (CleaningUser.pin == pin) &
+                    (CleaningUser.customer == terminal.customer))
+            except DoesNotExist:
+                raise self.logerr('Invalid PIN.', status=403) from None
             else:
-                CleaningDate.add(user, address)
-                return OK()
+                try:
+                    address = terminal.location.address
+                except AttributeError:
+                    raise self.logerr('Terminal has no address.') from None
+                else:
+                    CleaningDate.add(user, address)
+                    return OK(status=201)
