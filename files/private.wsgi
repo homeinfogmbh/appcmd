@@ -3,4 +3,4 @@
 from wsgilib import RestApp
 from appcmd.wsgi import PrivateHandler
 
-application = RestApp(PrivateHandler)
+application = RestApp({'appcmd': PrivateHandler})

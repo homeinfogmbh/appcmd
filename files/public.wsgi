@@ -3,4 +3,4 @@
 from wsgilib import RestApp
 from appcmd.wsgi import PublicHandler
 
-application = RestApp(PublicHandler)
+application = RestApp({'appcmd': PublicHandler})
