@@ -169,13 +169,7 @@ class PublicHandler(CommonBasicHandler):
         except AttributeError:
             raise self.logerr('Terminal has no address.') from None
         else:
-            cleaning_dates = []
-
-            for cleaning_date in CleaningDate.select().where(
-                    CleaningDate.address == address):
-                cleaning_dates.append(cleaning_date.to_dict())
-
-            return JSON(cleaning_dates)
+            return JSON(CleaningDate.dict_for(address))
 
     def _complete_command(self):
         """Completes the provided command"""
