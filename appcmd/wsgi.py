@@ -23,11 +23,11 @@ class CommonBasicHandler(ResourceHandler):
         try:
             return int(self.query['cid'])
         except KeyError:
-            return self.logerr('No CID specified.')
+            raise self.logerr('No CID specified.') from None
         except TypeError:
-            return self.logerr('CID must not be null.')
+            raise self.logerr('CID must not be null.') from None
         except ValueError:
-            return self.logerr('CID must be an integer.')
+            raise self.logerr('CID must be an integer.') from None
 
     @property
     def tid(self):
@@ -35,11 +35,11 @@ class CommonBasicHandler(ResourceHandler):
         try:
             return int(self.query['tid'])
         except KeyError:
-            return self.logerr('No TID specified.')
+            raise self.logerr('No TID specified.') from None
         except TypeError:
-            return self.logerr('TID must not be null.')
+            raise self.logerr('TID must not be null.') from None
         except ValueError:
-            return self.logerr('TID must be an integer.')
+            raise self.logerr('TID must be an integer.') from None
 
     @property
     def terminal(self):
@@ -47,8 +47,8 @@ class CommonBasicHandler(ResourceHandler):
         try:
             return Terminal.by_ids(self.cid, self.tid)
         except DoesNotExist:
-            return self.logerr('No such terminal: {}.{}.'.format(
-                self.tid, self.cid))
+            raise self.logerr('No such terminal: {}.{}.'.format(
+                self.tid, self.cid)) from None
 
 
 class PrivateHandler(CommonBasicHandler):
@@ -61,16 +61,16 @@ class PrivateHandler(CommonBasicHandler):
         elif self.resource == 'tenant2tenant':
             return self._tenant2tenant()
         else:
-            return self.logerr('Invalid operation.')
+            raise self.logerr('Invalid operation.') from None
 
     def _contact_mail(self):
         """Sends contact form emails"""
         try:
             dictionary = loads(self.data.decode())
         except AttributeError:
-            return self.logerr('No data provided.')
+            raise self.logerr('No data provided.') from None
         except ValueError:
-            return self.logerr('Data is not UTF-8 encoded JSON.')
+            raise self.logerr('Data is not UTF-8 encoded JSON.') from None
         else:
             mailer = ContactFormMailer(logger=self.logger)
             return mailer.send(dictionary)
@@ -80,12 +80,12 @@ class PrivateHandler(CommonBasicHandler):
         try:
             message = self.data.decode()
         except AttributeError:
-            return self.logerr('No message provided.')
+            raise self.logerr('No message provided.') from None
         except ValueError:
-            return self.logerr('Data is not UTF-8 text.')
+            raise self.logerr('Data is not UTF-8 text.') from None
         else:
             if len(message) > maxlen:
-                return self.logerr('Maximum text length exceeded.')
+                raise self.logerr('Maximum text length exceeded.') from None
             else:
                 TenantMessage.add(self.terminal, message)
                 return OK()
@@ -100,11 +100,11 @@ class PublicHandler(CommonBasicHandler):
         try:
             return int(self.query['vid'])
         except KeyError:
-            return self.logerr('No VID specified.')
+            raise self.logerr('No VID specified.') from None
         except TypeError:
-            return self.logerr('VID must not be null.')
+            raise self.logerr('VID must not be null.') from None
         except ValueError:
-            return self.logerr('VID must be an integer.')
+            raise self.logerr('VID must be an integer.') from None
 
     @property
     def customer(self):
@@ -112,7 +112,8 @@ class PublicHandler(CommonBasicHandler):
         try:
             return Customer.find(self.cid)
         except DoesNotExist:
-            return self.logerr('No such customer: {}.'.format(self.cid))
+            raise self.logerr(
+                'No such customer: {}.'.format(self.cid)) from None
 
     @property
     def task(self):
@@ -120,10 +121,10 @@ class PublicHandler(CommonBasicHandler):
         try:
             task = self.query['task']
         except KeyError:
-            return self.logerr('No task specified.')
+            raise self.logerr('No task specified.') from None
         else:
             if task is None:
-                return self.logerr('Task must not be null.')
+                raise self.logerr('Task must not be null.') from None
             else:
                 return task
 
@@ -134,7 +135,7 @@ class PublicHandler(CommonBasicHandler):
         elif self.resource == 'cleaning':
             return self._list_cleanings()
         else:
-            return self.logerr('Invalid operation.')
+            raise self.logerr('Invalid operation.') from None
 
     def post(self):
         """Handles POST requests"""
@@ -145,7 +146,7 @@ class PublicHandler(CommonBasicHandler):
         elif self.resource == 'cleaning':
             return self._add_cleaning()
         else:
-            return self.logerr('Invalid operation.')
+            raise self.logerr('Invalid operation.') from None
 
     def _list_commands(self):
         """Lists commands for the respective terminal"""
@@ -198,17 +199,17 @@ class PublicHandler(CommonBasicHandler):
         except KeyError:
             tid = None
         except ValueError:
-            return self.logerr('TID must be an integer')
+            raise self.logerr('TID must be an integer') from None
         except TypeError:
             tid = None
 
         try:
             document = self.query['document']
         except KeyError:
-            return self.logerr('Document must not be null.')
+            raise self.logerr('Document must not be null.') from None
         else:
             if document is None:
-                return self.logerr('Document must not be null.')
+                raise self.logerr('Document must not be null.') from None
 
         Statistic.add(customer, vid, tid, document)
         return OK()
@@ -218,21 +219,21 @@ class PublicHandler(CommonBasicHandler):
         try:
             pin = int(self.query['pin'])
         except KeyError:
-            return self.logerr('No PIN provided.')
+            raise self.logerr('No PIN provided.') from None
         except TypeError:
-            return self.logerr('PIN must not be null.')
+            raise self.logerr('PIN must not be null.') from None
         except ValueError:
-            return self.logerr('PIN must be an integer.')
+            raise self.logerr('PIN must be an integer.') from None
 
         try:
             user = CleaningUser.get(CleaningUser.pin == pin)
         except DoesNotExist:
-            return self.logerr('Invalid PIN.', status=403)
+            raise self.logerr('Invalid PIN.', status=403) from None
         else:
             try:
                 address = self.terminal.location.address
             except AttributeError:
-                return self.logerr('Terminal has no address.')
+                raise self.logerr('Terminal has no address.') from None
             else:
                 Cleaning.add(user, address)
                 return OK()
