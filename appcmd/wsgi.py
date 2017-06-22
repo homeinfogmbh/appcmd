@@ -164,13 +164,18 @@ class PublicHandler(CommonBasicHandler):
 
     def _list_cleanings(self):
         """Lists cleaning entries for the respective terminal"""
-        cleaning_dates = []
+        try:
+            address = self.terminal.location.address
+        except AttributeError:
+            raise self.logerr('Terminal has no address.') from None
+        else:
+            cleaning_dates = []
 
-        for cleaning_date in CleaningDate.select().where(
-                CleaningDate.terminal == self.terminal):
-            cleaning_dates.append(cleaning_date.to_dict())
+            for cleaning_date in CleaningDate.select().where(
+                    CleaningDate.address == address):
+                cleaning_dates.append(cleaning_date.to_dict())
 
-        return JSON(cleaning_dates)
+            return JSON(cleaning_dates)
 
     def _complete_command(self):
         """Completes the provided command"""
