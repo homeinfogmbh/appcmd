@@ -4,7 +4,7 @@ from json import loads
 from peewee import DoesNotExist
 
 from homeinfo.applicationdb import Command, Statistics, CleaningUser, \
-    Cleaning, TenantMessage
+    CleaningDate, TenantMessage
 from homeinfo.crm import Customer
 from homeinfo.terminals.orm import Terminal
 from wsgilib import ResourceHandler, OK, JSON, InternalServerError
@@ -164,13 +164,13 @@ class PublicHandler(CommonBasicHandler):
 
     def _list_cleanings(self):
         """Lists cleaning entries for the respective terminal"""
-        cleanings = []
+        cleaning_dates = []
 
-        for cleaning in Cleaning.select().where(
-                Cleaning.terminal == self.terminal):
-            cleanings.append(cleaning.to_dict())
+        for cleaning_date in CleaningDate.select().where(
+                CleaningDate.terminal == self.terminal):
+            cleaning_dates.append(cleaning_date.to_dict())
 
-        return JSON(cleanings)
+        return JSON(cleaning_dates)
 
     def _complete_command(self):
         """Completes the provided command"""
@@ -239,5 +239,5 @@ class PublicHandler(CommonBasicHandler):
             except AttributeError:
                 raise self.logerr('Terminal has no address.') from None
             else:
-                Cleaning.add(user, address)
+                CleaningDate.add(user, address)
                 return OK()
