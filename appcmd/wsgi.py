@@ -3,8 +3,8 @@
 from json import loads
 from peewee import DoesNotExist
 
-from homeinfo.applicationdb import Command, Statistic, CleaningUser, Cleaning,\
-    TenantMessage
+from homeinfo.applicationdb import Command, Statistics, CleaningUser, \
+    Cleaning, TenantMessage
 from homeinfo.crm import Customer
 from homeinfo.terminals.orm import Terminal
 from wsgilib import ResourceHandler, OK, JSON, InternalServerError
@@ -212,7 +212,7 @@ class PublicHandler(CommonBasicHandler):
                 raise self.logerr('Document must not be null.') from None
 
         try:
-            Statistic.add(customer, vid, tid, document)
+            Statistics.add(customer, vid, tid, document)
         except Exception as e:
             raise InternalServerError(str(e))
         else:
