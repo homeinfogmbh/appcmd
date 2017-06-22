@@ -7,7 +7,7 @@ from homeinfo.applicationdb import Command, Statistic, CleaningUser, Cleaning,\
     TenantMessage
 from homeinfo.crm import Customer
 from homeinfo.terminals.orm import Terminal
-from wsgilib import ResourceHandler, OK, JSON
+from wsgilib import ResourceHandler, OK, JSON, InternalServerError
 
 from .mail import ContactFormMailer
 
@@ -211,8 +211,12 @@ class PublicHandler(CommonBasicHandler):
             if document is None:
                 raise self.logerr('Document must not be null.') from None
 
-        Statistic.add(customer, vid, tid, document)
-        return OK()
+        try:
+            Statistic.add(customer, vid, tid, document)
+        except Exception as e:
+            raise InternalServerError(str(e))
+        else:
+            return OK()
 
     def _add_cleaning(self):
         """Adds a cleaning entry"""
