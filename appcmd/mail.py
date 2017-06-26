@@ -63,8 +63,7 @@ class ContactFormMailer(Mailer):
         try:
             super().send([email])
         except Exception:
-            msg = 'Error while sending email'
-            self.logger.error(msg)
+            self.logger.error('Error while sending email.')
             print(format_exc(), flush=True)
             raise
         else:
