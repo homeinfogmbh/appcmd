@@ -75,7 +75,13 @@ class PrivateHandler(CommonBasicHandler):
             raise self.logerr('Data is not UTF-8 encoded JSON.') from None
         else:
             mailer = ContactFormMailer(logger=self.logger)
-            return mailer.send(dictionary)
+
+            try:
+                msg = mailer.send(dictionary)
+            except Exception:
+                raise InternalServerError('Could not send email.') from None
+            else:
+                return OK(msg)
 
     def _tenant2tenant(self, maxlen=2048):
         """Stores tenant info"""
@@ -90,7 +96,7 @@ class PrivateHandler(CommonBasicHandler):
                 raise self.logerr('Maximum text length exceeded.') from None
             else:
                 TenantMessage.add(self.terminal, message)
-                return OK()
+                return OK(status=201)
 
     def _damage_report(self):
         """Stores damage reports"""
@@ -107,7 +113,7 @@ class PrivateHandler(CommonBasicHandler):
                 raise self.logerr('Missing mandatory property: {}.'.format(
                     ke.args[0])) from None
             else:
-                return OK()
+                return OK(status=201)
 
 
 class PublicHandler(CommonBasicHandler):
@@ -232,9 +238,9 @@ class PublicHandler(CommonBasicHandler):
         try:
             Statistics.add(customer, vid, tid, document)
         except Exception as e:
-            raise InternalServerError(str(e))
+            raise InternalServerError(str(e)) from None
         else:
-            return OK()
+            return OK(status=201)
 
     def _add_cleaning(self):
         """Adds a cleaning entry"""

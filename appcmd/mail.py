@@ -3,7 +3,6 @@
 from datetime import datetime
 from traceback import format_exc
 
-from wsgilib import Error, OK
 from emaillib import Mailer, EMail
 
 from .config import config
@@ -67,7 +66,6 @@ class ContactFormMailer(Mailer):
             msg = 'Error while sending email'
             self.logger.error(msg)
             print(format_exc(), flush=True)
-            raise Error(msg)
+            raise
         else:
-            msg = 'Sent email to: {}'.format(recipient)
-            return OK(msg)
+            return 'Sent email to: {}'.format(recipient)
