@@ -4,7 +4,7 @@ from json import loads
 from peewee import DoesNotExist
 
 from homeinfo.applicationdb import Command, Statistics, CleaningUser, \
-    CleaningDate, TenantMessage
+    CleaningDate, TenantMessage, DamageReport
 from homeinfo.crm import Customer
 from homeinfo.terminals.orm import Terminal
 from wsgilib import ResourceHandler, OK, JSON, InternalServerError
@@ -60,6 +60,8 @@ class PrivateHandler(CommonBasicHandler):
             return self._contact_mail()
         elif self.resource == 'tenant2tenant':
             return self._tenant2tenant()
+        elif self.resource == 'damagereport':
+            return self._damage_report()
         else:
             raise self.logerr('Invalid operation.') from None
 
@@ -88,6 +90,23 @@ class PrivateHandler(CommonBasicHandler):
                 raise self.logerr('Maximum text length exceeded.') from None
             else:
                 TenantMessage.add(self.terminal, message)
+                return OK()
+
+    def _damage_report(self):
+        """Stores damage reports"""
+        try:
+            dictionary = loads(self.data.decode())
+        except AttributeError:
+            raise self.logerr('No message provided.') from None
+        except ValueError:
+            raise self.logerr('Data is not UTF-8 JSON.') from None
+        else:
+            try:
+                DamageReport.from_dict(self.terminal, dictionary)
+            except KeyError as ke:
+                raise self.logerr('Missing mandatory property: {}.'.format(
+                    ke.args[0])) from None
+            else:
                 return OK()
 
 
