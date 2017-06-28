@@ -1,12 +1,10 @@
 FILE_LIST = ./.installed_files.txt
 
-.PHONY: pull push clean check install-only post-install uninstall
+.PHONY: pull push clean check install post-install uninstall
 
-default: | pull clean check install
+default: | pull clean check install post-install
 
-install: | install-only post-install
-
-install-only:
+install:
 	@ ./setup.py install --record $(FILE_LIST)
 
 uninstall:
