@@ -1,10 +1,12 @@
 FILE_LIST = ./.installed_files.txt
 
-.PHONY: pull push clean check install uninstall
+.PHONY: pull push clean check install-only post-install uninstall
 
 default: | pull clean check install
 
-install:
+install: | install-only post-install
+
+install-only:
 	@ ./setup.py install --record $(FILE_LIST)
 
 uninstall:
@@ -21,3 +23,6 @@ pull:
 
 push:
 	@ git push
+
+post-install:
+	fixuwsgi appcmd-public appcmd-private
