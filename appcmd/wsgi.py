@@ -24,9 +24,7 @@ class CommonBasicHandler(ResourceHandler):
             return int(self.query['cid'])
         except KeyError:
             raise self.logerr('No CID specified.') from None
-        except TypeError:
-            raise self.logerr('CID must not be null.') from None
-        except ValueError:
+        except (TypeError, ValueError):
             raise self.logerr('CID must be an integer.') from None
 
     @property
@@ -36,9 +34,7 @@ class CommonBasicHandler(ResourceHandler):
             return int(self.query['tid'])
         except KeyError:
             raise self.logerr('No TID specified.') from None
-        except TypeError:
-            raise self.logerr('TID must not be null.') from None
-        except ValueError:
+        except (TypeError, ValueError):
             raise self.logerr('TID must be an integer.') from None
 
     @property
@@ -223,7 +219,7 @@ class PublicHandler(CommonBasicHandler):
         except KeyError:
             tid = None
         except ValueError:
-            raise self.logerr('TID must be an integer') from None
+            raise self.logerr('TID must be an integer.') from None
         except TypeError:
             tid = None
 
@@ -248,9 +244,7 @@ class PublicHandler(CommonBasicHandler):
             pin = int(self.query['pin'])
         except KeyError:
             raise self.logerr('No PIN provided.') from None
-        except TypeError:
-            raise self.logerr('PIN must not be null.') from None
-        except ValueError:
+        except (TypeError, ValueError):
             raise self.logerr('PIN must be an integer.') from None
         else:
             terminal = self.terminal
