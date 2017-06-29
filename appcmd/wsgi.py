@@ -175,8 +175,6 @@ class PublicHandler(CommonBasicHandler):
             return self.list_commands(self.customer, self.vid)
         elif self.resource == 'cleaning':
             return self.list_cleanings(self.terminal)
-        elif self.resource == 'proxy':
-            return self.proxy()
         else:
             raise self.logerr('Invalid operation.') from None
 
@@ -189,6 +187,8 @@ class PublicHandler(CommonBasicHandler):
                 self.customer, self.vid, self.tid, self.document)
         elif self.resource == 'cleaning':
             return self.add_cleaning()
+        elif self.resource == 'proxy':
+            return self.proxy()
         else:
             raise self.logerr('Invalid operation.') from None
 
