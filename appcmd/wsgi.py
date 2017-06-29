@@ -270,10 +270,14 @@ class PublicHandler(CommonBasicHandler):
                         raise self.logerr('Forbidden.', status=403) from None
                     else:
                         return self._get_url(url.geturl())
+                else:
+                    raise self.logerr('Host name must not be empty.') from None
+            else:
+                raise self.logerr('Scheme must be HTTP or HTTPS.') from None
 
     def _get_url(self, url):
         """Proxies the respective URL"""
-        reply = get(url.geturl())
+        reply = get(url)
         content_type, *_ = reply.headers['Content-Type'].split(';')
         return Binary(reply.content, mimetype=content_type,
                       status=reply.status_code)
