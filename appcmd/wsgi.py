@@ -169,6 +169,15 @@ class PublicHandler(CommonBasicHandler):
         except (TypeError, ValueError):
             raise self.logerr('PIN must be an integer.') from None
 
+    def _get_url(self, url):
+        """Proxies the respective URL"""
+        reply = get(url)
+        content_type, charset_def = reply.headers['Content-Type'].split(';')
+        _, charset = charset_def.split('=')
+        return Response(msg=reply.content, status=reply.status_code,
+                        content_type=content_type, charset=charset,
+                        encoding=False)
+
     def get(self):
         """Handles GET requests"""
         if self.resource == 'command':
@@ -274,12 +283,3 @@ class PublicHandler(CommonBasicHandler):
                     raise self.logerr('Host name must not be empty.') from None
             else:
                 raise self.logerr('Scheme must be HTTP or HTTPS.') from None
-
-    def _get_url(self, url):
-        """Proxies the respective URL"""
-        reply = get(url)
-        content_type, charset_def = reply.headers['Content-Type'].split(';')
-        _, charset = charset_def.split('=')
-        return Response(msg=reply.content, status=reply.status_code,
-                        content_type=content_type, charset=charset,
-                        encoding=False)
