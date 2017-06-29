@@ -280,5 +280,5 @@ class PublicHandler(CommonBasicHandler):
         reply = get(url)
         content_type, charset = reply.headers['Content-Type'].split(';')
         _, encoding = charset.split('=')
-        return Response(reply.content, mimetype=content_type,
+        return Response(reply.content, content_type=content_type,
                         encoding=encoding, status=reply.status_code)
