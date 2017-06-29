@@ -2,12 +2,14 @@
 
 from json import loads
 from peewee import DoesNotExist
+from requests import get
+from urllib.parse import urlparse
 
 from homeinfo.applicationdb import Command, Statistics, CleaningUser, \
-    CleaningDate, TenantMessage, DamageReport
+    CleaningDate, TenantMessage, DamageReport, ProxyHost
 from homeinfo.crm import Customer
 from homeinfo.terminals.orm import Terminal
-from wsgilib import ResourceHandler, OK, JSON, InternalServerError
+from wsgilib import ResourceHandler, OK, JSON, InternalServerError, Binary
 
 from .mail import ContactFormMailer
 
@@ -138,8 +140,8 @@ class PublicHandler(CommonBasicHandler):
         try:
             return Customer.find(self.cid)
         except DoesNotExist:
-            raise self.logerr(
-                'No such customer: {}.'.format(self.cid)) from None
+            raise self.logerr('No such customer: {}.'.format(
+                self.cid)) from None
 
     @property
     def task(self):
@@ -250,3 +252,28 @@ class PublicHandler(CommonBasicHandler):
             else:
                 CleaningDate.add(user, address)
                 return OK(status=201)
+
+    def proxy(self):
+        """Proxies URLs"""
+        try:
+            url = urlparse(self.data.decode())
+        except AttributeError:
+            raise self.logerr('No data provided.') from None
+        except ValueError:
+            raise self.logerr('Provided data is not UTF-8 URL.') from None
+        else:
+            if url.scheme in ('http', 'https'):
+                if url.hostname != '':
+                    try:
+                        ProxyHost.get(ProxyHost.hostname == url.hostname)
+                    except DoesNotExist:
+                        raise self.logerr('Forbidden.', status=403) from None
+                    else:
+                        return self._get_url(url.geturl())
+
+    def _get_url(self, url):
+        """Proxies the respective URL"""
+        reply = get(url.geturl())
+        content_type, *_ = reply.headers['Content-Type'].split(';')
+        return Binary(reply.content, mimetype=content_type,
+                      status=reply.status_code)
