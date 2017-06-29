@@ -9,7 +9,7 @@ from homeinfo.applicationdb import Command, Statistics, CleaningUser, \
     CleaningDate, TenantMessage, DamageReport, ProxyHost
 from homeinfo.crm import Customer
 from homeinfo.terminals.orm import Terminal
-from wsgilib import ResourceHandler, OK, JSON, InternalServerError, Binary
+from wsgilib import ResourceHandler, Response, OK, JSON, InternalServerError
 
 from .mail import ContactFormMailer
 
@@ -278,6 +278,7 @@ class PublicHandler(CommonBasicHandler):
     def _get_url(self, url):
         """Proxies the respective URL"""
         reply = get(url)
-        content_type, *_ = reply.headers['Content-Type'].split(';')
-        return Binary(reply.content, mimetype=content_type,
-                      status=reply.status_code)
+        content_type, charset = reply.headers['Content-Type'].split(';')
+        _, encoding = charset.split('=')
+        return Response(reply.content, mimetype=content_type,
+                        encoding=encoding, status=reply.status_code)
