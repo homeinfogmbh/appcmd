@@ -280,5 +280,6 @@ class PublicHandler(CommonBasicHandler):
         reply = get(url)
         content_type, charset_def = reply.headers['Content-Type'].split(';')
         _, charset = charset_def.split('=')
-        return Response(reply.content, content_type=content_type,
-                        charset=charset, status=reply.status_code)
+        return Response(msg=reply.content, status=reply.status_code,
+                        content_type=content_type, charset=charset,
+                        encoding=False)
