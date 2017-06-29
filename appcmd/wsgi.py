@@ -181,9 +181,9 @@ class PublicHandler(CommonBasicHandler):
         else:
             _, charset = charset.split('=')
 
-        return Response(msg=reply.content, status=reply.status_code,
-                        content_type=content_type, charset=charset,
-                        encoding=False)
+        return Response(
+            msg=reply.content, status=reply.status_code,
+            content_type=content_type, charset=charset, encoding=False)
 
     def get(self):
         """Handles GET requests"""
@@ -283,7 +283,9 @@ class PublicHandler(CommonBasicHandler):
                     try:
                         ProxyHost.get(ProxyHost.hostname == url.hostname)
                     except DoesNotExist:
-                        raise self.logerr('Forbidden.', status=403) from None
+                        raise self.logerr(
+                            'Host name is not whitelisted.',
+                            status=403) from None
                     else:
                         return self._get_url(url.geturl())
                 else:
