@@ -172,8 +172,15 @@ class PublicHandler(CommonBasicHandler):
     def _get_url(self, url):
         """Proxies the respective URL"""
         reply = get(url)
-        content_type, charset_def = reply.headers['Content-Type'].split(';')
-        _, charset = charset_def.split('=')
+
+        try:
+            content_type, charset = reply.headers['Content-Type'].split(';')
+        except ValueError:
+            content_type = reply.headers['Content-Type']
+            charset = None
+        else:
+            _, charset = charset.split('=')
+
         return Response(msg=reply.content, status=reply.status_code,
                         content_type=content_type, charset=charset,
                         encoding=False)
