@@ -10,6 +10,9 @@ install:
 uninstall:
 	@ while read FILE; do echo "Removing: $$FILE"; rm "$$FILE"; done < $(FILE_LIST)
 
+post-install:
+	fixuwsgi appcmd-public appcmd-private
+
 clean:
 	@ rm -Rf ./build
 
@@ -21,6 +24,3 @@ pull:
 
 push:
 	@ git push
-
-post-install:
-	fixuwsgi appcmd-public appcmd-private
