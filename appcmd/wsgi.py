@@ -202,7 +202,7 @@ class PublicHandler(CommonBasicHandler):
             return self.add_statistics(
                 self.customer, self.vid, self.tid, self.document)
         elif self.resource == 'cleaning':
-            return self.add_cleaning()
+            return self.add_cleaning(self.terminal, self.pin)
         elif self.resource == 'proxy':
             return self.proxy()
         else:
