@@ -5,13 +5,13 @@ from peewee import DoesNotExist
 from requests import get
 from urllib.parse import urlparse
 
-from homeinfo.applicationdb import Command, Statistics, CleaningUser, \
-    CleaningDate, TenantMessage, DamageReport, ProxyHost
 from homeinfo.crm import Customer
 from homeinfo.terminals.orm import Terminal
 from wsgilib import ResourceHandler, Response, OK, JSON, InternalServerError
 
 from .mail import ContactFormMailer
+from .orm import Command, Statistics, CleaningUser, CleaningDate, \
+    TenantMessage, DamageReport, ProxyHost
 
 __all__ = ['PrivateHandler', 'PublicHandler']
 
