@@ -20,6 +20,16 @@ class CommonBasicHandler(ResourceHandler):
     """Caches also terminals and customers"""
 
     @property
+    def json(self):
+        """Returns JSON data"""
+        try:
+            return loads(self.data.decode())
+        except AttributeError:
+            raise self.logerr('No data provided.') from None
+        except ValueError:
+            raise self.logerr('Data is not UTF-8 encoded JSON.') from None
+
+    @property
     def cid(self):
         """Returns the customer ID"""
         try:
@@ -70,21 +80,16 @@ class PrivateHandler(CommonBasicHandler):
 
     def contact_mail(self):
         """Sends contact form emails"""
-        try:
-            dictionary = loads(self.data.decode())
-        except AttributeError:
-            raise self.logerr('No data provided.') from None
-        except ValueError:
-            raise self.logerr('Data is not UTF-8 encoded JSON.') from None
-        else:
-            mailer = ContactFormMailer(logger=self.logger)
+        mailer = ContactFormMailer(logger=self.logger)
 
-            try:
-                msg = mailer.send(dictionary)
-            except Exception:
-                raise InternalServerError('Could not send email.') from None
-            else:
-                return OK(msg)
+        try:
+            msg = mailer.send(self.json)
+        except Response:
+            raise
+        except Exception:
+            raise InternalServerError('Could not send email.') from None
+        else:
+            return OK(msg)
 
     def tenant2tenant(self, maxlen=2048):
         """Stores tenant info"""
@@ -104,19 +109,12 @@ class PrivateHandler(CommonBasicHandler):
     def damage_report(self):
         """Stores damage reports"""
         try:
-            dictionary = loads(self.data.decode())
-        except AttributeError:
-            raise self.logerr('No message provided.') from None
-        except ValueError:
-            raise self.logerr('Data is not UTF-8 JSON.') from None
+            DamageReport.from_dict(self.terminal, self.json)
+        except KeyError as ke:
+            raise self.logerr('Missing mandatory property: {}.'.format(
+                ke.args[0])) from None
         else:
-            try:
-                DamageReport.from_dict(self.terminal, dictionary)
-            except KeyError as ke:
-                raise self.logerr('Missing mandatory property: {}.'.format(
-                    ke.args[0])) from None
-            else:
-                return OK(status=201)
+            return OK(status=201)
 
 
 class PublicHandler(CommonBasicHandler):
