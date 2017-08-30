@@ -1,9 +1,10 @@
 """WSGI handlers for appcmd"""
 
 from json import loads
+from urllib.parse import urlparse
+
 from peewee import DoesNotExist
 from requests import get
-from urllib.parse import urlparse
 
 from homeinfo.crm import Customer
 from homeinfo.terminals.orm import Terminal
@@ -14,6 +15,24 @@ from .orm import Command, Statistics, CleaningUser, CleaningDate, \
     TenantMessage, DamageReport, ProxyHost
 
 __all__ = ['PrivateHandler', 'PublicHandler']
+
+
+def get_url(url):
+    """Proxies the respective URL"""
+
+    reply = get(url)
+
+    try:
+        content_type, charset = reply.headers['Content-Type'].split(';')
+    except ValueError:
+        content_type = reply.headers['Content-Type']
+        charset = None
+    else:
+        _, charset = charset.split('=')
+
+    return Response(
+        msg=reply.content, status=reply.status_code,
+        content_type=content_type, charset=charset, encoding=False)
 
 
 class CommonBasicHandler(ResourceHandler):
@@ -110,9 +129,9 @@ class PrivateHandler(CommonBasicHandler):
         """Stores damage reports"""
         try:
             DamageReport.from_dict(self.terminal, self.json)
-        except KeyError as ke:
+        except KeyError as key_error:
             raise self.logerr('Missing mandatory property: {}.'.format(
-                ke.args[0])) from None
+                key_error.args[0])) from None
         else:
             return OK(status=201)
 
@@ -161,27 +180,9 @@ class PublicHandler(CommonBasicHandler):
     def pin(self):
         """Returns the cleaning PIN"""
         try:
-            return int(self.query['pin'])
+            return self.query['pin']
         except KeyError:
             raise self.logerr('No PIN provided.') from None
-        except (TypeError, ValueError):
-            raise self.logerr('PIN must be an integer.') from None
-
-    def _get_url(self, url):
-        """Proxies the respective URL"""
-        reply = get(url)
-
-        try:
-            content_type, charset = reply.headers['Content-Type'].split(';')
-        except ValueError:
-            content_type = reply.headers['Content-Type']
-            charset = None
-        else:
-            _, charset = charset.split('=')
-
-        return Response(
-            msg=reply.content, status=reply.status_code,
-            content_type=content_type, charset=charset, encoding=False)
 
     def get(self):
         """Handles GET requests"""
@@ -195,12 +196,11 @@ class PublicHandler(CommonBasicHandler):
     def post(self):
         """Handles POST requests"""
         if self.resource == 'command':
-            return self.complete_command(self.customer, self.vid, self.task)
+            return self.complete_command()
         elif self.resource == 'statistics':
-            return self.add_statistics(
-                self.customer, self.vid, self.tid, self.document)
+            return self.add_statistics()
         elif self.resource == 'cleaning':
-            return self.add_cleaning(self.terminal, self.pin)
+            return self.add_cleaning()
         elif self.resource == 'proxy':
             return self.proxy()
         else:
@@ -225,36 +225,38 @@ class PublicHandler(CommonBasicHandler):
         except AttributeError:
             raise self.logerr('Terminal has no address.') from None
         else:
-            return JSON(CleaningDate.of(address, limit=10))
+            return JSON(CleaningDate.by_address(address, limit=10))
 
-    def complete_command(self, customer, vid, task):
+    def complete_command(self):
         """Completes the provided command"""
         result = False
 
         for command in Command.select().where(
-                (Command.customer == customer) &
-                (Command.vid == vid) &
-                (Command.task == task) &
+                (Command.customer == self.customer) &
+                (Command.vid == self.vid) &
+                (Command.task == self.task) &
                 (Command.completed >> None)):
             command.complete()
             result = True
 
         return OK('1' if result else '0')
 
-    def add_statistics(self, customer, vid, tid, document):
+    def add_statistics(self):
         """Adds a new statistics entry"""
         try:
-            Statistics.add(customer, vid, tid, document)
-        except Exception as e:
-            raise InternalServerError(str(e)) from None
+            Statistics.add(self.customer, self.vid, self.tid, self.document)
+        except Exception as exception:
+            raise InternalServerError(str(exception)) from None
         else:
             return OK(status=201)
 
-    def add_cleaning(self, terminal, pin):
+    def add_cleaning(self):
         """Adds a cleaning entry"""
+        terminal = self.terminal
+
         try:
             user = CleaningUser.get(
-                (CleaningUser.pin == pin) &
+                (CleaningUser.pin == self.pin) &
                 (CleaningUser.customer == terminal.customer))
         except DoesNotExist:
             raise self.logerr('Invalid PIN.', status=403) from None
@@ -285,7 +287,7 @@ class PublicHandler(CommonBasicHandler):
                             'Host name is not whitelisted.',
                             status=403) from None
                     else:
-                        return self._get_url(url.geturl())
+                        return get_url(url.geturl())
                 else:
                     raise self.logerr('Host name must not be empty.') from None
             else:

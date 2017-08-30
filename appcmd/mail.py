@@ -5,7 +5,7 @@ from traceback import format_exc
 
 from emaillib import Mailer, EMail
 
-from .config import config
+from .config import CONFIG
 
 SENDER = 'automailer@homeinfo.de'
 EMAIL_TEMP = '''Kontaktformular vom {datum}:
@@ -22,10 +22,10 @@ Objektbeschreibung:            {objektbeschreibung}
 '''
 
 
-def bool2lang(b, true='ja', false='nein'):
+def bool2lang(boolean, true='ja', false='nein'):
     """Converts a boolean value into natural language words"""
 
-    return true if b else false
+    return true if boolean else false
 
 
 class ContactFormMailer(Mailer):
@@ -34,8 +34,8 @@ class ContactFormMailer(Mailer):
     def __init__(self, logger=None):
         """Initializes the mailer with the appropriate configuration"""
         super().__init__(
-            config['mail']['host'], config['mail']['port'],
-            config['mail']['user'], config['mail']['passwd'], logger=logger)
+            CONFIG['mail']['host'], CONFIG['mail']['port'],
+            CONFIG['mail']['user'], CONFIG['mail']['passwd'], logger=logger)
 
     def send(self, dictionary):
         """Sends contact form emails from JSON-like dictionary"""

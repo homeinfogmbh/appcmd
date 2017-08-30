@@ -5,10 +5,11 @@ from peewee import DoesNotExist, Model, PrimaryKeyField, ForeignKeyField, \
     TextField, DateTimeField, BooleanField, IntegerField, CharField, \
     DateField
 
-from configparserplus import ConfigParserPlus
 from homeinfo.crm import Address, Customer
 from homeinfo.terminals.orm import Terminal
 from peeweeplus import MySQLDatabase
+
+from .config import CONFIG
 
 
 __all__ = [
@@ -20,12 +21,11 @@ __all__ = [
     'DamageReport',
     'ProxyHost']
 
-config = ConfigParserPlus('/etc/applicationdb.conf')
-database = MySQLDatabase(
-    config['db']['db'],
-    host=config['db']['host'],
-    user=config['db']['user'],
-    passwd=config['db']['passwd'],
+DATABASE = MySQLDatabase(
+    CONFIG['db']['db'],
+    host=CONFIG['db']['host'],
+    user=CONFIG['db']['user'],
+    passwd=CONFIG['db']['passwd'],
     closing=True)
 
 
@@ -39,7 +39,7 @@ class ApplicationModel(Model):
     """Abstract common model"""
 
     class Meta:
-        database = database
+        database = DATABASE
         schema = database.database
 
     id = PrimaryKeyField()
@@ -165,16 +165,16 @@ class CleaningDate(ApplicationModel):
         return record
 
     @classmethod
-    def of(cls, address, limit=None):
+    def by_address(cls, address, limit=None):
         """Returns a dictionary for the respective address"""
         cleanings = []
 
-        for n, cleaning_date in enumerate(cls.select().where(
+        for counter, cleaning_date in enumerate(cls.select().where(
                 cls.address == address).order_by(cls.timestamp.desc())):
-            if limit is not None and n >= limit:
+            if limit is not None and counter >= limit:
                 break
-            else:
-                cleanings.append(cleaning_date.to_dict())
+
+            cleanings.append(cleaning_date.to_dict())
 
         return cleanings
 
