@@ -8,7 +8,8 @@ from requests import get
 
 from homeinfo.crm import Customer
 from homeinfo.terminals.orm import Terminal
-from wsgilib import ResourceHandler, Response, OK, JSON, InternalServerError
+from wsgilib import ResourceHandler, Response, OK, Error, JSON, \
+    InternalServerError
 
 from .mail import ContactFormMailer
 from .orm import Command, Statistics, CleaningUser, CleaningDate, \
@@ -44,9 +45,9 @@ class CommonBasicHandler(ResourceHandler):
         try:
             return loads(self.data.decode())
         except AttributeError:
-            raise self.logerr('No data provided.') from None
+            raise Error('No data provided.') from None
         except ValueError:
-            raise self.logerr('Data is not UTF-8 encoded JSON.') from None
+            raise Error('Data is not UTF-8 encoded JSON.') from None
 
     @property
     def cid(self):
@@ -54,9 +55,9 @@ class CommonBasicHandler(ResourceHandler):
         try:
             return int(self.query['cid'])
         except KeyError:
-            raise self.logerr('No CID specified.') from None
+            raise Error('No CID specified.') from None
         except (TypeError, ValueError):
-            raise self.logerr('CID must be an integer.') from None
+            raise Error('CID must be an integer.') from None
 
     @property
     def tid(self):
@@ -66,7 +67,7 @@ class CommonBasicHandler(ResourceHandler):
         except (KeyError, TypeError):
             return None
         except ValueError:
-            raise self.logerr('TID must be an integer.') from None
+            raise Error('TID must be an integer.') from None
 
     @property
     def vid(self):
@@ -74,11 +75,11 @@ class CommonBasicHandler(ResourceHandler):
         try:
             return int(self.query['vid'])
         except KeyError:
-            raise self.logerr('No VID specified.') from None
+            raise Error('No VID specified.') from None
         except TypeError:
-            raise self.logerr('VID must not be null.') from None
+            raise Error('VID must not be null.') from None
         except ValueError:
-            raise self.logerr('VID must be an integer.') from None
+            raise Error('VID must be an integer.') from None
 
     @property
     def customer(self):
@@ -86,8 +87,8 @@ class CommonBasicHandler(ResourceHandler):
         try:
             return Customer.find(self.cid)
         except DoesNotExist:
-            raise self.logerr('No such customer: {}.'.format(
-                self.cid)) from None
+            raise Error('No such customer: {}.'.format(
+                self.cid), status=404) from None
 
     @property
     def task(self):
@@ -95,7 +96,7 @@ class CommonBasicHandler(ResourceHandler):
         try:
             return self.query['task']
         except KeyError:
-            raise self.logerr('No task specified.') from None
+            raise Error('No task specified.') from None
 
     @property
     def document(self):
@@ -103,7 +104,7 @@ class CommonBasicHandler(ResourceHandler):
         try:
             return self.query['document']
         except KeyError:
-            raise self.logerr('Document must not be null.') from None
+            raise Error('No document specified.') from None
 
     @property
     def pin(self):
@@ -111,21 +112,16 @@ class CommonBasicHandler(ResourceHandler):
         try:
             return self.query['pin']
         except KeyError:
-            raise self.logerr('No PIN provided.') from None
+            raise Error('No PIN provided.') from None
 
     @property
     def terminal(self):
         """Returns the respective customer."""
-        tid = self.tid
-
-        if tid is None:
-            raise self.logerr('No TID specified.') from None
-        else:
-            try:
-                return Terminal.by_ids(self.cid, self.tid)
-            except DoesNotExist:
-                raise self.logerr('No such terminal: {}.{}.'.format(
-                    self.tid, self.cid)) from None
+        try:
+            return Terminal.by_ids(self.cid, self.tid)
+        except DoesNotExist:
+            raise Error('No such terminal: {}.{}.'.format(
+                self.tid, self.cid), status=404) from None
 
     def list_commands(self):
         """Lists commands for the respective terminal."""
@@ -144,7 +140,7 @@ class CommonBasicHandler(ResourceHandler):
         try:
             address = self.terminal.location.address
         except AttributeError:
-            raise self.logerr('Terminal has no address.') from None
+            raise Error('Terminal has no address.') from None
         else:
             return JSON(CleaningDate.by_address(address, limit=10))
 
@@ -180,12 +176,12 @@ class CommonBasicHandler(ResourceHandler):
                 (CleaningUser.pin == self.pin) &
                 (CleaningUser.customer == terminal.customer))
         except DoesNotExist:
-            raise self.logerr('Invalid PIN.', status=403) from None
+            raise Error('Invalid PIN.', status=403) from None
         else:
             try:
                 address = terminal.location.address
             except AttributeError:
-                raise self.logerr('Terminal has no address.') from None
+                raise Error('Terminal has no address.') from None
             else:
                 CleaningDate.add(user, address)
                 return OK(status=201)
@@ -195,24 +191,24 @@ class CommonBasicHandler(ResourceHandler):
         try:
             url = urlparse(self.data.decode())
         except AttributeError:
-            raise self.logerr('No data provided.') from None
+            raise Error('No data provided.') from None
         except ValueError:
-            raise self.logerr('Provided data is not UTF-8 URL.') from None
+            raise Error('Provided data is not UTF-8 URL.') from None
         else:
             if url.scheme in ('http', 'https'):
                 if url.hostname != '':
                     try:
                         ProxyHost.get(ProxyHost.hostname == url.hostname)
                     except DoesNotExist:
-                        raise self.logerr(
+                        raise Error(
                             'Host name is not whitelisted.',
                             status=403) from None
                     else:
                         return get_url(url.geturl())
                 else:
-                    raise self.logerr('Host name must not be empty.') from None
+                    raise Error('Host name must not be empty.') from None
             else:
-                raise self.logerr('Scheme must be HTTP or HTTPS.') from None
+                raise Error('Scheme must be HTTP or HTTPS.') from None
 
     def contact_mail(self):
         """Sends contact form emails."""
@@ -232,12 +228,12 @@ class CommonBasicHandler(ResourceHandler):
         try:
             message = self.data.decode()
         except AttributeError:
-            raise self.logerr('No message provided.') from None
+            raise Error('No message provided.') from None
         except ValueError:
-            raise self.logerr('Data is not UTF-8 text.') from None
+            raise Error('Data is not UTF-8 text.') from None
         else:
             if len(message) > maxlen:
-                raise self.logerr('Maximum text length exceeded.') from None
+                raise Error('Maximum text length exceeded.') from None
             else:
                 TenantMessage.add(self.terminal, message)
                 return OK(status=201)
@@ -247,7 +243,7 @@ class CommonBasicHandler(ResourceHandler):
         try:
             DamageReport.from_dict(self.terminal, self.json)
         except KeyError as key_error:
-            raise self.logerr('Missing mandatory property: {}.'.format(
+            raise Error('Missing mandatory property: {}.'.format(
                 key_error.args[0])) from None
         else:
             return OK(status=201)
@@ -267,7 +263,7 @@ class PrivateHandler(CommonBasicHandler):
         elif self.resource == 'statistics':
             return self.add_statistics()
         else:
-            raise self.logerr('Invalid operation.') from None
+            raise Error('Invalid operation.') from None
 
 
 class PublicHandler(CommonBasicHandler):
@@ -280,7 +276,7 @@ class PublicHandler(CommonBasicHandler):
         elif self.resource == 'cleaning':
             return self.list_cleanings()
         else:
-            raise self.logerr('Invalid operation.') from None
+            raise Error('Invalid operation.') from None
 
     def post(self):
         """Handles POST requests."""
@@ -293,4 +289,4 @@ class PublicHandler(CommonBasicHandler):
         elif self.resource == 'proxy':
             return self.proxy()
         else:
-            raise self.logerr('Invalid operation.') from None
+            raise Error('Invalid operation.') from None
