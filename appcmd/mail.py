@@ -22,6 +22,15 @@ Objektbeschreibung:            {objektbeschreibung}
 '''
 
 
+class CouldNotSendMail(Exception):
+    """Indicates that emails could not be sent."""
+
+    def __init__(self, stacktrace):
+        """Sets the stacktrace."""
+        super().__init__(stacktrace)
+        self.stacktrace = stacktrace
+
+
 def bool2lang(boolean, true='ja', false='nein'):
     """Converts a boolean value into natural language words"""
 
@@ -63,8 +72,9 @@ class ContactFormMailer(Mailer):
         try:
             super().send([email])
         except Exception:
+            stacktrace = format_exc()
             self.logger.error('Error while sending email.')
-            print(format_exc(), flush=True)
-            raise
+            self.logger.debug(stacktrace)
+            raise CouldNotSendMail(stacktrace) from None
         else:
             return 'Sent email to: {}'.format(recipient)

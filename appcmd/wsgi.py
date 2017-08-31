@@ -11,7 +11,7 @@ from homeinfo.terminals.orm import Terminal
 from wsgilib import ResourceHandler, Response, OK, Error, JSON, \
     InternalServerError
 
-from .mail import ContactFormMailer
+from .mail import CouldNotSendMail, ContactFormMailer
 from .orm import Command, Statistics, CleaningUser, CleaningDate, \
     TenantMessage, DamageReport, ProxyHost
 
@@ -212,9 +212,7 @@ class CommonBasicHandler(ResourceHandler):
 
         try:
             msg = mailer.send(self.json)
-        except Response:
-            raise
-        except Exception:
+        except CouldNotSendMail:
             raise InternalServerError('Could not send email.') from None
         else:
             return OK(msg)
