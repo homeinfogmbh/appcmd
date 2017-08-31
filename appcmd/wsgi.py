@@ -1,4 +1,4 @@
-"""WSGI handlers for appcmd"""
+"""WSGI handlers for appcmd."""
 
 from json import loads
 from urllib.parse import urlparse
@@ -18,7 +18,7 @@ __all__ = ['PrivateHandler', 'PublicHandler']
 
 
 def get_url(url):
-    """Proxies the respective URL"""
+    """Returns the content of the retrieved URL."""
 
     reply = get(url)
 
@@ -36,11 +36,11 @@ def get_url(url):
 
 
 class CommonBasicHandler(ResourceHandler):
-    """Caches also terminals and customers"""
+    """Common handler base for private and public handler."""
 
     @property
     def json(self):
-        """Returns JSON data"""
+        """Returns POSTed JSON data."""
         try:
             return loads(self.data.decode())
         except AttributeError:
@@ -50,7 +50,7 @@ class CommonBasicHandler(ResourceHandler):
 
     @property
     def cid(self):
-        """Returns the customer ID"""
+        """Returns the customer ID."""
         try:
             return int(self.query['cid'])
         except KeyError:
@@ -60,7 +60,7 @@ class CommonBasicHandler(ResourceHandler):
 
     @property
     def tid(self):
-        """Returns the presentation ID"""
+        """Returns the presentation ID."""
         try:
             return int(self.query['tid'])
         except (KeyError, TypeError):
@@ -70,7 +70,7 @@ class CommonBasicHandler(ResourceHandler):
 
     @property
     def vid(self):
-        """Returns the presentation ID"""
+        """Returns the presentation ID."""
         try:
             return int(self.query['vid'])
         except KeyError:
@@ -82,7 +82,7 @@ class CommonBasicHandler(ResourceHandler):
 
     @property
     def customer(self):
-        """Returns the respective customer"""
+        """Returns the respective customer."""
         try:
             return Customer.find(self.cid)
         except DoesNotExist:
@@ -91,7 +91,7 @@ class CommonBasicHandler(ResourceHandler):
 
     @property
     def task(self):
-        """Returns the respective task"""
+        """Returns the respective task."""
         try:
             return self.query['task']
         except KeyError:
@@ -99,7 +99,7 @@ class CommonBasicHandler(ResourceHandler):
 
     @property
     def document(self):
-        """Returns the appropriate statistics document"""
+        """Returns the appropriate statistics document."""
         try:
             return self.query['document']
         except KeyError:
@@ -107,7 +107,7 @@ class CommonBasicHandler(ResourceHandler):
 
     @property
     def pin(self):
-        """Returns the cleaning PIN"""
+        """Returns the cleaning PIN."""
         try:
             return self.query['pin']
         except KeyError:
@@ -115,7 +115,7 @@ class CommonBasicHandler(ResourceHandler):
 
     @property
     def terminal(self):
-        """Returns the respective customer"""
+        """Returns the respective customer."""
         tid = self.tid
 
         if tid is None:
@@ -128,7 +128,7 @@ class CommonBasicHandler(ResourceHandler):
                     self.tid, self.cid)) from None
 
     def list_commands(self):
-        """Lists commands for the respective terminal"""
+        """Lists commands for the respective terminal."""
         tasks = []
 
         for command in Command.select().where(
@@ -140,7 +140,7 @@ class CommonBasicHandler(ResourceHandler):
         return JSON(tasks)
 
     def list_cleanings(self):
-        """Lists cleaning entries for the respective terminal"""
+        """Lists cleaning entries for the respective terminal."""
         try:
             address = self.terminal.location.address
         except AttributeError:
@@ -149,7 +149,7 @@ class CommonBasicHandler(ResourceHandler):
             return JSON(CleaningDate.by_address(address, limit=10))
 
     def complete_command(self):
-        """Completes the provided command"""
+        """Completes the provided command."""
         result = False
 
         for command in Command.select().where(
@@ -163,7 +163,7 @@ class CommonBasicHandler(ResourceHandler):
         return OK('1' if result else '0')
 
     def add_statistics(self):
-        """Adds a new statistics entry"""
+        """Adds a new statistics entry."""
         try:
             Statistics.add(self.customer, self.vid, self.tid, self.document)
         except Exception as exception:
@@ -172,7 +172,7 @@ class CommonBasicHandler(ResourceHandler):
             return OK(status=201)
 
     def add_cleaning(self):
-        """Adds a cleaning entry"""
+        """Adds a cleaning entry."""
         terminal = self.terminal
 
         try:
@@ -191,7 +191,7 @@ class CommonBasicHandler(ResourceHandler):
                 return OK(status=201)
 
     def proxy(self):
-        """Proxies URLs"""
+        """Proxies URLs."""
         try:
             url = urlparse(self.data.decode())
         except AttributeError:
@@ -215,7 +215,7 @@ class CommonBasicHandler(ResourceHandler):
                 raise self.logerr('Scheme must be HTTP or HTTPS.') from None
 
     def contact_mail(self):
-        """Sends contact form emails"""
+        """Sends contact form emails."""
         mailer = ContactFormMailer(logger=self.logger)
 
         try:
@@ -228,7 +228,7 @@ class CommonBasicHandler(ResourceHandler):
             return OK(msg)
 
     def tenant2tenant(self, maxlen=2048):
-        """Stores tenant info"""
+        """Stores tenant info."""
         try:
             message = self.data.decode()
         except AttributeError:
@@ -243,7 +243,7 @@ class CommonBasicHandler(ResourceHandler):
                 return OK(status=201)
 
     def damage_report(self):
-        """Stores damage reports"""
+        """Stores damage reports."""
         try:
             DamageReport.from_dict(self.terminal, self.json)
         except KeyError as key_error:
@@ -254,10 +254,10 @@ class CommonBasicHandler(ResourceHandler):
 
 
 class PrivateHandler(CommonBasicHandler):
-    """Handles posted data for legacy mode"""
+    """Handles data POSTed over VPN."""
 
     def post(self):
-        """Handles POST requests"""
+        """Handles POST requests."""
         if self.resource == 'contactform':
             return self.contact_mail()
         elif self.resource == 'tenant2tenant':
@@ -271,10 +271,10 @@ class PrivateHandler(CommonBasicHandler):
 
 
 class PublicHandler(CommonBasicHandler):
-    """Public services handler"""
+    """Handles data POSTed over the internet."""
 
     def get(self):
-        """Handles GET requests"""
+        """Handles GET requests."""
         if self.resource == 'command':
             return self.list_commands()
         elif self.resource == 'cleaning':
@@ -283,7 +283,7 @@ class PublicHandler(CommonBasicHandler):
             raise self.logerr('Invalid operation.') from None
 
     def post(self):
-        """Handles POST requests"""
+        """Handles POST requests."""
         if self.resource == 'command':
             return self.complete_command()
         elif self.resource == 'statistics':
