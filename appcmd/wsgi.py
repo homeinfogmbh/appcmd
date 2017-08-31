@@ -69,77 +69,6 @@ class CommonBasicHandler(ResourceHandler):
             raise self.logerr('TID must be an integer.') from None
 
     @property
-    def terminal(self):
-        """Returns the respective customer"""
-        tid = self.tid
-
-        if tid is None:
-            raise self.logerr('No TID specified.') from None
-        else:
-            try:
-                return Terminal.by_ids(self.cid, self.tid)
-            except DoesNotExist:
-                raise self.logerr('No such terminal: {}.{}.'.format(
-                    self.tid, self.cid)) from None
-
-
-class PrivateHandler(CommonBasicHandler):
-    """Handles posted data for legacy mode"""
-
-    def post(self):
-        """Handles POST requests"""
-        if self.resource == 'contactform':
-            return self.contact_mail()
-        elif self.resource == 'tenant2tenant':
-            return self.tenant2tenant()
-        elif self.resource == 'damagereport':
-            return self.damage_report()
-        else:
-            raise self.logerr('Invalid operation.') from None
-
-    def contact_mail(self):
-        """Sends contact form emails"""
-        mailer = ContactFormMailer(logger=self.logger)
-
-        try:
-            msg = mailer.send(self.json)
-        except Response:
-            raise
-        except Exception:
-            raise InternalServerError('Could not send email.') from None
-        else:
-            return OK(msg)
-
-    def tenant2tenant(self, maxlen=2048):
-        """Stores tenant info"""
-        try:
-            message = self.data.decode()
-        except AttributeError:
-            raise self.logerr('No message provided.') from None
-        except ValueError:
-            raise self.logerr('Data is not UTF-8 text.') from None
-        else:
-            if len(message) > maxlen:
-                raise self.logerr('Maximum text length exceeded.') from None
-            else:
-                TenantMessage.add(self.terminal, message)
-                return OK(status=201)
-
-    def damage_report(self):
-        """Stores damage reports"""
-        try:
-            DamageReport.from_dict(self.terminal, self.json)
-        except KeyError as key_error:
-            raise self.logerr('Missing mandatory property: {}.'.format(
-                key_error.args[0])) from None
-        else:
-            return OK(status=201)
-
-
-class PublicHandler(CommonBasicHandler):
-    """Public services handler"""
-
-    @property
     def vid(self):
         """Returns the presentation ID"""
         try:
@@ -184,44 +113,36 @@ class PublicHandler(CommonBasicHandler):
         except KeyError:
             raise self.logerr('No PIN provided.') from None
 
-    def get(self):
-        """Handles GET requests"""
-        if self.resource == 'command':
-            return self.list_commands(self.customer, self.vid)
-        elif self.resource == 'cleaning':
-            return self.list_cleanings(self.terminal)
-        else:
-            raise self.logerr('Invalid operation.') from None
+    @property
+    def terminal(self):
+        """Returns the respective customer"""
+        tid = self.tid
 
-    def post(self):
-        """Handles POST requests"""
-        if self.resource == 'command':
-            return self.complete_command()
-        elif self.resource == 'statistics':
-            return self.add_statistics()
-        elif self.resource == 'cleaning':
-            return self.add_cleaning()
-        elif self.resource == 'proxy':
-            return self.proxy()
+        if tid is None:
+            raise self.logerr('No TID specified.') from None
         else:
-            raise self.logerr('Invalid operation.') from None
+            try:
+                return Terminal.by_ids(self.cid, self.tid)
+            except DoesNotExist:
+                raise self.logerr('No such terminal: {}.{}.'.format(
+                    self.tid, self.cid)) from None
 
-    def list_commands(self, customer, vid):
+    def list_commands(self):
         """Lists commands for the respective terminal"""
         tasks = []
 
         for command in Command.select().where(
-                (Command.customer == customer) &
-                (Command.vid == vid) &
+                (Command.customer == self.customer) &
+                (Command.vid == self.vid) &
                 (Command.completed >> None)):
             tasks.append(command.task)
 
         return JSON(tasks)
 
-    def list_cleanings(self, terminal):
+    def list_cleanings(self):
         """Lists cleaning entries for the respective terminal"""
         try:
-            address = terminal.location.address
+            address = self.terminal.location.address
         except AttributeError:
             raise self.logerr('Terminal has no address.') from None
         else:
@@ -292,3 +213,84 @@ class PublicHandler(CommonBasicHandler):
                     raise self.logerr('Host name must not be empty.') from None
             else:
                 raise self.logerr('Scheme must be HTTP or HTTPS.') from None
+
+    def contact_mail(self):
+        """Sends contact form emails"""
+        mailer = ContactFormMailer(logger=self.logger)
+
+        try:
+            msg = mailer.send(self.json)
+        except Response:
+            raise
+        except Exception:
+            raise InternalServerError('Could not send email.') from None
+        else:
+            return OK(msg)
+
+    def tenant2tenant(self, maxlen=2048):
+        """Stores tenant info"""
+        try:
+            message = self.data.decode()
+        except AttributeError:
+            raise self.logerr('No message provided.') from None
+        except ValueError:
+            raise self.logerr('Data is not UTF-8 text.') from None
+        else:
+            if len(message) > maxlen:
+                raise self.logerr('Maximum text length exceeded.') from None
+            else:
+                TenantMessage.add(self.terminal, message)
+                return OK(status=201)
+
+    def damage_report(self):
+        """Stores damage reports"""
+        try:
+            DamageReport.from_dict(self.terminal, self.json)
+        except KeyError as key_error:
+            raise self.logerr('Missing mandatory property: {}.'.format(
+                key_error.args[0])) from None
+        else:
+            return OK(status=201)
+
+
+class PrivateHandler(CommonBasicHandler):
+    """Handles posted data for legacy mode"""
+
+    def post(self):
+        """Handles POST requests"""
+        if self.resource == 'contactform':
+            return self.contact_mail()
+        elif self.resource == 'tenant2tenant':
+            return self.tenant2tenant()
+        elif self.resource == 'damagereport':
+            return self.damage_report()
+        elif self.resource == 'statistics':
+            return self.add_statistics()
+        else:
+            raise self.logerr('Invalid operation.') from None
+
+
+class PublicHandler(CommonBasicHandler):
+    """Public services handler"""
+
+    def get(self):
+        """Handles GET requests"""
+        if self.resource == 'command':
+            return self.list_commands()
+        elif self.resource == 'cleaning':
+            return self.list_cleanings()
+        else:
+            raise self.logerr('Invalid operation.') from None
+
+    def post(self):
+        """Handles POST requests"""
+        if self.resource == 'command':
+            return self.complete_command()
+        elif self.resource == 'statistics':
+            return self.add_statistics()
+        elif self.resource == 'cleaning':
+            return self.add_cleaning()
+        elif self.resource == 'proxy':
+            return self.proxy()
+        else:
+            raise self.logerr('Invalid operation.') from None
