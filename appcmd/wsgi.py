@@ -160,12 +160,8 @@ class CommonBasicHandler(ResourceHandler):
 
     def add_statistics(self):
         """Adds a new statistics entry."""
-        try:
-            Statistics.add(self.customer, self.vid, self.tid, self.document)
-        except Exception as exception:
-            raise InternalServerError(str(exception)) from None
-        else:
-            return OK(status=201)
+        Statistics.add(self.customer, self.vid, self.tid, self.document)
+        return OK(status=201)
 
     def add_cleaning(self):
         """Adds a cleaning entry."""
