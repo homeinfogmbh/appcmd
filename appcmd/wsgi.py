@@ -85,7 +85,7 @@ class CommonBasicHandler(ResourceHandler):
     def customer(self):
         """Returns the respective customer."""
         try:
-            return Customer.find(self.cid)
+            return Customer.get(Customer.id == self.cid)
         except DoesNotExist:
             raise Error('No such customer: {}.'.format(
                 self.cid), status=404) from None
