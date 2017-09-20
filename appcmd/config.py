@@ -1,7 +1,7 @@
 """Configuration file parsing"""
 
-from configparserplus import ConfigParserPlus
+from configlib import INIParser
 
 __all__ = ['CONFIG']
 
-CONFIG = ConfigParserPlus('/etc/appcmd.conf')
+CONFIG = INIParser('/etc/appcmd.conf')
