@@ -119,6 +119,22 @@ class CommonBasicHandler(ResourceHandler):
             raise Error('No PIN provided.') from None
 
     @property
+    def street(self):
+        """Returns the street."""
+        try:
+            return self.query['street']
+        except KeyError:
+            raise Error('No street provided.') from None
+
+    @property
+    def house_number(self):
+        """Returns the house_number."""
+        try:
+            return self.query['house_number']
+        except KeyError:
+            raise Error('No house_number provided.') from None
+
+    @property
     def terminal(self):
         """Returns the respective customer."""
         try:
