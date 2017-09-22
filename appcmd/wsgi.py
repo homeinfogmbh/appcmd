@@ -268,7 +268,7 @@ class CommonBasicHandler(ResourceHandler):
             pickups = [pickup.to_dict() for pickup in AHA_CLIENT.by_address(
                 self.street, self.house_number)]
         except LocationNotFound:
-            return JSON([], status=404)
+            return Error('Location not found.', status=404)
         else:
             return JSON(pickups)
 
