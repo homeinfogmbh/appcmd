@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 from peewee import DoesNotExist
 from requests import get
 
+from aha import LocationNotFound, AhaDisposalClient
 from homeinfo.crm import Customer
 from homeinfo.terminals.orm import Terminal
 from wsgilib import ResourceHandler, Response, OK, Error, JSON, \
@@ -16,6 +17,9 @@ from .orm import Command, Statistics, CleaningUser, CleaningDate, \
     TenantMessage, DamageReport, ProxyHost
 
 __all__ = ['PrivateHandler', 'PublicHandler']
+
+
+AHA_CLIENT = AhaDisposalClient()
 
 
 def get_url(url):
@@ -242,6 +246,16 @@ class CommonBasicHandler(ResourceHandler):
         else:
             return OK(status=201)
 
+    def garbage_collection(self):
+        """Returns information about the garbage collection."""
+        try:
+            pickups = [pickup.to_dict() for pickup in AHA_CLIENT.by_address(
+                self.street, self.house_number)]
+        except LocationNotFound:
+            return JSON([], status=404)
+        else:
+            return JSON(pickups)
+
 
 class PrivateHandler(CommonBasicHandler):
     """Handles data POSTed over VPN."""
@@ -269,6 +283,8 @@ class PublicHandler(CommonBasicHandler):
             return self.list_commands()
         elif self.resource == 'cleaning':
             return self.list_cleanings()
+        elif self.resource == 'garbage_collection':
+            return self.garbage_collection()
         else:
             raise Error('Invalid operation.') from None
 
