@@ -3,7 +3,7 @@
 from urllib.parse import urlparse
 
 from peewee import DoesNotExist
-from requests import get
+from requests import ConnectionError as HTTPConnectionError, get
 
 from aha import LocationNotFound, AhaDisposalClient
 from homeinfo.crm import Customer
@@ -237,6 +237,8 @@ class CommonBasicHandler(ResourceHandler):
         try:
             pickups = [pickup.to_dict() for pickup in AHA_CLIENT.by_address(
                 street, house_number)]
+        except HTTPConnectionError:
+            return Error('Could not connect to AHA API.', status=503)
         except LocationNotFound:
             return Error('Location not found.', status=404)
         else:
