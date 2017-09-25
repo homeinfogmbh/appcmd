@@ -132,6 +132,26 @@ class CommonBasicHandler(ResourceHandler):
             raise Error('No such terminal: {}.{}.'.format(
                 self.tid, self.cid), status=404) from None
 
+    @property
+    def street_houseno(self):
+        """Returns street and house number."""
+        if 'street' in self.query and 'house_number' in self.query:
+            return (self.street, self.house_number)
+
+        if 'tid' in self.query and 'cid' in self.query:
+            terminal = self.terminal
+            location = terminal.location
+
+            if location is not None:
+                address = location.address
+                return (address.street, address.house_number)
+
+            raise Error('Terminal has no address associated.') from None
+
+        raise Error(
+            'Neither street and house_number, not tid and cid '
+            'were specified.') from None
+
     def list_commands(self):
         """Lists commands for the respective terminal."""
         tasks = []
@@ -210,6 +230,22 @@ class CommonBasicHandler(ResourceHandler):
         else:
             raise Error('Scheme must be HTTP or HTTPS.') from None
 
+    def garbage_collection(self):
+        """Returns information about the garbage collection."""
+        street, house_number = self.street_houseno
+
+        try:
+            pickups = [pickup.to_dict() for pickup in AHA_CLIENT.by_address(
+                street, house_number)]
+        except LocationNotFound:
+            return Error('Location not found.', status=404)
+        else:
+            return JSON(pickups)
+
+
+class PrivateHandler(CommonBasicHandler):
+    """Handles data POSTed over VPN."""
+
     def contact_mail(self):
         """Sends contact form emails."""
         mailer = ContactFormMailer(logger=self.logger)
@@ -240,20 +276,6 @@ class CommonBasicHandler(ResourceHandler):
                 key_error.args[0])) from None
         else:
             return OK(status=201)
-
-    def garbage_collection(self):
-        """Returns information about the garbage collection."""
-        try:
-            pickups = [pickup.to_dict() for pickup in AHA_CLIENT.by_address(
-                self.street, self.house_number)]
-        except LocationNotFound:
-            return Error('Location not found.', status=404)
-        else:
-            return JSON(pickups)
-
-
-class PrivateHandler(CommonBasicHandler):
-    """Handles data POSTed over VPN."""
 
     def post(self):
         """Handles POST requests."""
