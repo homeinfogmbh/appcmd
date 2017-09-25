@@ -1,6 +1,5 @@
 """WSGI handlers for appcmd."""
 
-from json import loads
 from urllib.parse import urlparse
 
 from peewee import DoesNotExist
