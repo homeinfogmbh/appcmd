@@ -44,16 +44,6 @@ class CommonBasicHandler(ResourceHandler):
     """Common handler base for private and public handler."""
 
     @property
-    def json(self):
-        """Returns POSTed JSON data."""
-        try:
-            return loads(self.data.decode())
-        except AttributeError:
-            raise Error('No data provided.') from None
-        except ValueError:
-            raise Error('Data is not UTF-8 encoded JSON.') from None
-
-    @property
     def cid(self):
         """Returns the customer ID."""
         try:
@@ -204,34 +194,29 @@ class CommonBasicHandler(ResourceHandler):
 
     def proxy(self):
         """Proxies URLs."""
-        try:
-            url = urlparse(self.data.decode())
-        except AttributeError:
-            raise Error('No data provided.') from None
-        except ValueError:
-            raise Error('Provided data is not UTF-8 URL.') from None
-        else:
-            if url.scheme in ('http', 'https'):
-                if url.hostname != '':
-                    try:
-                        ProxyHost.get(ProxyHost.hostname == url.hostname)
-                    except DoesNotExist:
-                        raise Error(
-                            'Host name is not whitelisted.',
-                            status=403) from None
-                    else:
-                        return get_url(url.geturl())
+        url = urlparse(self.data.text)
+
+        if url.scheme in ('http', 'https'):
+            if url.hostname != '':
+                try:
+                    ProxyHost.get(ProxyHost.hostname == url.hostname)
+                except DoesNotExist:
+                    raise Error(
+                        'Host name is not whitelisted.',
+                        status=403) from None
                 else:
-                    raise Error('Host name must not be empty.') from None
+                    return get_url(url.geturl())
             else:
-                raise Error('Scheme must be HTTP or HTTPS.') from None
+                raise Error('Host name must not be empty.') from None
+        else:
+            raise Error('Scheme must be HTTP or HTTPS.') from None
 
     def contact_mail(self):
         """Sends contact form emails."""
         mailer = ContactFormMailer(logger=self.logger)
 
         try:
-            msg = mailer.send(self.json)
+            msg = mailer.send(self.data.json)
         except CouldNotSendMail:
             raise InternalServerError('Could not send email.') from None
         else:
@@ -239,23 +224,18 @@ class CommonBasicHandler(ResourceHandler):
 
     def tenant2tenant(self, maxlen=2048):
         """Stores tenant info."""
-        try:
-            message = self.data.decode()
-        except AttributeError:
-            raise Error('No message provided.') from None
-        except ValueError:
-            raise Error('Data is not UTF-8 text.') from None
+        message = self.data.text
+
+        if len(message) > maxlen:
+            raise Error('Maximum text length exceeded.') from None
         else:
-            if len(message) > maxlen:
-                raise Error('Maximum text length exceeded.') from None
-            else:
-                TenantMessage.add(self.terminal, message)
-                return OK(status=201)
+            TenantMessage.add(self.terminal, message)
+            return OK(status=201)
 
     def damage_report(self):
         """Stores damage reports."""
         try:
-            DamageReport.from_dict(self.terminal, self.json)
+            DamageReport.from_dict(self.terminal, self.data.json)
         except KeyError as key_error:
             raise Error('Missing mandatory property: {}.'.format(
                 key_error.args[0])) from None
