@@ -11,13 +11,15 @@ from homeinfo.terminals.orm import Terminal
 from wsgilib import ResourceHandler, Response, OK, Error, JSON, \
     InternalServerError
 
-from .mail import CouldNotSendMail, ContactFormMailer
+from .mail import CouldNotSendMail, ContactFormEmail, ContactFormMailer
 from .orm import Command, Statistics, CleaningUser, CleaningDate, \
     TenantMessage, DamageReport, ProxyHost
 
 __all__ = ['PrivateHandler', 'PublicHandler']
 
 
+INVALID_OPERATION = Error('Invalid operation.')
+MAILER = ContactFormMailer()
 AHA_CLIENT = AhaDisposalClient()
 
 
@@ -225,10 +227,10 @@ class CommonBasicHandler(ResourceHandler):
                         status=403) from None
                 else:
                     return get_url(url.geturl())
-            else:
-                raise Error('Host name must not be empty.') from None
-        else:
-            raise Error('Scheme must be HTTP or HTTPS.') from None
+
+            raise Error('Host name must not be empty.') from None
+
+        raise Error('Scheme must be HTTP or HTTPS.') from None
 
     def garbage_collection(self):
         """Returns information about the garbage collection."""
@@ -250,10 +252,10 @@ class PrivateHandler(CommonBasicHandler):
 
     def contact_mail(self):
         """Sends contact form emails."""
-        mailer = ContactFormMailer(logger=self.logger)
+        email = ContactFormEmail.from_dict(self.data.json)
 
         try:
-            msg = mailer.send(self.data.json)
+            msg = MAILER.send_email(email)
         except CouldNotSendMail:
             raise InternalServerError('Could not send email.') from None
         else:
@@ -265,9 +267,9 @@ class PrivateHandler(CommonBasicHandler):
 
         if len(message) > maxlen:
             raise Error('Maximum text length exceeded.') from None
-        else:
-            TenantMessage.add(self.terminal, message)
-            return OK(status=201)
+
+        TenantMessage.add(self.terminal, message)
+        return OK(status=201)
 
     def damage_report(self):
         """Stores damage reports."""
@@ -289,8 +291,8 @@ class PrivateHandler(CommonBasicHandler):
             return self.damage_report()
         elif self.resource == 'statistics':
             return self.add_statistics()
-        else:
-            raise Error('Invalid operation.') from None
+
+        raise INVALID_OPERATION from None
 
 
 class PublicHandler(CommonBasicHandler):
@@ -304,8 +306,8 @@ class PublicHandler(CommonBasicHandler):
             return self.list_cleanings()
         elif self.resource == 'garbage_collection':
             return self.garbage_collection()
-        else:
-            raise Error('Invalid operation.') from None
+
+        raise INVALID_OPERATION from None
 
     def post(self):
         """Handles POST requests."""
@@ -317,5 +319,5 @@ class PublicHandler(CommonBasicHandler):
             return self.add_cleaning()
         elif self.resource == 'proxy':
             return self.proxy()
-        else:
-            raise Error('Invalid operation.') from None
+
+        raise INVALID_OPERATION from None

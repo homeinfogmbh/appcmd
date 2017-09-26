@@ -1,5 +1,6 @@
 """Contact form and E-Mail API"""
 
+from contextlib import suppress
 from datetime import datetime
 from traceback import format_exc
 
@@ -7,7 +8,6 @@ from emaillib import Mailer, EMail
 
 from .config import CONFIG
 
-SENDER = 'automailer@homeinfo.de'
 EMAIL_TEMP = '''Kontaktformular vom {datum}:
 -----------------------------------------------
 
@@ -37,44 +37,54 @@ def bool2lang(boolean, true='ja', false='nein'):
     return true if boolean else false
 
 
+def get_text(dictionary, template=EMAIL_TEMP):
+    """Returns the formatted text template."""
+
+    return template.format(
+        datum=datetime.strftime(datetime.now(), '%d.%m.%Y %H:%M:%S'),
+        objektnr=dictionary.get('objektnummer', 'unbekannt'),
+        name=dictionary.get('name'),
+        telefon=dictionary.get('telefon', 'nicht angegeben'),
+        email=dictionary.get('email', 'nicht angegeben'),
+        freitext=dictionary.get('freitext'),
+        rueckruf=bool2lang(dictionary.get('rueckruf')),
+        besichtigungstermin=bool2lang(dictionary.get('besichtigungstermin')),
+        objektbeschreibung=bool2lang(dictionary.get('objektbeschreibung')))
+
+
+class ContactFormEmail(EMail):
+    """An email for the contact form."""
+
+    @classmethod
+    def from_dict(cls, dictionary):
+        """Creates a new email from the provided dictionary."""
+        email = cls(
+            CONFIG['mail']['subject'], CONFIG['mail']['sender'],
+            dictionary['empfaenger'], plain=get_text(dictionary))
+
+        with suppress(KeyError):
+            email['Reply-To'] = dictionary['email']
+
+        return email
+
+
 class ContactFormMailer(Mailer):
-    """A contact form mailer"""
+    """A contact form mailer."""
 
     def __init__(self, logger=None):
-        """Initializes the mailer with the appropriate configuration"""
+        """Initializes the mailer with the appropriate configuration."""
         super().__init__(
             CONFIG['mail']['host'], CONFIG['mail']['port'],
             CONFIG['mail']['user'], CONFIG['mail']['passwd'], logger=logger)
 
-    def send(self, dictionary):
-        """Sends contact form emails from JSON-like dictionary"""
-        subject = 'Kontaktanfrage vom Immobiliendisplay'
-        text = EMAIL_TEMP.format(
-            datum=datetime.strftime(datetime.now(), '%d.%m.%Y %H:%M:%S'),
-            objektnr=dictionary.get('objektnummer', 'unbekannt'),
-            name=dictionary.get('name'),
-            telefon=dictionary.get('telefon', 'nicht angegeben'),
-            email=dictionary.get('email', 'nicht angegeben'),
-            freitext=dictionary.get('freitext'),
-            rueckruf=bool2lang(dictionary.get('rueckruf')),
-            besichtigungstermin=bool2lang(
-                dictionary.get('besichtigungstermin')),
-            objektbeschreibung=bool2lang(
-                dictionary.get('objektbeschreibung')))
-        recipient = dictionary.get('empfaenger')
-        email = EMail(subject, SENDER, recipient, plain=text)
-        reply_to = dictionary.get('email')
-
-        if reply_to:
-            email['Reply-To'] = reply_to
-            self.logger.debug('Reply to: {}'.format(reply_to))
-
+    def send_email(self, email):
+        """Sends contact form emails from JSON-like dictionary."""
         try:
-            super().send([email])
+            self.send([email])
         except Exception:
             stacktrace = format_exc()
             self.logger.error('Error while sending email.')
             self.logger.debug(stacktrace)
             raise CouldNotSendMail(stacktrace) from None
         else:
-            return 'Sent email to: {}'.format(recipient)
+            return 'Sent email to: "{}".'.format(email.recipient)
