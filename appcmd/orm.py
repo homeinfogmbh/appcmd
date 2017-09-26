@@ -30,13 +30,13 @@ DATABASE = MySQLDatabase(
 
 
 class DuplicateUserError(Exception):
-    """Indicates a duplicate user entry"""
+    """Indicates a duplicate user entry."""
 
     pass
 
 
 class ApplicationModel(Model):
-    """Abstract common model"""
+    """Abstract common model."""
 
     class Meta:
         database = DATABASE
@@ -46,7 +46,7 @@ class ApplicationModel(Model):
 
 
 class Command(ApplicationModel):
-    """Command entries"""
+    """Command entries."""
 
     customer = ForeignKeyField(Customer, db_column='customer')
     vid = IntegerField()
@@ -56,7 +56,7 @@ class Command(ApplicationModel):
 
     @classmethod
     def add(cls, customer, vid, task):
-        """Creates a new task"""
+        """Creates a new command task."""
         try:
             return cls.get(
                 (cls.customer == customer) & (cls.vid == vid) &
@@ -71,14 +71,14 @@ class Command(ApplicationModel):
             return record
 
     def complete(self, force=False):
-        """Completes the command"""
+        """Completes the command."""
         if force or self.completed is None:
             self.completed = datetime.now()
             self.save()
 
 
 class Statistics(ApplicationModel):
-    """Usage statistics entries"""
+    """Usage statistics entries."""
 
     customer = ForeignKeyField(Customer, db_column='customer')
     vid = IntegerField()
@@ -88,7 +88,7 @@ class Statistics(ApplicationModel):
 
     @classmethod
     def add(cls, customer, vid, tid, document):
-        """Adds a new statistics entry"""
+        """Adds a new statistics entry."""
         record = cls()
         record.customer = customer
         record.vid = vid
@@ -100,13 +100,13 @@ class Statistics(ApplicationModel):
 
     @property
     def terminal(self):
-        """Returns the appropriate terminal"""
+        """Returns the appropriate terminal."""
         if self.tid is not None:
             return Terminal.by_ids(self.customer.id, self.tid)
 
 
 class CleaningUser(ApplicationModel):
-    """Cleaning users"""
+    """Accounts for valet service employees."""
 
     class Meta:
         db_table = 'cleaning_user'
@@ -120,7 +120,7 @@ class CleaningUser(ApplicationModel):
 
     @classmethod
     def add(cls, name, customer, pin, annotation=None, enabled=None):
-        """Adds a new cleaning user"""
+        """Adds a new cleaning user."""
         try:
             cls.get((cls.name == name) & (cls.customer == customer))
         except DoesNotExist:
@@ -140,12 +140,12 @@ class CleaningUser(ApplicationModel):
             raise DuplicateUserError()
 
     def to_dict(self):
-        """Returns a JSON compliant dictionary"""
+        """Returns a JSON compliant dictionary."""
         return {'name': self.name, 'annotation': self.annotation}
 
 
 class CleaningDate(ApplicationModel):
-    """Cleaning chart entries"""
+    """Cleaning chart entries."""
 
     class Meta:
         db_table = 'cleaning_date'
@@ -156,7 +156,7 @@ class CleaningDate(ApplicationModel):
 
     @classmethod
     def add(cls, user, address):
-        """Adds a new cleaning record"""
+        """Adds a new cleaning record."""
         record = cls()
         record.user = user
         record.address = address
@@ -166,7 +166,7 @@ class CleaningDate(ApplicationModel):
 
     @classmethod
     def by_address(cls, address, limit=None):
-        """Returns a dictionary for the respective address"""
+        """Returns a dictionary for the respective address."""
         cleanings = []
 
         for counter, cleaning_date in enumerate(cls.select().where(
@@ -179,7 +179,7 @@ class CleaningDate(ApplicationModel):
         return cleanings
 
     def to_dict(self, verbose=False):
-        """Returns a JSON compliant dictionary"""
+        """Returns a JSON compliant dictionary."""
         dictionary = {
             'timestamp': self.timestamp.isoformat()}
 
@@ -193,7 +193,7 @@ class CleaningDate(ApplicationModel):
 
 
 class TenantMessage(ApplicationModel):
-    """Tenant to tenant messages"""
+    """Tenant to tenant messages."""
 
     class Meta:
         db_table = 'tenant_message'
@@ -207,7 +207,7 @@ class TenantMessage(ApplicationModel):
 
     @classmethod
     def add(cls, terminal, message):
-        """Creates a new entry for the respective terminal"""
+        """Creates a new entry for the respective terminal."""
         record = cls()
         record.terminal = terminal
         record.message = message
@@ -217,7 +217,7 @@ class TenantMessage(ApplicationModel):
 
 
 class DamageReport(ApplicationModel):
-    """Damage reports"""
+    """Damage reports."""
 
     class Meta:
         db_table = 'damage_report'
@@ -231,7 +231,7 @@ class DamageReport(ApplicationModel):
 
     @classmethod
     def add(cls, terminal, message, name, damage_type, contact=None):
-        """Creates a new entry for the respective terminal"""
+        """Creates a new entry for the respective terminal."""
         record = cls()
         record.terminal = terminal
         record.message = message
@@ -244,14 +244,14 @@ class DamageReport(ApplicationModel):
 
     @classmethod
     def from_dict(cls, terminal, dictionary):
-        """Creates a new entry from the respective dictionary"""
+        """Creates a new entry from the respective dictionary."""
         return cls.add(
             terminal, dictionary['message'], dictionary['name'],
             dictionary['damage_type'], contact=dictionary.get('contact'))
 
 
 class ProxyHost(ApplicationModel):
-    """Valid proxy hosts"""
+    """Valid proxy hosts."""
 
     class Meta:
         db_table = 'proxy_hosts'
