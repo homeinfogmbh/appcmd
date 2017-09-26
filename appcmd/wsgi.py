@@ -237,14 +237,13 @@ class CommonBasicHandler(ResourceHandler):
         street, house_number = self.street_houseno
 
         try:
-            pickups = [pickup.to_dict() for pickup in AHA_CLIENT.by_address(
-                street, house_number)]
+            pickup = AHA_CLIENT.by_address(street, house_number)
         except HTTPConnectionError:
             return Error('Could not connect to AHA API.', status=503)
         except LocationNotFound:
             return Error('Location not found.', status=404)
         else:
-            return JSON(pickups)
+            return JSON(pickup.to_dict())
 
 
 class PrivateHandler(CommonBasicHandler):
