@@ -1,4 +1,4 @@
-"""Contact form and E-Mail API"""
+"""Contact form E-Mail API."""
 
 from contextlib import suppress
 from datetime import datetime

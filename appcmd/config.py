@@ -1,4 +1,4 @@
-"""Configuration file parsing"""
+"""Configuration file parsing."""
 
 from configlib import INIParser
 

@@ -1,4 +1,4 @@
-"""Application database ORM models"""
+"""Application database ORM models."""
 
 from datetime import datetime
 from peewee import DoesNotExist, Model, PrimaryKeyField, ForeignKeyField, \
