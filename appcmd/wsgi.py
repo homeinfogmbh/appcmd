@@ -141,8 +141,7 @@ class CommonBasicHandler(ResourceHandler):
             return (self.street, self.house_number)
 
         if 'tid' in self.query and 'cid' in self.query:
-            terminal = self.terminal
-            location = terminal.location
+            location = self.terminal.location
 
             if location is not None:
                 address = location.address
