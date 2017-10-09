@@ -273,7 +273,7 @@ class PrivateHandler(CommonBasicHandler):
         """Stores damage reports."""
         try:
             print('TEXT:')
-            print(self.text, flush=True)
+            print(self.data, flush=True)
         except Exception:
             print('Got garbage.', flush=True)
 
