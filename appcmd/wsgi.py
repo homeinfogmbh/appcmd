@@ -275,7 +275,7 @@ class PrivateHandler(CommonBasicHandler):
 
         try:
             print('JSON:')
-            print(self.data.bytes, flush=True)
+            print(self.data.json, flush=True)
         except Exception as json:
             print('Got garbage.', format_exc(), flush=True)
 
