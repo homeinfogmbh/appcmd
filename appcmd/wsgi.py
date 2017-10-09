@@ -271,17 +271,13 @@ class PrivateHandler(CommonBasicHandler):
 
     def damage_report(self):
         """Stores damage reports."""
-        try:
-            print('DATA:')
-            print(self.data.bytes, flush=True)
-        except Exception as error:
-            print('Got garbage.', error, flush=True)
+        from traceback import format_exc
 
         try:
             print('JSON:')
-            print(self.data.json, flush=True)
-        except Exception as error:
-            print('Got garbage.', error, flush=True)
+            print(self.data.bytes, flush=True)
+        except Exception as json:
+            print('Got garbage.', format_exc(), flush=True)
 
         try:
             DamageReport.from_dict(self.terminal, self.data.json)
