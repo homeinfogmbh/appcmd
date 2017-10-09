@@ -273,6 +273,12 @@ class PrivateHandler(CommonBasicHandler):
     def damage_report(self):
         """Stores damage reports."""
         try:
+            print('TEXT:')
+            print(self.text, flush=True)
+        except Exception:
+            print('Got garbage.', flush=True)
+
+        try:
             DamageReport.from_dict(self.terminal, self.data.json)
         except KeyError as key_error:
             raise Error('Missing mandatory property: {}.'.format(
