@@ -7,7 +7,7 @@ from requests import ConnectionError as HTTPConnectionError, get
 
 from aha import LocationNotFound, AhaDisposalClient
 from homeinfo.crm import Customer
-from homeinfo.terminals.orm import Terminal
+from terminallib import Terminal
 from wsgilib import ResourceHandler, Response, OK, Error, JSON, \
     InternalServerError
 

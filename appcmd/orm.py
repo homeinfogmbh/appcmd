@@ -6,8 +6,8 @@ from peewee import DoesNotExist, Model, PrimaryKeyField, ForeignKeyField, \
     DateField
 
 from homeinfo.crm import Address, Customer
-from homeinfo.terminals.orm import Terminal
 from peeweeplus import MySQLDatabase
+from terminallib import Terminal
 
 from .config import CONFIG
 
