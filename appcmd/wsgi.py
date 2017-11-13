@@ -11,8 +11,8 @@ from terminallib import Terminal
 from wsgilib import ResourceHandler, Response, OK, Error, JSON, \
     InternalServerError
 
-from .mail import CouldNotSendMail, ContactFormEmail, ContactFormMailer
-from .orm import Command, Statistics, CleaningUser, CleaningDate, \
+from appcmd.mail import CouldNotSendMail, ContactFormEmail, ContactFormMailer
+from appcmd.orm import Command, Statistics, CleaningUser, CleaningDate, \
     TenantMessage, DamageReport, ProxyHost
 
 __all__ = ['PrivateHandler', 'PublicHandler']
@@ -37,8 +37,8 @@ def get_url(url):
         _, charset = charset.split('=')
 
     return Response(
-        msg=reply.content, status=reply.status_code,
-        content_type=content_type, charset=charset, encoding=False)
+        msg=reply.content, status=reply.status_code, content_type=content_type,
+        charset=charset, encoding=False)
 
 
 class CommonBasicHandler(ResourceHandler):
@@ -158,9 +158,8 @@ class CommonBasicHandler(ResourceHandler):
         tasks = []
 
         for command in Command.select().where(
-                (Command.customer == self.customer) &
-                (Command.vid == self.vid) &
-                (Command.completed >> None)):
+                (Command.customer == self.customer) & (Command.vid == self.vid)
+                & (Command.completed >> None)):
             tasks.append(command.task)
 
         return JSON(tasks)
@@ -179,14 +178,12 @@ class CommonBasicHandler(ResourceHandler):
         result = False
 
         for command in Command.select().where(
-                (Command.customer == self.customer) &
-                (Command.vid == self.vid) &
-                (Command.task == self.task) &
-                (Command.completed >> None)):
+                (Command.customer == self.customer) & (Command.vid == self.vid)
+                & (Command.task == self.task) & (Command.completed >> None)):
             command.complete()
             result = True
 
-        return OK('1' if result else '0')
+        return OK(str(int(result)))
 
     def add_statistics(self):
         """Adds a new statistics entry."""
@@ -203,33 +200,32 @@ class CommonBasicHandler(ResourceHandler):
                 (CleaningUser.customer == terminal.customer))
         except DoesNotExist:
             raise Error('Invalid PIN.', status=403) from None
+
+        try:
+            address = terminal.location.address
+        except AttributeError:
+            raise Error('Terminal has no address.') from None
         else:
-            try:
-                address = terminal.location.address
-            except AttributeError:
-                raise Error('Terminal has no address.') from None
-            else:
-                CleaningDate.add(user, address)
-                return OK(status=201)
+            CleaningDate.add(user, address)
+            return OK(status=201)
 
     def proxy(self):
         """Proxies URLs."""
         url = urlparse(self.data.text)
 
-        if url.scheme in ('http', 'https'):
-            if url.hostname != '':
-                try:
-                    ProxyHost.get(ProxyHost.hostname == url.hostname)
-                except DoesNotExist:
-                    raise Error(
-                        'Host name is not whitelisted.',
-                        status=403) from None
-                else:
-                    return get_url(url.geturl())
-
+        if url.scheme not in ('http', 'https'):
+            raise Error('Scheme must be HTTP or HTTPS.') from None
+        elif not url.hostname:
             raise Error('Host name must not be empty.') from None
 
-        raise Error('Scheme must be HTTP or HTTPS.') from None
+        try:
+            ProxyHost.get(ProxyHost.hostname == url.hostname)
+        except DoesNotExist:
+            raise Error(
+                'Host name is not whitelisted.',
+                status=403) from None
+        else:
+            return get_url(url.geturl())
 
     def garbage_collection(self):
         """Returns information about the garbage collection."""
