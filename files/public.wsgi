@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
 from wsgilib import RestApp
-from appcmd.wsgi import PublicHandler
+from appcmd.wsgi import PUBLIC
 
-application = RestApp({'appcmd': PublicHandler})
+application = RestApp(PUBLIC)
