@@ -9,7 +9,7 @@ from aha import LocationNotFound, AhaDisposalClient
 from homeinfo.crm import Customer
 from terminallib import Terminal
 from wsgilib import Response, OK, Error, JSON, InternalServerError, \
-    RestHandler, Route, Router
+    RestHandler, Router
 
 from appcmd.mail import CouldNotSendMail, ContactFormEmail, ContactFormMailer
 from appcmd.orm import Command, Statistics, CleaningUser, CleaningDate, \
@@ -18,6 +18,8 @@ from appcmd.orm import Command, Statistics, CleaningUser, CleaningDate, \
 __all__ = ['PUBLIC', 'PRIVATE']
 
 
+PUBLIC = Router()
+PRIVATE = Router()
 INVALID_OPERATION = Error('Invalid operation.')
 MAILER = ContactFormMailer()
 AHA_CLIENT = AhaDisposalClient()
@@ -241,6 +243,7 @@ class CommonBasicHandler(RestHandler):
             return JSON(pickup.to_dict())
 
 
+@PRIVATE.route('/appcmd/<command>')
 class PrivateHandler(CommonBasicHandler):
     """Handles data POSTed over VPN."""
 
@@ -289,6 +292,7 @@ class PrivateHandler(CommonBasicHandler):
         raise INVALID_OPERATION from None
 
 
+@PUBLIC.route('/appcmd/<command>')
 class PublicHandler(CommonBasicHandler):
     """Handles data POSTed over the internet."""
 
@@ -315,7 +319,3 @@ class PublicHandler(CommonBasicHandler):
             return self.proxy()
 
         raise INVALID_OPERATION from None
-
-
-PUBLIC = Router((Route('/appcmd/<command>'), PublicHandler))
-PRIVATE = Router((Route('/appcmd/<command>'), PrivateHandler))
