@@ -8,14 +8,14 @@ from requests import ConnectionError as HTTPConnectionError, get
 from aha import LocationNotFound, AhaDisposalClient
 from homeinfo.crm import Customer
 from terminallib import Terminal
-from wsgilib import ResourceHandler, Response, OK, Error, JSON, \
-    InternalServerError
+from wsgilib import Response, OK, Error, JSON, InternalServerError, \
+    RestHandler, Route, Router
 
 from appcmd.mail import CouldNotSendMail, ContactFormEmail, ContactFormMailer
 from appcmd.orm import Command, Statistics, CleaningUser, CleaningDate, \
     TenantMessage, DamageReport, ProxyHost
 
-__all__ = ['PrivateHandler', 'PublicHandler']
+__all__ = ['PUBLIC', 'PRIVATE']
 
 
 INVALID_OPERATION = Error('Invalid operation.')
@@ -41,7 +41,7 @@ def get_url(url):
         charset=charset, encoding=False)
 
 
-class CommonBasicHandler(ResourceHandler):
+class CommonBasicHandler(RestHandler):
     """Common handler base for private and public handler."""
 
     @property
@@ -315,3 +315,7 @@ class PublicHandler(CommonBasicHandler):
             return self.proxy()
 
         raise INVALID_OPERATION from None
+
+
+PUBLIC = Router((Route('/appcmd/<command>'), PublicHandler))
+PRIVATE = Router((Route('/appcmd/<command>'), PrivateHandler))

@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
 from wsgilib import RestApp
-from appcmd.wsgi import PrivateHandler
+from appcmd.wsgi import PRIVATE
 
-application = RestApp({'appcmd': PrivateHandler})
+application = RestApp(PRIVATE)
