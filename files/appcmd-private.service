@@ -1,0 +1,12 @@
+[Unit]
+Description=Private Application Command Interface
+After=network.target mysql.service
+Requires=mysql.service
+
+[Service]
+User=appcmd
+Group=appcmd
+ExecStart=/usr/local/bin/appcmd-private
+
+[Install]
+WantedBy=multi-user.target
