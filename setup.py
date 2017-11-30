@@ -14,11 +14,9 @@ setup(
         'homeinfo.crm',
         'openimmo'],
     packages=['appcmd'],
+    scripts=['files/appcmd-private', 'files/appcmd-public'],
     data_files=[
-        ('/usr/local/share/appcmd', [
-            'files/private.wsgi',
-            'files/public.wsgi']),
-        ('/etc/uwsgi/apps-available', [
-            'files/appcmd-private.ini',
-            'files/appcmd-public.ini'])],
+        ('/usr/lib/systemd/system', [
+            'files/appcmd-private.service',
+            'files/appcmd-public.service'])],
     description='Digital Sigange Flash Application communication interface')
