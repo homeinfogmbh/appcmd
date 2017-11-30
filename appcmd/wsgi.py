@@ -1,15 +1,15 @@
 """WSGI handlers for appcmd."""
 
+from json import loads, dumps
 from urllib.parse import urlparse
 
+from flask import request, jsonify, Response, Flask
 from peewee import DoesNotExist
 from requests import ConnectionError as HTTPConnectionError, get
 
 from aha import LocationNotFound, AhaDisposalClient
 from homeinfo.crm import Customer
 from terminallib import Terminal
-from wsgilib import Response, OK, Error, JSON, InternalServerError, \
-    RestHandler, Router
 
 from appcmd.mail import CouldNotSendMail, ContactFormEmail, ContactFormMailer
 from appcmd.orm import Command, Statistics, CleaningUser, CleaningDate, \
@@ -18,304 +18,262 @@ from appcmd.orm import Command, Statistics, CleaningUser, CleaningDate, \
 __all__ = ['PUBLIC', 'PRIVATE']
 
 
-PUBLIC = Router()
-PRIVATE = Router()
-INVALID_OPERATION = Error('Invalid operation.')
 MAILER = ContactFormMailer()
 AHA_CLIENT = AhaDisposalClient()
+PUBLIC = Flask('public')
+PRIVATE = Flask('private')
 
 
-def get_url(url):
-    """Returns the content of the retrieved URL."""
+def get_customer():
+    """Returns the respective customer."""
 
-    reply = get(url)
+    return Customer.get(Customer.id == request.args['cid'])
+
+
+def get_terminal():
+    """Returns the respective terminal."""
+
+    return Terminal.by_ids(request.args['cid'], request.args['tid'])
+
+
+def street_houseno():
+    """Returns street and house number."""
 
     try:
-        content_type, charset = reply.headers['Content-Type'].split(';')
-    except ValueError:
-        content_type = reply.headers['Content-Type']
-        charset = None
-    else:
-        _, charset = charset.split('=')
+        return (request.args['street'], request.args['house_number'])
+    except KeyError:
+        terminal = get_terminal()
 
-    return Response(
-        msg=reply.content, status=reply.status_code, content_type=content_type,
-        charset=charset, encoding=False)
-
-
-class CommonBasicHandler(RestHandler):
-    """Common handler base for private and public handler."""
-
-    @property
-    def cid(self):
-        """Returns the customer ID."""
-        try:
-            return int(self.query['cid'])
-        except KeyError:
-            raise Error('No CID specified.') from None
-        except (TypeError, ValueError):
-            raise Error('CID must be an integer.') from None
-
-    @property
-    def tid(self):
-        """Returns the presentation ID."""
-        try:
-            return int(self.query['tid'])
-        except (KeyError, TypeError):
-            return None
-        except ValueError:
-            raise Error('TID must be an integer.') from None
-
-    @property
-    def vid(self):
-        """Returns the presentation ID."""
-        try:
-            return int(self.query['vid'])
-        except KeyError:
-            raise Error('No VID specified.') from None
-        except TypeError:
-            raise Error('VID must not be null.') from None
-        except ValueError:
-            raise Error('VID must be an integer.') from None
-
-    @property
-    def customer(self):
-        """Returns the respective customer."""
-        try:
-            return Customer.get(Customer.id == self.cid)
-        except DoesNotExist:
-            raise Error('No such customer: {}.'.format(
-                self.cid), status=404) from None
-
-    @property
-    def task(self):
-        """Returns the respective task."""
-        try:
-            return self.query['task']
-        except KeyError:
-            raise Error('No task specified.') from None
-
-    @property
-    def document(self):
-        """Returns the appropriate statistics document."""
-        try:
-            return self.query['document']
-        except KeyError:
-            raise Error('No document specified.') from None
-
-    @property
-    def pin(self):
-        """Returns the cleaning PIN."""
-        try:
-            return self.query['pin']
-        except KeyError:
-            raise Error('No PIN provided.') from None
-
-    @property
-    def street(self):
-        """Returns the street."""
-        try:
-            return self.query['street']
-        except KeyError:
-            raise Error('No street provided.') from None
-
-    @property
-    def house_number(self):
-        """Returns the house_number."""
-        try:
-            return self.query['house_number']
-        except KeyError:
-            raise Error('No house_number provided.') from None
-
-    @property
-    def terminal(self):
-        """Returns the respective customer."""
-        try:
-            return Terminal.by_ids(self.cid, self.tid)
-        except DoesNotExist:
-            raise Error('No such terminal: {}.{}.'.format(
-                self.tid, self.cid), status=404) from None
-
-    @property
-    def street_houseno(self):
-        """Returns street and house number."""
-        if 'street' in self.query and 'house_number' in self.query:
-            return (self.street, self.house_number)
-
-        if 'tid' in self.query and 'cid' in self.query:
-            location = self.terminal.location
-
-            if location is not None:
-                address = location.address
-                return (address.street, address.house_number)
-
-            raise Error('Terminal has no address associated.') from None
-
-        raise Error(
-            'Neither street and house_number, not tid and cid '
-            'were specified.') from None
-
-    def list_commands(self):
-        """Lists commands for the respective terminal."""
-        tasks = []
-
-        for command in Command.select().where(
-                (Command.customer == self.customer) & (Command.vid == self.vid)
-                & (Command.completed >> None)):
-            tasks.append(command.task)
-
-        return JSON(tasks)
-
-    def list_cleanings(self):
-        """Lists cleaning entries for the respective terminal."""
-        try:
-            address = self.terminal.location.address
-        except AttributeError:
-            raise Error('Terminal has no address.') from None
-        else:
-            return JSON(CleaningDate.by_address(address, limit=10))
-
-    def complete_command(self):
-        """Completes the provided command."""
-        result = False
-
-        for command in Command.select().where(
-                (Command.customer == self.customer) & (Command.vid == self.vid)
-                & (Command.task == self.task) & (Command.completed >> None)):
-            command.complete()
-            result = True
-
-        return OK(str(int(result)))
-
-    def add_statistics(self):
-        """Adds a new statistics entry."""
-        Statistics.add(self.customer, self.vid, self.tid, self.document)
-        return OK(status=201)
-
-    def add_cleaning(self):
-        """Adds a cleaning entry."""
-        terminal = self.terminal
-
-        try:
-            user = CleaningUser.get(
-                (CleaningUser.pin == self.pin) &
-                (CleaningUser.customer == terminal.customer))
-        except DoesNotExist:
-            raise Error('Invalid PIN.', status=403) from None
-
-        try:
+        if terminal.location is not None:
             address = terminal.location.address
-        except AttributeError:
-            raise Error('Terminal has no address.') from None
-        else:
-            CleaningDate.add(user, address)
-            return OK(status=201)
+            return (address.street, address.house_number)
 
-    def proxy(self):
-        """Proxies URLs."""
-        url = urlparse(self.data.text)
+        return None
 
-        if url.scheme not in ('http', 'https'):
-            raise Error('Scheme must be HTTP or HTTPS.') from None
-        elif not url.hostname:
-            raise Error('Host name must not be empty.') from None
+def send_contact_mail():
+    """Sends contact form emails."""
 
-        try:
-            ProxyHost.get(ProxyHost.hostname == url.hostname)
-        except DoesNotExist:
-            raise Error(
-                'Host name is not whitelisted.',
-                status=403) from None
-        else:
-            return get_url(url.geturl())
+    json = loads(request.get_data().decode())
+    email = ContactFormEmail.from_dict(json)
 
-    def garbage_collection(self):
-        """Returns information about the garbage collection."""
-        street, house_number = self.street_houseno
+    try:
+        msg = MAILER.send_email(email)
+    except CouldNotSendMail:
+        return ('Could not send email.', 500)
 
-        try:
-            pickup = AHA_CLIENT.by_address(street, house_number)
-        except HTTPConnectionError:
-            return Error('Could not connect to AHA API.', status=503)
-        except LocationNotFound:
-            return Error('Location not found.', status=404)
-        else:
-            return JSON(pickup.to_dict())
+    return msg
 
 
-@PRIVATE.route('/appcmd/<command>')
-class PrivateHandler(CommonBasicHandler):
-    """Handles data POSTed over VPN."""
+def tenant2tenant(maxlen=2048):
+    """Stores tenant info."""
 
-    def contact_mail(self):
-        """Sends contact form emails."""
-        email = ContactFormEmail.from_dict(self.data.json)
+    message = request.get_data().decode()
 
-        try:
-            msg = MAILER.send_email(email)
-        except CouldNotSendMail:
-            raise InternalServerError('Could not send email.') from None
-        else:
-            return OK(msg)
+    if len(message) > maxlen:
+        return ('Maximum text length exceeded.', 413)
 
-    def tenant2tenant(self, maxlen=2048):
-        """Stores tenant info."""
-        message = self.data.text
+    try:
+        TenantMessage.add(get_terminal(), message)
+    except DoesNotExist:
+        return ('No such terminal.', 404)
 
-        if len(message) > maxlen:
-            raise Error('Maximum text length exceeded.') from None
-
-        TenantMessage.add(self.terminal, message)
-        return OK(status=201)
-
-    def damage_report(self):
-        """Stores damage reports."""
-        try:
-            DamageReport.from_dict(self.terminal, self.data.json)
-        except KeyError as key_error:
-            raise Error('Missing mandatory property: {}.'.format(
-                key_error.args[0])) from None
-        else:
-            return OK(status=201)
-
-    def post(self):
-        """Handles POST requests."""
-        if self.resource == 'contactform':
-            return self.contact_mail()
-        elif self.resource == 'tenant2tenant':
-            return self.tenant2tenant()
-        elif self.resource == 'damagereport':
-            return self.damage_report()
-        elif self.resource == 'statistics':
-            return self.add_statistics()
-
-        raise INVALID_OPERATION from None
+    return ('Tenant message added.', 201)
 
 
-@PUBLIC.route('/appcmd/<command>')
-class PublicHandler(CommonBasicHandler):
-    """Handles data POSTed over the internet."""
+def damage_report():
+    """Stores damage reports."""
 
-    def get(self):
-        """Handles GET requests."""
-        if self.resource == 'command':
-            return self.list_commands()
-        elif self.resource == 'cleaning':
-            return self.list_cleanings()
-        elif self.resource == 'garbage_collection':
-            return self.garbage_collection()
+    json = loads(request.get_data().decode())
 
-        raise INVALID_OPERATION from None
+    try:
+        DamageReport.from_dict(get_terminal(), json)
+    except DoesNotExist:
+        return ('No such terminal.', 404)
+    except KeyError as key_error:
+        return ('Missing property: {}.'.format(key_error.args[0]), 400)
 
-    def post(self):
-        """Handles POST requests."""
-        if self.resource == 'command':
-            return self.complete_command()
-        elif self.resource == 'statistics':
-            return self.add_statistics()
-        elif self.resource == 'cleaning':
-            return self.add_cleaning()
-        elif self.resource == 'proxy':
-            return self.proxy()
+    return ('Damage report added.', 201)
 
-        raise INVALID_OPERATION from None
+
+def add_statistics():
+    """Adds a new statistics entry."""
+
+    try:
+        Statistics.add(
+            get_customer(), request.args['vid'], request.args['tid'],
+            request.args['document'])
+    except DoesNotExist:
+        return ('No such customer.', 404)
+
+    return ('Statistics added.', 201)
+
+
+def list_commands():
+    """Lists commands for the respective terminal."""
+
+    try:
+        customer = get_customer()
+    except DoesNotExist:
+        return ('No such customer.', 404)
+
+    tasks = []
+
+    for command in Command.select().where(
+            (Command.customer == customer)
+            & (Command.vid == request.args['vid'])
+            & (Command.completed >> None)):
+        tasks.append(command.task)
+
+    return Response(dumps(tasks), mimetype='application/json')
+
+
+def list_cleanings():
+    """Lists cleaning entries for the respective terminal."""
+
+    try:
+        terminal = get_terminal()
+    except DoesNotExist:
+        return ('No such terminal.', 404)
+
+    try:
+        address = terminal.location.address
+    except AttributeError:
+        return ('Terminal has no address.', 400)
+
+    json = CleaningDate.by_address(address, limit=10)
+    return Response(dumps(json), mimetype='application/json')
+
+
+def garbage_collection():
+    """Returns information about the garbage collection."""
+
+    try:
+        street, house_number = street_houseno()
+    except KeyError:
+        return ('Neither street and house_number, not tid and cid '
+                'were specified.', 400)
+    except DoesNotExist:
+        return ('No such terminal.', 404)
+    except TypeError:
+        return ('Terminal has no address associated.', 400)
+
+    try:
+        pickup = AHA_CLIENT.by_address(street, house_number)
+    except HTTPConnectionError:
+        return ('Could not connect to AHA API.', 503)
+    except LocationNotFound:
+        return ('Location not found.', 404)
+
+    return jsonify(pickup.to_dict())
+
+
+def complete_command():
+    """Completes the provided command."""
+
+    try:
+        customer = get_customer()
+    except DoesNotExist:
+        return ('No such customer.', 404)
+
+    result = False
+
+    for command in Command.select().where(
+            (Command.customer == customer)
+            & (Command.vid == request.args['vid'])
+            & (Command.task == request.args['task'])
+            & (Command.completed >> None)):
+        command.complete()
+        result = True
+
+    return str(int(result))
+
+
+def add_cleaning():
+    """Adds a cleaning entry."""
+
+    try:
+        terminal = get_terminal()
+    except DoesNotExist:
+        return ('No such terminal.', 404)
+
+    try:
+        user = CleaningUser.get(
+            (CleaningUser.pin == request.args['pin']) &
+            (CleaningUser.customer == terminal.customer))
+    except DoesNotExist:
+        return ('Invalid PIN.', 403)
+
+    try:
+        address = terminal.location.address
+    except AttributeError:
+        return ('Terminal has no address.', 400)
+
+    CleaningDate.add(user, address)
+    return ('Cleaning date added.', 201)
+
+
+def proxy():
+    """Proxies URLs."""
+
+    url = urlparse(request.get_data().decode())
+
+    if url.scheme not in ('http', 'https'):
+        return ('Scheme must be HTTP or HTTPS.', 400)
+    elif not url.hostname:
+        return ('Host name must not be empty.', 400)
+
+    try:
+        ProxyHost.get(ProxyHost.hostname == url.hostname)
+    except DoesNotExist:
+        return ('Host name is not whitelisted.', 403)
+
+    reply = get(url.geturl())
+    return Response(
+        reply.content, status=reply.status_code,
+        content_type=reply.headers['Content-Type'])
+
+
+@PRIVATE.route('/<command>', methods=['POST'])
+def post_private(command):
+    """Handles private POST request."""
+
+    if command == 'contactform':
+        return send_contact_mail()
+    elif command == 'tenant2tenant':
+        return tenant2tenant()
+    elif command == 'damagereport':
+        return damage_report()
+    elif command == 'statistics':
+        return add_statistics()
+
+    return ('Invalid operation.', 400)
+
+
+@PUBLIC.route('/<command>')
+def get_public(command):
+    """Handles public get request."""
+
+    if command == 'command':
+        return list_commands()
+    elif command == 'cleaning':
+        return list_cleanings()
+    elif command == 'garbage_collection':
+        return garbage_collection()
+
+    return ('Invalid operation.', 400)
+
+
+@PUBLIC.route('/<command>', methods=['POST'])
+def post_public(command):
+    """Handles public POST request."""
+
+    if command == 'command':
+        return complete_command()
+    elif command == 'statistics':
+        return add_statistics()
+    elif command == 'cleaning':
+        return add_cleaning()
+    elif command == 'proxy':
+        return proxy()
+
+    return ('Invalid operation.', 400)
