@@ -7,12 +7,7 @@ setup(
     name='appcmd',
     version='latest',
     author='Richard Neumann',
-    requires=[
-        'wsgilib',
-        'setproctitle',
-        'homeinfo.lib',
-        'homeinfo.crm',
-        'openimmo'],
+    requires=['homeinfo.crm', 'openimmo'],
     packages=['appcmd'],
     scripts=['files/appcmd-private', 'files/appcmd-public'],
     data_files=[
