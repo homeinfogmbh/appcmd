@@ -6,7 +6,7 @@ from traceback import format_exc
 
 from emaillib import Mailer, EMail
 
-from .config import CONFIG
+from appcmd.config import CONFIG
 
 EMAIL_TEMP = '''Kontaktformular vom {datum}:
 -----------------------------------------------

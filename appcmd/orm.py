@@ -9,7 +9,7 @@ from homeinfo.crm import Address, Customer
 from peeweeplus import MySQLDatabase
 from terminallib import Terminal
 
-from .config import CONFIG
+from appcmd.config import CONFIG
 
 
 __all__ = [
