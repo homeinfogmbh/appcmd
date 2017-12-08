@@ -3,13 +3,14 @@
 from json import loads, dumps
 from urllib.parse import urlparse
 
-from flask import request, jsonify, Response, Flask
+from flask import request, jsonify, Response
 from peewee import DoesNotExist
 from requests import ConnectionError as HTTPConnectionError, get
 
 from aha import LocationNotFound, AhaDisposalClient
 from homeinfo.crm import Customer
 from terminallib import Terminal
+from wsgilib import Application
 
 from appcmd.mail import CouldNotSendMail, ContactFormEmail, ContactFormMailer
 from appcmd.orm import Command, Statistics, CleaningUser, CleaningDate, \
@@ -20,8 +21,8 @@ __all__ = ['PUBLIC', 'PRIVATE']
 
 MAILER = ContactFormMailer()
 AHA_CLIENT = AhaDisposalClient()
-PUBLIC = Flask('public')
-PRIVATE = Flask('private')
+PUBLIC = Application('public', cors=True, debug=True)
+PRIVATE = Application('private', cors=True, debug=True)
 
 
 def get_customer():
