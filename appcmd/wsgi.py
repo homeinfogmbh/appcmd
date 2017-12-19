@@ -1,16 +1,15 @@
 """WSGI handlers for appcmd."""
 
-from json import loads, dumps
 from urllib.parse import urlparse
 
-from flask import request, jsonify, Response
+from flask import request, Response
 from peewee import DoesNotExist
 from requests import ConnectionError as HTTPConnectionError, get
 
 from aha import LocationNotFound, AhaDisposalClient
 from homeinfo.crm import Customer
 from terminallib import Terminal
-from wsgilib import Application
+from wsgilib import Error, JSON, PostData, Application
 
 from appcmd.mail import CouldNotSendMail, ContactFormEmail, ContactFormMailer
 from appcmd.orm import Command, Statistics, CleaningUser, CleaningDate, \
@@ -23,18 +22,25 @@ MAILER = ContactFormMailer()
 AHA_CLIENT = AhaDisposalClient()
 PUBLIC = Application('public', cors=True, debug=True)
 PRIVATE = Application('private', cors=True, debug=True)
+DATA = PostData()
 
 
 def get_customer():
     """Returns the respective customer."""
 
-    return Customer.get(Customer.id == request.args['cid'])
+    try:
+        return Customer.get(Customer.id == request.args['cid'])
+    except DoesNotExist:
+        raise Error('No such customer.', status=404)
 
 
 def get_terminal():
     """Returns the respective terminal."""
 
-    return Terminal.by_ids(request.args['cid'], request.args['tid'])
+    try:
+        return Terminal.by_ids(request.args['cid'], request.args['tid'])
+    except DoesNotExist:
+        raise Error('No such terminal.', status=404)
 
 
 def street_houseno():
@@ -49,18 +55,17 @@ def street_houseno():
             address = terminal.location.address
             return (address.street, address.house_number)
 
-        return None
+        raise Error('No address specified and terminal has no address.')
 
 def send_contact_mail():
     """Sends contact form emails."""
 
-    json = loads(request.get_data().decode())
-    email = ContactFormEmail.from_dict(json)
+    email = ContactFormEmail.from_dict(DATA.json)
 
     try:
         msg = MAILER.send_email(email)
     except CouldNotSendMail:
-        return ('Could not send email.', 500)
+        raise Error('Could not send email.', status=500)
 
     return msg
 
@@ -71,27 +76,19 @@ def tenant2tenant(maxlen=2048):
     message = request.get_data().decode()
 
     if len(message) > maxlen:
-        return ('Maximum text length exceeded.', 413)
+        raise Error('Maximum text length exceeded.', status=413)
 
-    try:
-        TenantMessage.add(get_terminal(), message)
-    except DoesNotExist:
-        return ('No such terminal.', 404)
-
+    TenantMessage.add(get_terminal(), message)
     return ('Tenant message added.', 201)
 
 
 def damage_report():
     """Stores damage reports."""
 
-    json = loads(request.get_data().decode())
-
     try:
-        DamageReport.from_dict(get_terminal(), json)
-    except DoesNotExist:
-        return ('No such terminal.', 404)
+        DamageReport.from_dict(get_terminal(), DATA.json)
     except KeyError as key_error:
-        return ('Missing property: {}.'.format(key_error.args[0]), 400)
+        raise Error('Missing property: {}.'.format(key_error.args[0]))
 
     return ('Damage report added.', 201)
 
@@ -99,24 +96,16 @@ def damage_report():
 def add_statistics():
     """Adds a new statistics entry."""
 
-    try:
-        Statistics.add(
-            get_customer(), request.args['vid'], request.args['tid'],
-            request.args['document'])
-    except DoesNotExist:
-        return ('No such customer.', 404)
-
+    Statistics.add(
+        get_customer(), request.args['vid'], request.args['tid'],
+        request.args['document'])
     return ('Statistics added.', 201)
 
 
 def list_commands():
     """Lists commands for the respective terminal."""
 
-    try:
-        customer = get_customer()
-    except DoesNotExist:
-        return ('No such customer.', 404)
-
+    customer = get_customer()
     tasks = []
 
     for command in Command.select().where(
@@ -125,47 +114,34 @@ def list_commands():
             & (Command.completed >> None)):
         tasks.append(command.task)
 
-    return Response(dumps(tasks), mimetype='application/json')
+    return JSON(tasks)
 
 
 def list_cleanings():
     """Lists cleaning entries for the respective terminal."""
 
-    try:
-        terminal = get_terminal()
-    except DoesNotExist:
-        return ('No such terminal.', 404)
+    terminal = get_terminal()
 
     try:
         address = terminal.location.address
     except AttributeError:
-        return ('Terminal has no address.', 400)
+        raise Error('Terminal has no address.')
 
     json = CleaningDate.by_address(address, limit=10)
-    return Response(dumps(json), mimetype='application/json')
+    return JSON(json)
 
 
 def garbage_collection():
     """Returns information about the garbage collection."""
 
     try:
-        street, house_number = street_houseno()
-    except KeyError:
-        return ('Neither street and house_number, not tid and cid '
-                'were specified.', 400)
-    except DoesNotExist:
-        return ('No such terminal.', 404)
-    except TypeError:
-        return ('Terminal has no address associated.', 400)
-
-    try:
-        pickup = AHA_CLIENT.by_address(street, house_number)
+        pickup = AHA_CLIENT.by_address(*street_houseno())
     except HTTPConnectionError:
         return ('Could not connect to AHA API.', 503)
     except LocationNotFound:
         return ('Location not found.', 404)
 
-    return jsonify(pickup.to_dict())
+    return JSON(pickup.to_dict())
 
 
 def complete_command():
