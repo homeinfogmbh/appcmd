@@ -1,7 +1,5 @@
 [Unit]
 Description=Private Application Command Interface
-After=network.target mysql.service
-Wants=mysql.service
 
 [Service]
 User=appcmd
@@ -9,4 +7,4 @@ Group=appcmd
 ExecStart=/usr/local/bin/appcmd-private
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=wsgi-services.target
