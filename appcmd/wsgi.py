@@ -3,7 +3,6 @@
 from urllib.parse import urlparse
 
 from flask import request, Response
-from peewee import DoesNotExist
 from requests import ConnectionError as HTTPConnectionError, get
 
 from aha import LocationNotFound, AhaDisposalClient
@@ -30,7 +29,7 @@ def get_customer():
 
     try:
         return Customer.get(Customer.id == request.args['cid'])
-    except DoesNotExist:
+    except Customer.DoesNotExist:
         raise Error('No such customer.', status=404)
 
 
@@ -39,7 +38,7 @@ def get_terminal():
 
     try:
         return Terminal.by_ids(request.args['cid'], request.args['tid'])
-    except DoesNotExist:
+    except Terminal.DoesNotExist:
         raise Error('No such terminal.', status=404)
 
 
@@ -147,11 +146,7 @@ def garbage_collection():
 def complete_command():
     """Completes the provided command."""
 
-    try:
-        customer = get_customer()
-    except DoesNotExist:
-        return ('No such customer.', 404)
-
+    customer = get_customer()
     result = False
 
     for command in Command.select().where(
@@ -168,16 +163,13 @@ def complete_command():
 def add_cleaning():
     """Adds a cleaning entry."""
 
-    try:
-        terminal = get_terminal()
-    except DoesNotExist:
-        return ('No such terminal.', 404)
+    terminal = get_terminal()
 
     try:
         user = CleaningUser.get(
             (CleaningUser.pin == request.args['pin']) &
             (CleaningUser.customer == terminal.customer))
-    except DoesNotExist:
+    except CleaningUser.DoesNotExist:
         return ('Invalid PIN.', 403)
 
     try:
@@ -201,7 +193,7 @@ def proxy():
 
     try:
         ProxyHost.get(ProxyHost.hostname == url.hostname)
-    except DoesNotExist:
+    except ProxyHost.DoesNotExist:
         return ('Host name is not whitelisted.', 403)
 
     reply = get(url.geturl())

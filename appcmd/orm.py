@@ -1,9 +1,8 @@
 """Application database ORM models."""
 
 from datetime import datetime
-from peewee import DoesNotExist, Model, PrimaryKeyField, ForeignKeyField, \
-    TextField, DateTimeField, BooleanField, IntegerField, CharField, \
-    DateField
+from peewee import Model, PrimaryKeyField, ForeignKeyField, TextField, \
+    DateTimeField, BooleanField, IntegerField, CharField, DateField
 
 from homeinfo.crm import Address, Customer
 from peeweeplus import MySQLDatabase
@@ -61,7 +60,7 @@ class Command(ApplicationModel):
             return cls.get(
                 (cls.customer == customer) & (cls.vid == vid) &
                 (cls.task == task))
-        except DoesNotExist:
+        except cls.DoesNotExist:
             record = cls()
             record.customer = customer
             record.vid = vid
@@ -123,7 +122,7 @@ class CleaningUser(ApplicationModel):
         """Adds a new cleaning user."""
         try:
             cls.get((cls.name == name) & (cls.customer == customer))
-        except DoesNotExist:
+        except cls.DoesNotExist:
             record = cls()
             record.name = name
             record.customer = customer
