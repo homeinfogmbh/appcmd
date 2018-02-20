@@ -56,6 +56,7 @@ def street_houseno():
 
         raise Error('No address specified and terminal has no address.')
 
+
 def send_contact_mail():
     """Sends contact form emails."""
 
