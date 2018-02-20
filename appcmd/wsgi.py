@@ -97,7 +97,7 @@ def add_statistics():
     """Adds a new statistics entry."""
 
     Statistics.add(
-        get_customer(), request.args['vid'], request.args['tid'],
+        get_customer(), request.args['vid'], request.args.get('tid'),
         request.args['document'])
     return ('Statistics added.', 201)
 
