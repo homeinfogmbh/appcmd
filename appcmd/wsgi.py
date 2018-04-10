@@ -63,11 +63,9 @@ def send_contact_mail():
     email = ContactFormEmail.from_dict(DATA.json)
 
     try:
-        msg = MAILER.send_email(email)
+        return MAILER.send_email(email)
     except CouldNotSendMail:
         raise Error('Could not send email.', status=500)
-
-    return msg
 
 
 def tenant2tenant(maxlen=2048):
@@ -127,8 +125,7 @@ def list_cleanings():
     except AttributeError:
         raise Error('Terminal has no address.')
 
-    json = CleaningDate.by_address(address, limit=10)
-    return JSON(json)
+    return JSON(CleaningDate.by_address(address, limit=10))
 
 
 def garbage_collection():

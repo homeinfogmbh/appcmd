@@ -85,6 +85,6 @@ class ContactFormMailer(Mailer):
             stacktrace = format_exc()
             self.logger.error('Error while sending email.')
             self.logger.debug(stacktrace)
-            raise CouldNotSendMail(stacktrace) from None
-        else:
-            return 'Sent email to: "{}".'.format(email.recipient)
+            raise CouldNotSendMail(stacktrace)
+
+        return 'Sent email to: "{}".'.format(email.recipient)
