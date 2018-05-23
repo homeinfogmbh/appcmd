@@ -8,3 +8,4 @@ setup.cfg
 dist
 files/etc/homie.conf
 __pycache__
+.buildconfig
