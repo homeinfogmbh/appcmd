@@ -20,12 +20,7 @@ __all__ = [
     'DamageReport',
     'ProxyHost']
 
-DATABASE = MySQLDatabase(
-    CONFIG['db']['db'],
-    host=CONFIG['db']['host'],
-    user=CONFIG['db']['user'],
-    passwd=CONFIG['db']['passwd'],
-    closing=True)
+DATABASE = MySQLDatabase.from_config(CONFIG['db'])
 
 
 class DuplicateUserError(Exception):
