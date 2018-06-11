@@ -89,7 +89,10 @@ def tenant2tenant(maxlen=2048):
     if len(message) > maxlen:
         raise Error('Maximum text length exceeded.', status=413)
 
-    TenantMessage.add(get_terminal(), message)
+    terminal = get_terminal()
+    address = address_of(terminal)
+    message = TenantMessage.from_message(address, message)
+    message.save()
     return ('Tenant message added.', 201)
 
 
