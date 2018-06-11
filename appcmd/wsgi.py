@@ -125,7 +125,9 @@ def list_cleanings():
     except AttributeError:
         raise Error('Terminal has no address.')
 
-    return JSON(CleaningDate.by_address(address, limit=10))
+    return JSON([
+        cleaning_date.to_dict(short=True) for cleaning_date in
+        CleaningDate.by_address(address, limit=10)])
 
 
 def garbage_collection():
