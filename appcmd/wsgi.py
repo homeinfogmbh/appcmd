@@ -9,6 +9,7 @@ from aha import LocationNotFound, AhaDisposalClient
 from digsigdb import Command, Statistics, CleaningUser, CleaningDate, \
     TenantMessage, DamageReport, ProxyHost
 from homeinfo.crm import Customer
+from peeweeplus import FieldValueError, FieldNotNullable, InvalidKeys
 from terminallib import Terminal
 from wsgilib import Error, JSON, PostData, Application
 
@@ -43,6 +44,16 @@ def get_terminal():
         raise Error('No such terminal.', status=404)
 
 
+def address_of(terminal):
+    """Returns the address of the respective terminal."""
+
+    if terminal.location is not None:
+        address = terminal.location.address
+        return (address.street, address.house_number)
+
+    raise Error('Terminal has no address.')
+
+
 def street_houseno():
     """Returns street and house number."""
 
@@ -51,11 +62,12 @@ def street_houseno():
     except KeyError:
         terminal = get_terminal()
 
-        if terminal.location is not None:
-            address = terminal.location.address
-            return (address.street, address.house_number)
+        try:
+            address = address_of(terminal)
+        except Error:
+            raise Error('No address specified and terminal has no address.')
 
-        raise Error('No address specified and terminal has no address.')
+        return (address.street, address.house_number)
 
 
 def send_contact_mail():
@@ -84,11 +96,21 @@ def tenant2tenant(maxlen=2048):
 def damage_report():
     """Stores damage reports."""
 
-    try:
-        DamageReport.from_dict(get_terminal(), DATA.json)
-    except KeyError as key_error:
-        raise Error('Missing property: {}.'.format(key_error.args[0]))
+    terminal = get_terminal()
+    address = address_of(terminal)
 
+    try:
+        damage_report = DamageReport.from_dict(address, DATA.json)
+    except InvalidKeys as invalid_keys:
+        raise Error('Invalid keys: {}.'.format(invalid_keys.invalid_keys))
+    except FieldNotNullable as field_not_nullable:
+        raise Error('Field "{}" is not nullable.'.format(
+            field_not_nullable.field))
+    except FieldValueError as field_value_error:
+        raise Error('Invalid value for field "{}": "{}".'.format(
+            field_value_error.field, field_value_error.value))
+
+    damage_report.save()
     return ('Damage report added.', 201)
 
 
