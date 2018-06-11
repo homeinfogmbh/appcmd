@@ -91,8 +91,8 @@ def tenant2tenant(maxlen=2048):
 
     terminal = get_terminal()
     address = address_of(terminal)
-    message = TenantMessage.from_message(address, message)
-    message.save()
+    record = TenantMessage.from_message(address, message)
+    record.save()
     return ('Tenant message added.', 201)
 
 
@@ -103,7 +103,7 @@ def damage_report():
     address = address_of(terminal)
 
     try:
-        damage_report = DamageReport.from_dict(address, DATA.json)
+        record = DamageReport.from_dict(address, DATA.json)
     except InvalidKeys as invalid_keys:
         raise Error('Invalid keys: {}.'.format(invalid_keys.invalid_keys))
     except FieldNotNullable as field_not_nullable:
@@ -113,7 +113,7 @@ def damage_report():
         raise Error('Invalid value for field "{}": "{}".'.format(
             field_value_error.field, field_value_error.value))
 
-    damage_report.save()
+    record.save()
     return ('Damage report added.', 201)
 
 
