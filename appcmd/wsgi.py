@@ -13,6 +13,7 @@ from peeweeplus import FieldValueError, FieldNotNullable, InvalidKeys
 from terminallib import Terminal
 from wsgilib import Error, JSON, PostData, Application
 
+from appcmd.config import MAX_MSG_SIZE
 from appcmd.mail import CouldNotSendMail, ContactFormEmail, ContactFormMailer
 
 __all__ = ['PUBLIC', 'PRIVATE']
@@ -81,7 +82,7 @@ def send_contact_mail():
         raise Error('Could not send email.', status=500)
 
 
-def tenant2tenant(maxlen=2048):
+def tenant2tenant(maxlen=MAX_MSG_SIZE):
     """Stores tenant info."""
 
     message = request.get_data().decode()
