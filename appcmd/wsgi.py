@@ -22,6 +22,7 @@ AHA_CLIENT = AhaDisposalClient()
 PUBLIC = Application('public', cors=True, debug=True)
 PRIVATE = Application('private', cors=True, debug=True)
 DATA = PostData()
+INVALID_OPERATION = ('Invalid operation.', 400)
 
 
 def get_customer():
@@ -134,13 +135,13 @@ def garbage_collection():
     """Returns information about the garbage collection."""
 
     try:
-        pickup = AHA_CLIENT.by_address(*street_houseno())
+        pickups = tuple(AHA_CLIENT.by_street_houseno(*street_houseno()))
     except HTTPConnectionError:
         return ('Could not connect to AHA API.', 503)
     except LocationNotFound:
         return ('Location not found.', 404)
 
-    return JSON(pickup.to_dict())
+    return JSON([pickup.to_dict() for pickup in pickups])
 
 
 def complete_command():
@@ -215,7 +216,7 @@ def post_private(command):
     elif command == 'statistics':
         return add_statistics()
 
-    return ('Invalid operation.', 400)
+    return INVALID_OPERATION
 
 
 @PUBLIC.route('/<command>')
@@ -229,7 +230,7 @@ def get_public(command):
     elif command == 'garbage_collection':
         return garbage_collection()
 
-    return ('Invalid operation.', 400)
+    return INVALID_OPERATION
 
 
 @PUBLIC.route('/<command>', methods=['POST'])
@@ -245,4 +246,4 @@ def post_public(command):
     elif command == 'proxy':
         return proxy()
 
-    return ('Invalid operation.', 400)
+    return INVALID_OPERATION
