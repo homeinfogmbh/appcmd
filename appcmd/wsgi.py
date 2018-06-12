@@ -49,8 +49,7 @@ def address_of(terminal):
     """Returns the address of the respective terminal."""
 
     if terminal.location is not None:
-        address = terminal.location.address
-        return (address.street, address.house_number)
+        return terminal.location.address
 
     raise Error('Terminal has no address.')
 
