@@ -25,6 +25,7 @@ PUBLIC = Application('public', cors=True, debug=True)
 PRIVATE = Application('private', cors=True, debug=True)
 DATA = PostData()
 INVALID_OPERATION = ('Invalid operation.', 400)
+NO_ADDRESS = Error('Terminal has no address.')
 
 
 def get_customer():
@@ -45,15 +46,6 @@ def get_terminal():
         raise Error('No such terminal.', status=404)
 
 
-def address_of(terminal):
-    """Returns the address of the respective terminal."""
-
-    if terminal.location is not None:
-        return terminal.location.address
-
-    raise Error('Terminal has no address.')
-
-
 def street_houseno():
     """Returns street and house number."""
 
@@ -63,8 +55,8 @@ def street_houseno():
         terminal = get_terminal()
 
         try:
-            address = address_of(terminal)
-        except Error:
+            address = terminal.location.address
+        except AttributeError:
             raise Error('No address specified and terminal has no address.')
 
         return (address.street, address.house_number)
@@ -90,8 +82,12 @@ def tenant2tenant(maxlen=MAX_MSG_SIZE):
         raise Error('Maximum text length exceeded.', status=413)
 
     terminal = get_terminal()
-    address = address_of(terminal)
-    record = TenantMessage.from_message(address, message)
+
+    try:
+        record = TenantMessage.from_terminal(terminal, message)
+    except AttributeError:
+        raise NO_ADDRESS
+
     record.save()
     return ('Tenant message added.', 201)
 
@@ -100,10 +96,11 @@ def damage_report():
     """Stores damage reports."""
 
     terminal = get_terminal()
-    address = address_of(terminal)
 
     try:
-        record = DamageReport.from_dict(address, DATA.json)
+        record = DamageReport.from_terminal(terminal, DATA.json)
+    except AttributeError:
+        raise NO_ADDRESS
     except InvalidKeys as invalid_keys:
         raise Error('Invalid keys: {}.'.format(invalid_keys.invalid_keys))
     except FieldNotNullable as field_not_nullable:
