@@ -6,8 +6,8 @@ from flask import request, Response
 from requests import ConnectionError as HTTPConnectionError, get
 
 from aha import LocationNotFound, AhaDisposalClient
-from digsigdb import Command, Statistics, CleaningUser, CleaningDate, \
-    TenantMessage, DamageReport, ProxyHost
+from digsigdb import Statistics, CleaningUser, CleaningDate, TenantMessage, \
+    DamageReport, ProxyHost
 from homeinfo.crm import Customer
 from peeweeplus import FieldValueError, FieldNotNullable, InvalidKeys
 from terminallib import Terminal
@@ -154,23 +154,6 @@ def garbage_collection():
         return ('Location not found.', 404)
 
     return JSON([pickup.to_dict() for pickup in pickups])
-
-
-def complete_command():
-    """Completes the provided command."""
-
-    customer = get_customer()
-    result = False
-
-    for command in Command.select().where(
-            (Command.customer == customer)
-            & (Command.vid == request.args['vid'])
-            & (Command.task == request.args['task'])
-            & (Command.completed >> None)):
-        command.complete()
-        result = True
-
-    return str(int(result))
 
 
 def add_cleaning():
