@@ -59,7 +59,7 @@ def hide_screenshot(entity):
             (ScreenshotLog.entity == entity)
             & (ScreenshotLog.end >> None))
     except ScreenshotLog.DoesNotExist:
-        return ('No such entry.', 404)
+        return ('No pending entry found.', 404)
 
     entry.end = datetime.now()
     entry.save()
