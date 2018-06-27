@@ -16,24 +16,24 @@ __all__ = [
     'hide_screenshot']
 
 
-def get_entity():
+def get_uuid():
     """Returns the respective entity UUID."""
 
     try:
-        return UUID(request.args['entity'])
+        return UUID(request.args['uuid'])
     except KeyError:
-        raise Error('No entity UUID specified.')
+        raise Error('No UUID specified.')
     except ValueError:
-        raise Error('Invalid entity UUID specified.')
+        raise Error('Invalid UUID specified.')
 
 
 def get_screenshot():
-    """Checks whether a screenshot of the respective entity exists."""
+    """Checks whether a respective screenshot exists."""
 
     customer, address = get_customer_and_address()
 
     try:
-        Screenshot.fetch(get_entity(), customer, address)
+        Screenshot.fetch(get_uuid(), customer, address)
     except Screenshot.DoesNotExist:
         return ('No such entity.', 404)
 
@@ -41,10 +41,10 @@ def get_screenshot():
 
 
 def add_screenshot():
-    """Adds a screenshot for the respective entity."""
+    """Adds a screenshot."""
 
     customer, address = get_customer_and_address()
-    Screenshot.add(get_entity(), customer, address, request.get_data())
+    Screenshot.add(get_uuid(), customer, address, request.get_data())
     return ('Screenshot added.', 201)
 
 
@@ -52,7 +52,7 @@ def show_screenshot():
     """Starts to show a screenshot."""
 
     customer, address = get_customer_and_address()
-    ScreenshotLog.add(get_entity(), customer, address)
+    ScreenshotLog.add(get_uuid(), customer, address)
     return ('Entry added.', 201)
 
 
@@ -62,7 +62,7 @@ def hide_screenshot():
     customer, address = get_customer_and_address()
 
     try:
-        ScreenshotLog.close(get_entity(), customer, address)
+        ScreenshotLog.close(get_uuid(), customer, address)
     except ScreenshotLog.DoesNotExist:
         return ('No pending entry found.', 404)
 
