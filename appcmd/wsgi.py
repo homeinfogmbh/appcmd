@@ -20,16 +20,16 @@ PUBLIC = Application('public', cors=True, debug=True)
 PRIVATE_ROUTES = (
     ('GET', '/cleaning', list_cleanings, 'list_cleanings'),
     ('GET', '/garbage_collection', garbage_collection, 'garbage_collection'),
-    ('GET', '/screenshot/<entity>', get_screenshot, 'get_screenshot'),
+    ('GET', '/screenshot', get_screenshot, 'get_screenshot'),
     ('POST', '/contactform', send_contact_mail, 'send_contact_mail'),
     ('POST', '/tenant2tenant', tenant2tenant, 'tenant2tenant'),
     ('POST', '/damagereport', damage_report, 'damage_report'),
     ('POST', '/statistics', add_statistics, 'add_statistics'),
     ('POST', '/cleaning', add_cleaning, 'add_cleaning'),
     ('POST', '/proxy', proxy, 'proxy'),
-    ('POST', '/screenshot/<entity>', add_screenshot, 'add_screenshot'),
-    ('PUT', '/screenshot/<entity>', show_screenshot, 'show_screenshot'),
-    ('POST', '/screenshot/<entity>', hide_screenshot, 'hide_screenshot'))
+    ('POST', '/screenshot', add_screenshot, 'add_screenshot'),
+    ('PUT', '/screenshot', show_screenshot, 'show_screenshot'),
+    ('POST', '/screenshot', hide_screenshot, 'hide_screenshot'))
 PUBLIC_ROUTES = (
     ('POST', '/statistics', add_statistics, 'add_statistics'),
     ('POST', '/proxy', proxy, 'proxy'))

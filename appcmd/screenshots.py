@@ -1,12 +1,11 @@
 """Loggs application entity screenshots."""
 
-from datetime import datetime
-from functools import wraps
 from uuid import UUID
 
 from flask import request
 
 from digsigdb import Screenshot, ScreenshotLog
+from wsgilib import Error
 
 from appcmd.functions import get_customer_and_address
 
@@ -17,57 +16,53 @@ __all__ = [
     'hide_screenshot']
 
 
-def with_uuid(function):
-    """Converts a string into a UUID."""
+def get_entity():
+    """Returns the respective entity UUID."""
 
-    @wraps(function)
-    def wrapper(uuid, *args, **kwargs):
-        """Calls the wrapped function with the parsed UUID."""
-        return function(UUID(uuid), *args, **kwargs)
+    try:
+        return UUID(request.args['entity'])
+    except KeyError:
+        raise Error('No entity UUID specified.')
+    except ValueError:
+        raise Error('Invalid entity UUID specified.')
 
-    return wrapper
 
-
-@with_uuid
-def get_screenshot(entity):
+def get_screenshot():
     """Checks whether a screenshot of the respective entity exists."""
 
     customer, address = get_customer_and_address()
 
     try:
-        Screenshot.fetch(entity, customer, address)
+        Screenshot.fetch(get_entity(), customer, address)
     except Screenshot.DoesNotExist:
         return ('No such entity.', 404)
 
     return ('Entity exists.', 200)
 
 
-@with_uuid
-def add_screenshot(entity):
+def add_screenshot():
     """Adds a screenshot for the respective entity."""
 
     customer, address = get_customer_and_address()
-    Screenshot.add(entity, customer, address, request.get_data())
+    Screenshot.add(get_entity(), customer, address, request.get_data())
     return ('Screenshot added.', 201)
 
 
-@with_uuid
-def show_screenshot(entity):
+def show_screenshot():
     """Starts to show a screenshot."""
 
     customer, address = get_customer_and_address()
-    ScreenshotLog.add(entity, customer, address)
+    ScreenshotLog.add(get_entity(), customer, address)
     return ('Entry added.', 201)
 
 
-@with_uuid
-def hide_screenshot(entity):
+def hide_screenshot():
     """Stops to show a screenshot."""
 
     customer, address = get_customer_and_address()
 
     try:
-        ScreenshotLog.close(entity, customer, address)
+        ScreenshotLog.close(get_entity(), customer, address)
     except ScreenshotLog.DoesNotExist:
         return ('No pending entry found.', 404)
 
