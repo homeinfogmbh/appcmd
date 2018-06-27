@@ -2,7 +2,7 @@
 
 from digsigdb import Statistics
 
-from flak import request
+from flask import request
 
 from appcmd.functions import get_customer
 
