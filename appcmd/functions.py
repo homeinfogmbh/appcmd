@@ -6,7 +6,11 @@ from homeinfo.crm import Customer
 from terminallib import Terminal
 from wsgilib import Error
 
-__all__ = ['get_customer', 'get_terminal', 'street_houseno']
+__all__ = [
+    'get_customer',
+    'get_terminal',
+    'get_customer_and_address',
+    'street_houseno']
 
 
 def get_customer():
@@ -25,6 +29,21 @@ def get_terminal():
         return Terminal.by_ids(request.args['cid'], request.args['tid'])
     except Terminal.DoesNotExist:
         raise Error('No such terminal.', status=404)
+
+
+def get_customer_and_address():
+    """Returns customer and address by
+    the respective terminal arguments.
+    """
+
+    terminal = get_terminal()
+
+    try:
+        address = terminal.location.address
+    except AttributeError:
+        raise Error('Terminal has no address.')
+
+    return (terminal.customer, address)
 
 
 def street_houseno():
