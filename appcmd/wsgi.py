@@ -1,58 +1,37 @@
-"""WSGI handlers for appcmd."""
+"""WSGI private routes (VPN)."""
 
 from wsgilib import Application
 
-from appcmd.functions import list_cleanings, garbage_collection, \
-    send_contact_mail, tenant2tenant, damage_report, add_statistics, \
-    add_cleaning, proxy
+from appcmd.cleaning import list_cleanings, add_cleaning
+from appcmd.damage_report import damage_report
+from appcmd.garbage_collection import garbage_collection
+from appcmd.mail import send_contact_mail
+from appcmd.proxy import proxy
+from appcmd.screenshots import get_screenshot, add_screenshot, \
+    show_screenshot, hide_screenshot
+from appcmd.statistics import add_statistics
+from appcmd.tenant2tenant import tenant2tenant
 
-__all__ = ['PRIVATE']
+__all__ = ['PRIVATE', 'PUBLIC']
 
 
 PRIVATE = Application('private', cors=True, debug=True)
 PUBLIC = Application('public', cors=True, debug=True)
-INVALID_OPERATION = ('Invalid operation.', 400)
-
-
-@PRIVATE.route('/<command>', methods=['GET'])
-def get_private(command):
-    """Handles public get request."""
-
-    if command == 'cleaning':
-        return list_cleanings()
-    elif command == 'garbage_collection':
-        return garbage_collection()
-
-    return INVALID_OPERATION
-
-
-@PRIVATE.route('/<command>', methods=['POST'])
-def post_private(command):
-    """Handles private POST request."""
-
-    if command == 'contactform':
-        return send_contact_mail()
-    elif command == 'tenant2tenant':
-        return tenant2tenant()
-    elif command == 'damagereport':
-        return damage_report()
-    elif command == 'statistics':
-        return add_statistics()
-    elif command == 'cleaning':
-        return add_cleaning()
-    elif command == 'proxy':
-        return proxy()
-
-    return INVALID_OPERATION
-
-
-@PUBLIC.route('/<command>', methods=['POST'])
-def post_public(command):
-    """Handles private POST request."""
-
-    if command == 'statistics':
-        return add_statistics()
-    elif command == 'proxy':
-        return proxy()
-
-    return INVALID_OPERATION
+PRIVATE_ROUTES = (
+    ('GET', '/cleaning', list_cleanings, 'list_cleanings'),
+    ('GET', '/garbage_collection', garbage_collection, 'garbage_collection'),
+    ('GET', '/screenshot', get_screenshot, 'get_screenshot'),
+    ('POST', '/contactform', send_contact_mail, 'send_contact_mail'),
+    ('POST', '/tenant2tenant', tenant2tenant, 'tenant2tenant'),
+    ('POST', '/damagereport', damage_report, 'damage_report'),
+    ('POST', '/statistics', add_statistics, 'add_statistics'),
+    ('POST', '/cleaning', add_cleaning, 'add_cleaning'),
+    ('POST', '/proxy', proxy, 'proxy'),
+    ('POST', '/screenshot', add_screenshot, 'add_screenshot'),
+    ('PUT', '/screenshot', show_screenshot, 'show_screenshot'),
+    ('POST', '/screenshot', hide_screenshot, 'hide_screenshot'))
+PUBLIC_ROUTES = (
+    ('POST', '/statistics', add_statistics, 'add_statistics'),
+    ('POST', '/proxy', proxy, 'proxy'))
+PRIVATE.add_routes(PRIVATE_ROUTES)
+PUBLIC.add_routes(PUBLIC_ROUTES)
