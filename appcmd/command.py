@@ -1,6 +1,6 @@
 """Legacy command interface for Smart TVs."""
 
-from flak import request
+from flask import request
 
 from digsigdb import Command
 from wsgilib import JSON
