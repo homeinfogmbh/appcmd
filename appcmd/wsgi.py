@@ -29,7 +29,7 @@ PRIVATE_ROUTES = (
     ('POST', '/proxy', proxy, 'proxy'),
     ('POST', '/screenshot', add_screenshot, 'add_screenshot'),
     ('PUT', '/screenshot', show_screenshot, 'show_screenshot'),
-    ('POST', '/screenshot', hide_screenshot, 'hide_screenshot'))
+    ('PATCH', '/screenshot', hide_screenshot, 'hide_screenshot'))
 PUBLIC_ROUTES = (
     ('POST', '/statistics', add_statistics, 'add_statistics'),
     ('POST', '/proxy', proxy, 'proxy'))
