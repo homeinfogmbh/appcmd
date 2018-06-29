@@ -3,6 +3,7 @@
 from wsgilib import Application
 
 from appcmd.cleaning import list_cleanings, add_cleaning
+from appcmd.command import list_commands, complete_command
 from appcmd.damage_report import damage_report
 from appcmd.garbage_collection import garbage_collection
 from appcmd.mail import send_contact_mail
@@ -31,6 +32,8 @@ PRIVATE_ROUTES = (
     ('PUT', '/screenshot', show_screenshot, 'show_screenshot'),
     ('PATCH', '/screenshot', hide_screenshot, 'hide_screenshot'))
 PUBLIC_ROUTES = (
+    ('GET', '/command', list_commands, 'list_commands'),
+    ('POST', '/command', complete_command, 'complete_command'),
     ('POST', '/statistics', add_statistics, 'add_statistics'),
     ('POST', '/proxy', proxy, 'proxy'))
 PRIVATE.add_routes(PRIVATE_ROUTES)
