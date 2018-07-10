@@ -10,6 +10,6 @@ setup(
     author_email='<info at homeinfo dot de>',
     maintainer='Richard Neumann',
     maintainer_email='<r dot neumann at homeinfo priod de>',
-    requires=['homeinfo.crm', 'openimmo'],
+    requires=['mdb', 'openimmo'],
     packages=['appcmd'],
     description='Digital Sigange Flash Application communication interface')
