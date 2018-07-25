@@ -26,7 +26,7 @@
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element name="task" type="xs:string" maxOccurs="unbounded">
+            <xs:element name="task" type="xs:string" minOccurs="0" maxOccurs="unbounded">
                 <xs:annotation>
                     <xs:documentation xml:lang="de">
                         Die einzelnen Tasks.
