@@ -40,7 +40,7 @@ def _to_dom(solutions_):
                     pickup_date_.date)
                 pickup_date.exceptional = pickup_date_.exceptional
                 pickup_date.weekday = pickup_date_.weekday
-                pickup_.date.append(pickup_date)
+                pickup.date.append(pickup_date)
 
             location.pickup.append(pickup)
 
