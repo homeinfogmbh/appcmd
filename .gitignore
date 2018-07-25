@@ -9,3 +9,5 @@ dist
 files/etc/homie.conf
 __pycache__
 .buildconfig
+appcmd/dom/*.py
+!appcmd/dom/__init__.py

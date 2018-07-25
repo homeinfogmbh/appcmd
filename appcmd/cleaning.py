@@ -3,11 +3,31 @@
 from flask import request
 
 from digsigdb import CleaningUser, CleaningDate
-from wsgilib import Error, JSON
+from wsgilib import Error, JSON, XML
 
+from appcmd import dom
 from appcmd.functions import get_terminal
 
+
 __all__ = ['list_cleanings', 'add_cleaning']
+
+
+def _cleaning_response(cleaning_dates):
+    """Creates a response from the respective dictionary."""
+
+    if 'xml' in request.args:
+        cleanings = dom.cleaning.cleanings()
+
+        for cleaning_date in cleaning_dates:
+            cleaning_ = dom.cleaning.Cleaning()
+            cleaning_.timestamp = cleaning_date.timestamp
+            cleaning_.user = cleaning_date.user.name
+            cleanings.cleaning.append(cleaning_)
+
+        return XML(cleanings)
+
+    return JSON([
+        cleaning_date.to_dict(short=True) for cleaning_date in cleaning_dates])
 
 
 def list_cleanings():
@@ -20,9 +40,7 @@ def list_cleanings():
     except AttributeError:
         raise Error('Terminal has no address.')
 
-    return JSON([
-        cleaning_date.to_dict(short=True) for cleaning_date in
-        CleaningDate.by_address(address, limit=10)])
+    return _cleaning_response(CleaningDate.by_address(address, limit=10))
 
 
 def add_cleaning():

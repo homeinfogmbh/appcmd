@@ -3,26 +3,38 @@
 from flask import request
 
 from digsigdb import Command
-from wsgilib import JSON
+from wsgilib import JSON, XML
 
+from appcmd import dom
 from appcmd.functions import get_customer
 
+
 __all__ = ['list_commands', 'complete_command']
+
+
+def _command_response(commands):
+    """Returns an XML or JSON response."""
+
+    if 'xml' in request.args:
+        commands_ = dom.commands.commands()
+
+        for command in commands_:
+            commands_.task.append(command.task)
+
+        return XML(commands_)
+
+    return JSON([command.task for command in commands_])
 
 
 def list_commands():
     """Lists commands for the respective terminal."""
 
-    customer = get_customer()
-    tasks = []
-
-    for command in Command.select().where(
-            (Command.customer == customer)
+    commands = Command.select().where(
+            (Command.customer == get_customer())
             & (Command.vid == request.args['vid'])
             & (Command.completed >> None)):
         tasks.append(command.task)
-
-    return JSON(tasks)
+    return _command_response(commands)
 
 
 def complete_command():

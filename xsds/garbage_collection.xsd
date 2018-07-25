@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  XSD für Müllabfuhrtermine.
+
+  Maintainer: Richard Neumann <r dot neumann at homeinfo fullstop de>
+-->
+
+<xs:schema  xmlns="http://xml.homeinfo.de/schema/appcmd/cleaning"
+            xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0"
+            targetNamespace="http://xml.homeinfo.de/schema/appcmd/cleaning">
+
+    <xs:element name="solutions" type="Solutions">
+        <xs:annotation>
+            <xs:documentation xml:lang="de">
+                Wurzelelement.
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+
+    <xs:complexType name="Solutions">
+        <xs:annotation>
+            <xs:documentation xml:lang="de">
+                Gefundene Abfuhrstellen.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="location" type="Location" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation xml:lang="de">
+                        Die einzelnen Abfuhrstelles.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+
+    <xs:complexType name="Location">
+        <xs:annotation>
+            <xs:documentation xml:lang="de">
+                Abfuhrstelle.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="code" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation xml:lang="de">
+                        AHA-Code der Müllafuhrstelle.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="houseNumber" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation xml:lang="de">
+                        Hausnummer.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="street" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation xml:lang="de">
+                        Straße.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="district" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation xml:lang="de">
+                        Stadtteil.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="pickup" type="Pickup" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation xml:lang="de">
+                        Die Müllabfuhrtermine.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+
+    <xs:complexType name="Pickup">
+        <xs:annotation>
+            <xs:documentation xml:lang="de">
+                Ein Müllabfuhrtermin.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="interval" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation xml:lang="de">
+                        Intervall der Müllabfuhr.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="image_link" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation xml:lang="de">
+                        Link zum Bild.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="type" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation xml:lang="de">
+                        Typ des Mülls.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="weekday" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation xml:lang="de">
+                        Wochentag der Abfuhr.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="date" type="PickupDate" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation xml:lang="de">
+                        Kommende Müllabfuhrtermine.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+
+    <xs:complexType name="PickupDate">
+        <xs:annotation>
+            <xs:documentation xml:lang="de">
+                Abfuhrdatum.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:simpleContent>
+            <xs:extension base="xs:date">
+                <xs:attribute name="exceptional" type="xs:boolean">
+                    <xs:annotation>
+                        <xs:documentation xml:lang="de">
+                            Abweichendes Datum.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="weekday" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation xml:lang="de">
+                            Wochentag.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+</xs:schema>

@@ -11,5 +11,5 @@ setup(
     maintainer='Richard Neumann',
     maintainer_email='<r dot neumann at homeinfo priod de>',
     requires=['mdb', 'openimmo'],
-    packages=['appcmd'],
-    description='Digital Sigange Flash Application communication interface')
+    packages=['appcmd', 'appcmd.dom'],
+    description='Digital Sigange Flash Application communication interface.')

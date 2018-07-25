@@ -3,9 +3,11 @@
 from requests import ConnectionError as ConnectionError_
 
 from aha import LocationNotFound, AhaDisposalClient
-from wsgilib import JSON
+from wsgilib import JSON, XML
 
+from appcmd import dom
 from appcmd.functions import street_houseno
+
 
 __all__ = ['garbage_collection']
 
@@ -13,14 +15,56 @@ __all__ = ['garbage_collection']
 AHA_CLIENT = AhaDisposalClient()
 
 
+def _to_dom(solutions_):
+    """Returns an XML or JSON response."""
+
+    solutions = dom.garbage_collection.solution()
+
+    for location_, pickups in solutions_:
+        location = dom.garbage_collection.Location()
+        location.code = location_.code
+        location.street = location_.street
+        location.houseNumber = location_.house_number
+        location.district = location_.district
+
+        for pickup_ in pickups:
+            pickup = dom.garbage_collection.Pickup()
+            pickup.interval = pickup_.interval
+            pickup.imageLink = pickup_.image_link
+            pickup.type = pickup_.type
+            pickup.weekday = pickup_.weekday
+
+            for pickup_date_ in pickup_.next_dates:
+                pickup_date = dom.garbage_collection.PickupDate(
+                    pickup_date_.date)
+                pickup_date.exceptional = pickup_date_.exceptional
+                pickup_date.weekday = pickup_date_.weekday
+                pickup_.date.append(pickup_date)
+
+            location.pickup.append(pickup)
+
+        solutions.location.append(location)
+
+    return solutions
+
+
+def _response(solutions):
+    """Returns an XML or JSON response."""
+
+    if 'xml' in request.args:
+        return XML(_to_dom(solutions))
+
+    return JSON([solution.to_dict() for solution in solutions])
+
+
 def garbage_collection():
     """Returns information about the garbage collection."""
 
     try:
-        pickups = tuple(AHA_CLIENT.by_street_houseno(*street_houseno()))
+        solutions = tuple(AHA_CLIENT.by_street_houseno(*street_houseno()))
     except ConnectionError_:
         return ('Could not connect to AHA API.', 503)
     except LocationNotFound:
         return ('Location not found.', 404)
 
-    return JSON([pickup.to_dict() for pickup in pickups])
+    return JSON(solutions)
