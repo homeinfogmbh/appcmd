@@ -20,11 +20,9 @@ def _response(cleaning_dates):
 
         for cleaning_date in cleaning_dates:
             cleaning = dom.cleaning.Cleaning()
-            cleaning.id = cleaning_date.id
             cleaning.timestamp = cleaning_date.timestamp
             user = dom.cleaning.User()
             user_ = cleaning_date.user
-            user.id = user_.id
             user.name = user_.name
             user.type = user_.type_
             cleaning.user = user
