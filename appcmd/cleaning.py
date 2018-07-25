@@ -12,7 +12,7 @@ from appcmd.functions import get_terminal
 __all__ = ['list_cleanings', 'add_cleaning']
 
 
-def _cleaning_response(cleaning_dates):
+def _response(cleaning_dates):
     """Creates a response from the respective dictionary."""
 
     if 'xml' in request.args:
@@ -40,7 +40,7 @@ def list_cleanings():
     except AttributeError:
         raise Error('Terminal has no address.')
 
-    return _cleaning_response(CleaningDate.by_address(address, limit=10))
+    return _response(CleaningDate.by_address(address, limit=10))
 
 
 def add_cleaning():

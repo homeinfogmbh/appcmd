@@ -12,7 +12,7 @@ from appcmd.functions import get_customer
 __all__ = ['list_commands', 'complete_command']
 
 
-def _command_response(commands_):
+def _response(commands_):
     """Returns an XML or JSON response."""
 
     if 'xml' in request.args:
@@ -33,7 +33,7 @@ def list_commands():
         (Command.customer == get_customer())
         & (Command.vid == request.args['vid'])
         & (Command.completed >> None))
-    return _command_response(commands)
+    return _response(commands)
 
 
 def complete_command():

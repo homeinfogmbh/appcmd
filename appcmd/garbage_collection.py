@@ -68,4 +68,4 @@ def garbage_collection():
     except LocationNotFound:
         return ('Location not found.', 404)
 
-    return JSON(solutions)
+    return _response(solutions)
