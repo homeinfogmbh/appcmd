@@ -51,13 +51,38 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="user" type="xs:string">
+            <xs:element name="user" type="User">
                 <xs:annotation>
                     <xs:documentation xml:lang="de">
-                        Name der Reinigungskraft.
+                        Die Reinigungskraft oder das Reinigungsunternehmen.
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
         </xs:sequence>
+    </xs:complexType>
+
+
+    <xs:complexType name="User">
+        <xs:annotation>
+            <xs:documentation xml:lang="de">
+                Ein Reinigungsnachweis.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="name" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation xml:lang="de">
+                        Name der Reinigungskraft / des Unternehmens.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="type" type="xs:string">
+            <xs:annotation>
+                <xs:documentation xml:lang="de">
+                    Typ der Reinigung.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 </xs:schema>

@@ -19,10 +19,13 @@ def _response(cleaning_dates):
         cleanings = dom.cleaning.cleanings()
 
         for cleaning_date in cleaning_dates:
-            cleaning_ = dom.cleaning.Cleaning()
-            cleaning_.timestamp = cleaning_date.timestamp
-            cleaning_.user = cleaning_date.user.name
-            cleanings.cleaning.append(cleaning_)
+            cleaning = dom.cleaning.Cleaning()
+            cleaning.timestamp = cleaning_date.timestamp
+            user = dom.cleaning.User()
+            user.name = cleaning_date.user.name
+            user.type = cleaning_date.user.type_
+            cleaning.user = user
+            cleanings.cleaning.append(cleaning)
 
         return XML(cleanings)
 
