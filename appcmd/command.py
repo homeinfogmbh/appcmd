@@ -12,16 +12,16 @@ from appcmd.functions import get_customer
 __all__ = ['list_commands', 'complete_command']
 
 
-def _command_response(commands):
+def _command_response(commands_):
     """Returns an XML or JSON response."""
 
     if 'xml' in request.args:
-        commands_ = dom.commands.commands()
+        commands = dom.commands.commands()
 
         for command in commands_:
-            commands_.task.append(command.task)
+            commands.task.append(command.task)
 
-        return XML(commands_)
+        return XML(commands)
 
     return JSON([command.task for command in commands_])
 
@@ -30,10 +30,9 @@ def list_commands():
     """Lists commands for the respective terminal."""
 
     commands = Command.select().where(
-            (Command.customer == get_customer())
-            & (Command.vid == request.args['vid'])
-            & (Command.completed >> None)):
-        tasks.append(command.task)
+        (Command.customer == get_customer())
+        & (Command.vid == request.args['vid'])
+        & (Command.completed >> None))
     return _command_response(commands)
 
 

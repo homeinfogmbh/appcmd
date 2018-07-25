@@ -1,5 +1,6 @@
 """Garbage collection info retrieval."""
 
+from flask import request
 from requests import ConnectionError as ConnectionError_
 
 from aha import LocationNotFound, AhaDisposalClient
@@ -18,7 +19,7 @@ AHA_CLIENT = AhaDisposalClient()
 def _to_dom(solutions_):
     """Returns an XML or JSON response."""
 
-    solutions = dom.garbage_collection.solution()
+    solutions = dom.garbage_collection.solutions()
 
     for location_, pickups in solutions_:
         location = dom.garbage_collection.Location()
