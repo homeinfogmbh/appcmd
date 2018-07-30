@@ -37,10 +37,9 @@ def get_customer_and_address():
     """
 
     terminal = get_terminal()
+    address = terminal.address
 
-    try:
-        address = terminal.location.address
-    except AttributeError:
+    if address is None:
         raise Error('Terminal has no address.')
 
     return (terminal.customer, address)
@@ -52,11 +51,9 @@ def street_houseno():
     try:
         return (request.args['street'], request.args['house_number'])
     except KeyError:
-        terminal = get_terminal()
+        address = get_terminal().address
 
-        try:
-            address = terminal.location.address
-        except AttributeError:
+        if address is None:
             raise Error('No address specified and terminal has no address.')
 
         return (address.street, address.house_number)

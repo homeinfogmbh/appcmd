@@ -36,11 +36,9 @@ def _response(cleaning_dates):
 def list_cleanings():
     """Lists cleaning entries for the respective terminal."""
 
-    terminal = get_terminal()
+    address = get_terminal().address
 
-    try:
-        address = terminal.location.address
-    except AttributeError:
+    if address is None:
         raise Error('Terminal has no address.')
 
     return _response(CleaningDate.by_address(address, limit=10))
@@ -58,9 +56,9 @@ def add_cleaning():
     except CleaningUser.DoesNotExist:
         return ('Invalid PIN.', 403)
 
-    try:
-        address = terminal.location.address
-    except AttributeError:
+    address = terminal.address
+
+    if address is None:
         return ('Terminal has no address.', 400)
 
     CleaningDate.add(user, address)
