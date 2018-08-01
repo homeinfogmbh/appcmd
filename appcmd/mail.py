@@ -5,14 +5,15 @@ from datetime import datetime
 from traceback import format_exc
 
 from emaillib import Mailer, EMail
-from wsgilib import PostData, Error
+from wsgilib import Error
 
 from appcmd.config import CONFIG
+from appcmd.functions import get_json
+
 
 __all__ = ['send_contact_mail']
 
 
-DATA = PostData()
 EMAIL_TEMP = '''Kontaktformular vom {datum}:
 -----------------------------------------------
 
@@ -60,7 +61,7 @@ def get_text(dictionary, template=EMAIL_TEMP):
 def send_contact_mail():
     """Sends contact form emails."""
 
-    email = ContactFormEmail.from_dict(DATA.json)
+    email = ContactFormEmail.from_dict(get_json())
 
     try:
         return MAILER.send_email(email)

@@ -1,15 +1,13 @@
 """Damage report submission."""
 
-from appcmd.functions import get_customer_and_address
+from appcmd.functions import get_json, get_customer_and_address
 
 from digsigdb import DamageReport
 from peeweeplus import FieldValueError, FieldNotNullable, InvalidKeys
-from wsgilib import PostData, Error
+from wsgilib import Error
+
 
 __all__ = ['damage_report']
-
-
-DATA = PostData()
 
 
 def damage_report():
@@ -18,7 +16,7 @@ def damage_report():
     customer, address = get_customer_and_address()
 
     try:
-        record = DamageReport.from_dict(customer, address, DATA.json)
+        record = DamageReport.from_dict(customer, address, get_json())
     except InvalidKeys as invalid_keys:
         raise Error('Invalid keys: {}.'.format(invalid_keys.invalid_keys))
     except FieldNotNullable as field_not_nullable:

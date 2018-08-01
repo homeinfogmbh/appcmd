@@ -13,6 +13,7 @@ from appcmd.screenshots import get_screenshot, add_screenshot, \
 from appcmd.statistics import add_statistics
 from appcmd.tenant2tenant import tenant2tenant
 
+
 __all__ = ['PRIVATE', 'PUBLIC']
 
 

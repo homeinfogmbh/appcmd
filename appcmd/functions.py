@@ -1,16 +1,30 @@
 """WSGI handlers for appcmd."""
 
+from json import loads
+
 from flask import request
 
 from mdb import Customer
 from terminallib import Terminal
 from wsgilib import Error
 
+
 __all__ = [
+    'get_json',
     'get_customer',
     'get_terminal',
     'get_customer_and_address',
     'street_houseno']
+
+
+def get_json():
+    """Returns POSTed JSON data.
+
+    TODO: This is a hack as long as the Flash Application
+    does not send "ContentType: application/json".
+    """
+
+    return loads(request.get_data(as_text=True))
 
 
 def get_customer():

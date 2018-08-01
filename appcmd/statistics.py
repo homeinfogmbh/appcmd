@@ -6,6 +6,7 @@ from flask import request
 
 from appcmd.functions import get_customer
 
+
 __all__ = ['add_statistics']
 
 

@@ -9,6 +9,7 @@ from wsgilib import Error
 
 from appcmd.functions import get_customer_and_address
 
+
 __all__ = [
     'get_screenshot',
     'add_screenshot',

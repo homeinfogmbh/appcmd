@@ -7,6 +7,7 @@ from requests import get
 
 from digsigdb import ProxyHost
 
+
 __all__ = ['proxy']
 
 

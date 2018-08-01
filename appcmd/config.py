@@ -2,7 +2,9 @@
 
 from configlib import INIParser
 
+
 __all__ = ['CONFIG', 'MAX_MSG_SIZE']
+
 
 CONFIG = INIParser('/etc/appcmd.conf')
 
