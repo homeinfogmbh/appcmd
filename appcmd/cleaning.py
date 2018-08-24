@@ -30,7 +30,7 @@ def _response(cleaning_dates):
         return XML(cleanings)
 
     return JSON([
-        cleaning_date.to_dict(short=True) for cleaning_date in cleaning_dates])
+        cleaning_date.to_json(short=True) for cleaning_date in cleaning_dates])
 
 
 def list_cleanings():

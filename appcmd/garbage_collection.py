@@ -55,7 +55,7 @@ def _response(solutions):
     if 'xml' in request.args:
         return XML(_to_dom(solutions))
 
-    return JSON([solution.to_dict() for solution in solutions])
+    return JSON([solution.to_json() for solution in solutions])
 
 
 def garbage_collection():
