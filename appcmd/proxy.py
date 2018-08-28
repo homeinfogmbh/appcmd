@@ -18,7 +18,8 @@ def proxy():
 
     if url.scheme not in ('http', 'https'):
         return ('Scheme must be HTTP or HTTPS.', 400)
-    elif not url.hostname:
+
+    if not url.hostname:
         return ('Host name must not be empty.', 400)
 
     try:

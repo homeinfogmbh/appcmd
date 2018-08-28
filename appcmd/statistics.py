@@ -1,8 +1,8 @@
 """Statistics submission."""
 
-from digsigdb import Statistics
-
 from flask import request
+
+from digsigdb import Statistics
 
 from appcmd.functions import get_customer
 

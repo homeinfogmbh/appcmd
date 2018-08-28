@@ -16,7 +16,7 @@ def damage_report():
     customer, address = get_customer_and_address()
 
     try:
-        record = DamageReport.from_dict(customer, address, get_json())
+        record = DamageReport.from_json(get_json(), customer, address)
     except InvalidKeys as invalid_keys:
         raise Error('Invalid keys: {}.'.format(invalid_keys.invalid_keys))
     except FieldNotNullable as field_not_nullable:

@@ -61,7 +61,7 @@ def get_text(dictionary, template=EMAIL_TEMP):
 def send_contact_mail():
     """Sends contact form emails."""
 
-    email = ContactFormEmail.from_dict(get_json())
+    email = ContactFormEmail.json(get_json())
 
     try:
         return MAILER.send_email(email)
@@ -73,7 +73,7 @@ class ContactFormEmail(EMail):
     """An email for the contact form."""
 
     @classmethod
-    def from_dict(cls, dictionary):
+    def from_json(cls, dictionary):
         """Creates a new email from the provided dictionary."""
         email = cls(
             CONFIG['mail']['subject'], CONFIG['mail']['sender'],
