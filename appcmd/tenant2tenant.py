@@ -2,8 +2,7 @@
 
 from flask import request
 
-from digsigdb import TenantMessage
-from wsgilib import Error
+from tenant2tenant import TenantMessage
 
 from appcmd.config import MAX_MSG_SIZE
 from appcmd.functions import get_terminal
@@ -18,14 +17,14 @@ def tenant2tenant(maxlen=MAX_MSG_SIZE):
     message = request.get_data().decode()
 
     if len(message) > maxlen:
-        raise Error('Maximum text length exceeded.', status=413)
+        return ('Maximum text length exceeded.', 413)
 
     terminal = get_terminal()
 
     try:
         record = TenantMessage.from_terminal(terminal, message)
     except AttributeError:
-        raise Error('Terminal has no address.')
+        return ('Terminal has no address.', 400)
 
     record.save()
     return ('Tenant message added.', 201)
