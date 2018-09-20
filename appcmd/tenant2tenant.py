@@ -2,7 +2,7 @@
 
 from flask import request
 
-from tenant2tenant import TenantMessage
+from tenant2tenant import email, TenantMessage
 
 from appcmd.config import MAX_MSG_SIZE
 from appcmd.functions import get_terminal
@@ -27,4 +27,5 @@ def tenant2tenant(maxlen=MAX_MSG_SIZE):
         return ('Terminal has no address.', 400)
 
     record.save()
+    email(record)
     return ('Tenant message added.', 201)
