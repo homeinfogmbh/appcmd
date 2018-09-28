@@ -2,7 +2,7 @@
 
 from appcmd.functions import get_json, get_customer_and_address
 
-from digsigdb import DamageReport
+from damage_report import DamageReport
 from peeweeplus import FieldValueError, FieldNotNullable, InvalidKeys
 from wsgilib import Error
 
