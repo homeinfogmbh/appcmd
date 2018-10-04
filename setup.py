@@ -10,6 +10,6 @@ setup(
     author_email='<info at homeinfo dot de>',
     maintainer='Richard Neumann',
     maintainer_email='<r dot neumann at homeinfo priod de>',
-    requires=['mdb', 'openimmo'],
+    requires=['mdb', 'openimmo', 'damage_report', 'tenant2tenant'],
     packages=['appcmd', 'appcmd.dom'],
     description='Digital Sigange Flash Application communication interface.')
