@@ -2,7 +2,7 @@
 
 from appcmd.functions import get_json, get_customer_and_address
 
-from damage_report import DamageReport
+from damage_report import email, DamageReport
 from peeweeplus import FieldValueError, FieldNotNullable, InvalidKeys
 from wsgilib import Error
 
@@ -27,4 +27,5 @@ def damage_report():
             field_value_error.field, field_value_error.value))
 
     record.save()
+    email(record)
     return ('Damage report added.', 201)
