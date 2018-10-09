@@ -14,9 +14,10 @@ def damage_report():
     """Stores damage reports."""
 
     customer, address = get_customer_and_address()
+    json = get_json()
 
     try:
-        record = DamageReport.from_json(get_json(), customer, address)
+        record = DamageReport.from_json(json, customer, address)
     except InvalidKeys as invalid_keys:
         raise Error('Invalid keys: {}.'.format(invalid_keys.invalid_keys))
     except FieldNotNullable as field_not_nullable:
@@ -25,6 +26,9 @@ def damage_report():
     except FieldValueError as field_value_error:
         raise Error('Invalid value for field "{}": "{}".'.format(
             field_value_error.field, field_value_error.value))
+    except Exception as exception:
+        print('Got error:', exception, flush=True)
+        print(json, flush=True)
 
     record.save()
     email(record)
