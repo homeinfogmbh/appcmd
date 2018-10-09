@@ -5,7 +5,6 @@ from wsgilib import Application
 from appcmd.cleaning import list_cleanings, add_cleaning
 from appcmd.command import list_commands, complete_command
 from appcmd.damage_report import damage_report
-from appcmd.error import log_error
 from appcmd.garbage_collection import garbage_collection
 from appcmd.mail import send_contact_mail
 from appcmd.proxy import proxy
@@ -42,5 +41,3 @@ PUBLIC_ROUTES = (
     ('POST', '/proxy', proxy, 'proxy'))
 PRIVATE.add_routes(PRIVATE_ROUTES)
 PUBLIC.add_routes(PUBLIC_ROUTES)
-PRIVATE.errorhandler(log_error)
-PUBLIC.errorhandler(log_error)
