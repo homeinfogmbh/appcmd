@@ -52,10 +52,15 @@ def _to_dom(solutions_):
 def _response(solutions):
     """Returns an XML or JSON response."""
 
-    if 'xml' in request.args:
+    content_type = request.headers.get('Accept', 'application/json')
+
+    if content_type == 'application/xml':
         return XML(_to_dom(solutions))
 
-    return JSON([solution.to_json() for solution in solutions])
+    if content_type == 'application/json':
+        return JSON([solution.to_json() for solution in solutions])
+
+    return ('Invalid content type.', 406)
 
 
 def garbage_collection():

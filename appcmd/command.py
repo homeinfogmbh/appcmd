@@ -14,8 +14,9 @@ __all__ = ['list_commands', 'complete_command']
 
 def _response(commands_):
     """Returns an XML or JSON response."""
+    content_type = request.headers.get('Accept', 'application/json')
 
-    if 'xml' in request.args:
+    if content_type == 'application/xml':
         commands = dom.commands.commands()
 
         for command in commands_:
@@ -23,7 +24,10 @@ def _response(commands_):
 
         return XML(commands)
 
-    return JSON([command.task for command in commands_])
+    if content_type == 'application/json':
+        return JSON([command.task for command in commands_])
+
+    return ('Invalid content type.', 406)
 
 
 def list_commands():
