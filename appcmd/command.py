@@ -3,7 +3,7 @@
 from flask import request
 
 from digsigdb import Command
-from wsgilib import JSON, XML
+from wsgilib import ACCEPT, JSON, XML
 
 from appcmd import dom
 from appcmd.functions import get_customer
@@ -14,9 +14,8 @@ __all__ = ['list_commands', 'complete_command']
 
 def _response(commands_):
     """Returns an XML or JSON response."""
-    content_type = request.headers.get('Accept', 'application/json')
 
-    if content_type == 'application/xml':
+    if 'application/xml' in ACCEPT:
         commands = dom.commands.commands()
 
         for command in commands_:
@@ -24,7 +23,7 @@ def _response(commands_):
 
         return XML(commands)
 
-    if content_type == 'application/json':
+    if 'application/json' in ACCEPT:
         return JSON([command.task for command in commands_])
 
     return ('Invalid content type.', 406)

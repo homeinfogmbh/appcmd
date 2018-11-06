@@ -3,7 +3,7 @@
 from flask import request
 
 from digsigdb import CleaningUser, CleaningDate
-from wsgilib import Error, JSON, XML
+from wsgilib import ACCEPT, Error, JSON, XML
 
 from appcmd import dom
 from appcmd.functions import get_terminal
@@ -15,9 +15,7 @@ __all__ = ['list_cleanings', 'add_cleaning']
 def _response(cleaning_dates):
     """Creates a response from the respective dictionary."""
 
-    content_type = request.headers.get('Accept', 'application/json')
-
-    if content_type == 'application/xml':
+    if 'application/xml' in ACCEPT:
         cleanings = dom.cleaning.cleanings()
 
         for cleaning_date in cleaning_dates:
@@ -31,7 +29,7 @@ def _response(cleaning_dates):
 
         return XML(cleanings)
 
-    if content_type == 'application/json':
+    if 'application/json' in ACCEPT:
         return JSON([
             cleaning_date.to_json(short=True)
             for cleaning_date in cleaning_dates])
