@@ -19,7 +19,7 @@ from appcmd.tenant2tenant import tenant2tenant
 __all__ = ['PRIVATE', 'PUBLIC']
 
 
-PRIVATE = Application('private', cors=True)
+PRIVATE = Application('private', cors=True, debug=True)
 PUBLIC = Application('public', cors=True)
 PRIVATE_ROUTES = (
     ('GET', '/cleaning', list_cleanings, 'list_cleanings'),
