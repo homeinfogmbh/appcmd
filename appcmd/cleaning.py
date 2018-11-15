@@ -15,26 +15,23 @@ __all__ = ['list_cleanings', 'add_cleaning']
 def _response(cleaning_dates):
     """Creates a response from the respective dictionary."""
 
-    if 'application/xml' in ACCEPT:
-        cleanings = dom.cleaning.cleanings()
-
-        for cleaning_date in cleaning_dates:
-            cleaning = dom.cleaning.Cleaning()
-            cleaning.timestamp = cleaning_date.timestamp
-            user_ = cleaning_date.user
-            user = dom.cleaning.User(user_.name)
-            user.type = user_.type_
-            cleaning.user = user
-            cleanings.cleaning.append(cleaning)
-
-        return XML(cleanings)
-
     if 'application/json' in ACCEPT:
         return JSON([
             cleaning_date.to_json(short=True)
             for cleaning_date in cleaning_dates])
 
-    return ('Invalid content type.', 406)
+    cleanings = dom.cleaning.cleanings()
+
+    for cleaning_date in cleaning_dates:
+        cleaning = dom.cleaning.Cleaning()
+        cleaning.timestamp = cleaning_date.timestamp
+        user_ = cleaning_date.user
+        user = dom.cleaning.User(user_.name)
+        user.type = user_.type_
+        cleaning.user = user
+        cleanings.cleaning.append(cleaning)
+
+    return XML(cleanings)
 
 
 def list_cleanings():
