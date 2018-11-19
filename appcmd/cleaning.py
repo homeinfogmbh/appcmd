@@ -15,7 +15,7 @@ __all__ = ['list_cleanings', 'add_cleaning']
 def _response(cleaning_dates):
     """Creates a response from the respective dictionary."""
 
-    if 'application/json' in ACCEPT:
+    if 'application/json' in ACCEPT or '*/*' in ACCEPT:
         return JSON([
             cleaning_date.to_json(short=True)
             for cleaning_date in cleaning_dates])

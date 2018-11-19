@@ -51,7 +51,7 @@ def _to_dom(solutions_):
 def _response(solutions):
     """Returns an XML or JSON response."""
 
-    if 'application/xml' in ACCEPT:
+    if 'application/xml' in ACCEPT or '*/*' in ACCEPT:
         return XML(_to_dom(solutions))
 
     if 'application/json' in ACCEPT:

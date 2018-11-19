@@ -15,7 +15,7 @@ __all__ = ['list_commands', 'complete_command']
 def _response(commands_):
     """Returns an XML or JSON response."""
 
-    if 'application/xml' in ACCEPT:
+    if 'application/xml' in ACCEPT or '*/*' in ACCEPT:
         commands = dom.commands.commands()
 
         for command in commands_:
