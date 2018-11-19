@@ -6,7 +6,7 @@ from digsigdb import CleaningUser, CleaningDate
 from wsgilib import ACCEPT, Error, JSON, XML
 
 from appcmd import dom
-from appcmd.functions import get_terminal
+from appcmd.functions import get_json, get_terminal
 
 
 __all__ = ['list_cleanings', 'add_cleaning']
@@ -62,5 +62,12 @@ def add_cleaning():
     if address is None:
         return ('Terminal has no address.', 400)
 
-    CleaningDate.add(user, address)
+    try:
+        json = get_json()
+    except ValueError:
+        annotations = None
+    else:
+        annotations = json.get('annotations')
+
+    CleaningDate.add(user, address, annotations=annotations)
     return ('Cleaning date added.', 201)
