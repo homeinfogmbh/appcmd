@@ -5,7 +5,6 @@ FILE_LIST = ./.installed_files.txt
 default: | pull clean generate-bindings install
 
 generate-bindings:
-	@ pyxbgen -u xsds/cleaning.xsd -m cleaning --module-prefix=appcmd.dom
 	@ pyxbgen -u xsds/commands.xsd -m commands --module-prefix=appcmd.dom
 	@ pyxbgen -u xsds/garbage_collection.xsd -m garbage_collection --module-prefix=appcmd.dom
 

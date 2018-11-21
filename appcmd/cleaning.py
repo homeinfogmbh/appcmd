@@ -3,9 +3,9 @@
 from flask import request
 
 from digsigdb import CleaningUser, CleaningDate
+from digsigdb.dom import cleanings
 from wsgilib import ACCEPT, Error, JSON, XML
 
-from appcmd import dom
 from appcmd.functions import get_json, get_terminal
 
 
@@ -20,18 +20,12 @@ def _response(cleaning_dates):
             cleaning_date.to_json(short=True)
             for cleaning_date in cleaning_dates])
 
-    cleanings = dom.cleaning.cleanings()
+    xml = cleanings()
 
     for cleaning_date in cleaning_dates:
-        cleaning = dom.cleaning.Cleaning()
-        cleaning.timestamp = cleaning_date.timestamp
-        user_ = cleaning_date.user
-        user = dom.cleaning.User(user_.name)
-        user.type = user_.type_
-        cleaning.user = user
-        cleanings.cleaning.append(cleaning)
+        xml.cleaning.append(cleaning_date.to_dom())
 
-    return XML(cleanings)
+    return XML(xml)
 
 
 def list_cleanings():
