@@ -38,7 +38,7 @@ class CouldNotSendMail(Exception):
 
 
 def bool2lang(boolean, true='ja', false='nein'):
-    """Converts a boolean value into natural language words"""
+    """Converts a boolean value into natural language words."""
 
     return true if boolean else false
 
