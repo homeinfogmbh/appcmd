@@ -251,7 +251,7 @@ class StopEvent:
     def from_hafas(cls, departure):
         """Creates a stop from the respective HAFAS Departure element."""
         line = departure.Product.line
-        scheduled = '{}T{}'.format(departure.date, departure.Time)
+        scheduled = '{}T{}'.format(departure.date, departure.time)
         scheduled = strpdatetime(scheduled)
         estimated = '{}T{}'.format(departure.rtDate, departure.rtTime)
         estimated = strpdatetime(estimated)
