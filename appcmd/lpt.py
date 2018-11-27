@@ -88,7 +88,7 @@ def get_departures_trias(client, address):
         payload = trias.ServiceDelivery.DeliveryPayload
         stop_events = []
 
-        for stop_event_result in payload.StopEventResult:
+        for stop_event_result in payload.StopEventResponse.StopEventResult:
             stop_event = StopEvent.from_trias(stop_event_result)
             stop_events.append(stop_event)
 
