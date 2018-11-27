@@ -10,10 +10,10 @@
             xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0"
             targetNamespace="http://xml.homeinfo.de/schema/appcmd/commands">
 
-    <xs:element name="lpt" type="LocalPublicTransport"/>
+    <xs:element name="stops" type="Stops"/>
 
 
-    <xs:complexType name="LocalPublicTransport">
+    <xs:complexType name="Stops">
         <xs:sequence>
             <xs:element name="stop" type="Stop" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
