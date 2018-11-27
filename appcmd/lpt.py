@@ -241,8 +241,8 @@ class StopEvent:
         _service = stop_event_result.StopEvent.Service
         line = _service.PublishedLineName.Text
         _call_at_stop = stop_event_result.StopEvent.ThisCall.CallAtStop
-        scheduled = _call_at_stop.ServiceDeparture.TimetabledTime.value()
-        estimated = _call_at_stop.ServiceDeparture.EstimatedTime.value()
+        scheduled = _call_at_stop.ServiceDeparture.TimetabledTime
+        estimated = _call_at_stop.ServiceDeparture.EstimatedTime
         destination = _service.DestinationText.Text
         route = _service.RouteDescription.Text
         return cls(line, scheduled, estimated, destination, route=route)
