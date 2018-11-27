@@ -253,8 +253,13 @@ class StopEvent:
         line = departure.Product.line
         scheduled = '{}T{}'.format(departure.date, departure.time)
         scheduled = strpdatetime(scheduled)
-        estimated = '{}T{}'.format(departure.rtDate, departure.rtTime)
-        estimated = strpdatetime(estimated)
+
+        if departure.rtDate is None or departure.rtTime is None:
+            estimated = None
+        else:
+            estimated = '{}T{}'.format(departure.rtDate, departure.rtTime)
+            estimated = strpdatetime(estimated)
+
         destination = departure.direction
         return cls(line, scheduled, estimated, destination)
 
