@@ -179,8 +179,8 @@ class Stop:
         """
         ident = location.Location.StopPoint.StopPointRef.value()
         name = location.Location.StopPoint.StopPointName.Text
-        longitude = location.Location.GeoPosition.Longitude.value()
-        latitude = location.Location.GeoPosition.Latitude.value()
+        longitude = location.Location.GeoPosition.Longitude
+        latitude = location.Location.GeoPosition.Latitude
         return cls(ident, name, longitude, latitude, stop_events=stop_events)
 
     @classmethod
