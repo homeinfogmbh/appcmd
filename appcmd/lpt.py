@@ -116,12 +116,12 @@ def get_departures():
     else:
         return ('Invalid client "{}".'.format(type(client).__name__), 400)
 
-    if 'application/xml' in ACCEPT or '*/*' in ACCEPT:
-        xml = dom.stops()
-        xml.stop = [stop.to_dom() for stop in stops]
-        return XML(xml)
+    if 'application/json' in ACCEPT:
+        return JSON([stop.to_json() for stop in stops])
 
-    return JSON([stop.to_json() for stop in stops])
+    xml = dom.stops()
+    xml.stop = [stop.to_dom() for stop in stops]
+    return XML(xml)
 
 
 class Stop:
