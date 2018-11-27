@@ -83,7 +83,7 @@ def get_departures_trias(client, address):
     stops = []
 
     for location in payload.LocationInformationResponse.Location:
-        stop_point_ref = location.Location.StopPoint.StopPointRef
+        stop_point_ref = location.Location.StopPoint.StopPointRef.value()
         trias = client.stop_event(stop_point_ref)
         payload = trias.ServiceDelivery.DeliveryPayload
         stop_events = []
