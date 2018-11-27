@@ -6,6 +6,7 @@ from appcmd.cleaning import list_cleanings, add_cleaning
 from appcmd.command import list_commands, complete_command
 from appcmd.damage_report import damage_report
 from appcmd.garbage_collection import garbage_collection
+from appcmd.lpt import get_departures
 from appcmd.mail import send_contact_mail
 from appcmd.proxy import proxy
 from appcmd.screenshots import add_screenshot
@@ -24,6 +25,7 @@ PUBLIC = Application('public', cors=True)
 PRIVATE_ROUTES = (
     ('GET', '/cleaning', list_cleanings, 'list_cleanings'),
     ('GET', '/garbage_collection', garbage_collection, 'garbage_collection'),
+    ('GET', '/lpt', get_departures, 'get_departures'),
     ('GET', '/screenshot', get_screenshot, 'get_screenshot'),
     ('POST', '/contactform', send_contact_mail, 'send_contact_mail'),
     ('POST', '/tenant2tenant', tenant2tenant, 'tenant2tenant'),
