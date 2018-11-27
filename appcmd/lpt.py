@@ -67,7 +67,10 @@ def _load_clients_map():
                 yield (zip_code, client)
 
 
-CLIENTS = dict(_load_clients_map())
+try:
+    CLIENTS = dict(_load_clients_map())
+except FileNotFoundError:
+    CLIENTS = {}
 
 
 def get_departures_trias(client, address):
