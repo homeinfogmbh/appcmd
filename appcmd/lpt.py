@@ -28,15 +28,35 @@ def _load_clients_map():
 
     for name, config in json.items():
         logger.info('Loading %s.', name)
-        url = config['url']
-        type_ = config['type'].strip().lower()
+
+        try:
+            type_ = config['type'].strip().lower()
+        except KeyError:
+            logger.error('No type specified.')
+            continue
+
+        try:
+            url = config['url']
+        except KeyError:
+            logger.error('No URL specified.')
+            continue
 
         if type_ == 'trias':
-            requestor_ref = config['requestor_ref']
+            try:
+                requestor_ref = config['requestor_ref']
+            except KeyError:
+                logger.error('No requestor_ref specified.')
+                continue
+
             debug = config.get('debug', False)
             client = TriasClient(url, requestor_ref, debug=debug)
         elif type_ == 'hafas':
-            access_id = config['access_id']
+            try:
+                access_id = config['access_id']
+            except KeyError:
+                logger.error('No access_id specified.')
+                continue
+
             client = HafasClient(url, access_id)
         else:
             logger.error('Invalid client type: "%s".', type_)
