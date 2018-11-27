@@ -23,8 +23,12 @@ def _load_clients_map():
 
     logger = getLogger('LPT')
 
-    with open(CONFIG_FILE, 'r') as file:
-        json = load(file)
+    try:
+        with open(CONFIG_FILE, 'r') as file:
+            json = load(file)
+    except FileNotFoundError:
+        logger.error('Config file "%s" not found.', CONFIG_FILE)
+        return
 
     for name, config in json.items():
         logger.info('Loading %s.', name)
@@ -67,10 +71,7 @@ def _load_clients_map():
                 yield (zip_code, client)
 
 
-try:
-    CLIENTS = dict(_load_clients_map())
-except FileNotFoundError:
-    CLIENTS = {}
+CLIENTS = dict(_load_clients_map())
 
 
 def get_departures_trias(client, address):
