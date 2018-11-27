@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  XSD für ÖPNV Abfahrtszeiten.
+
+  Maintainer: Richard Neumann <r dot neumann at homeinfo fullstop de>
+-->
+
+<xs:schema  xmlns="http://xml.homeinfo.de/schema/appcmd/commands"
+            xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0"
+            targetNamespace="http://xml.homeinfo.de/schema/appcmd/commands">
+
+    <xs:element name="lpt" type="LocalPublicTransport"/>
+
+
+    <xs:complexType name="LocalPublicTransport">
+        <xs:sequence>
+            <xs:element name="stop" type="Stop" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+
+    <xs:complexType name="Stop">
+        <xs:sequence>
+            <xs:element name="ident" type="xs:string"/>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="longitude" type="xs:string"/>
+            <xs:element name="latitude" type="xs:string"/>
+            <xs:element name="stop_event" type="StopEvent" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+
+    <xs:complexType name="StopEvent">
+        <xs:sequence>
+            <xs:element name="line" type="xs:string"/>
+            <xs:element name="scheduled" type="xs:dateTime"/>
+            <xs:element name="estimated" type="xs:dateTime" minOccurs="0"/>
+            <xs:element name="destination" type="xs:string"/>
+            <xs:element name="route" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>
