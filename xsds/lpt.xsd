@@ -24,8 +24,8 @@
         <xs:sequence>
             <xs:element name="ident" type="xs:string"/>
             <xs:element name="name" type="xs:string"/>
-            <xs:element name="longitude" type="xs:string"/>
-            <xs:element name="latitude" type="xs:string"/>
+            <xs:element name="longitude" type="xs:decimal"/>
+            <xs:element name="latitude" type="xs:decimal"/>
             <xs:element name="stop_event" type="StopEvent" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
