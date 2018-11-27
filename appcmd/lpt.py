@@ -1,6 +1,6 @@
 """Local public transportation API."""
 
-from configparser import ConfigParser
+from json import load
 from logging import getLogger
 
 from timelib import isoformat, strpdatetime
@@ -15,37 +15,36 @@ from appcmd.dom import lpt as dom
 __all__ = ['get_departures']
 
 
-CONFIG_FILE = '/etc/lpt.conf'
+CONFIG_FILE = '/etc/lpt.json'
 
 
 def _load_clients_map():
     """Loads the clients map."""
 
     logger = getLogger('LPT')
-    config = ConfigParser()
-    config.read(CONFIG_FILE)
 
-    for section in config.sections():
-        logger.info('Loading %s.', section)
-        section = config[section]
-        zip_code_start = int(section['zip_code_start'])
-        zip_code_end = int(section['zip_code_end'])
-        url = section['url']
-        type_ = section['type'].strip().lower()
+    with open(CONFIG_FILE, 'r') as file:
+        json = load(file)
+
+    for name, config in json.items():
+        logger.info('Loading %s.', name)
+        url = config['url']
+        type_ = config['type'].strip().lower()
 
         if type_ == 'trias':
-            requestor_ref = section['requestor_ref']
-            debug = section.getboolean('debug')
+            requestor_ref = config['requestor_ref']
+            debug = config.get('debug', False)
             client = TriasClient(url, requestor_ref, debug=debug)
         elif type_ == 'hafas':
-            access_id = section['access_id']
+            access_id = config['access_id']
             client = HafasClient(url, access_id)
         else:
             logger.error('Invalid client type: "%s".', type_)
             continue
 
-        for zip_code in range(zip_code_start, zip_code_end):
-            yield (zip_code, client)
+        for (start, end) in config.get('zip_codes'):
+            for zip_code in range(start, end+1):
+                yield (zip_code, client)
 
 
 CLIENTS = dict(_load_clients_map())
