@@ -26,6 +26,7 @@ def _load_clients_map():
     config.read(CONFIG_FILE)
 
     for section in config.sections():
+        logger.info('Loading %s.', section)
         section = config[section]
         zip_code_start = int(section['zip_code_start'])
         zip_code_end = int(section['zip_code_end'])
@@ -41,6 +42,7 @@ def _load_clients_map():
             client = HafasClient(url, access_id)
         else:
             logger.error('Invalid client type: "%s".', type_)
+            continue
 
         for zip_code in range(zip_code_start, zip_code_end):
             yield (zip_code, client)
