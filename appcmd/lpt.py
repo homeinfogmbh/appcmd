@@ -244,8 +244,13 @@ class StopEvent:
         _call_at_stop = stop_event_result.StopEvent.ThisCall.CallAtStop
         scheduled = datetime.fromtimestamp(
             _call_at_stop.ServiceDeparture.TimetabledTime.timestamp())
-        estimated = datetime.fromtimestamp(
-            _call_at_stop.ServiceDeparture.EstimatedTime.timestamp())
+
+        if _call_at_stop.ServiceDeparture.EstimatedTime is None:
+            estimated = None
+        else:
+            estimated = datetime.fromtimestamp(
+                _call_at_stop.ServiceDeparture.EstimatedTime.timestamp())
+
         destination = str(_service.DestinationText.Text)
 
         try:
