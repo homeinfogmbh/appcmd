@@ -244,7 +244,12 @@ class StopEvent:
         scheduled = _call_at_stop.ServiceDeparture.TimetabledTime
         estimated = _call_at_stop.ServiceDeparture.EstimatedTime
         destination = _service.DestinationText.Text
-        route = _service.RouteDescription.Text
+
+        try:
+            route = _service.RouteDescription.Text
+        except AttributeError:
+            route = None
+
         return cls(line, scheduled, estimated, destination, route=route)
 
     @classmethod
