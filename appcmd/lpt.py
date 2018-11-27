@@ -1,5 +1,6 @@
 """Local public transportation API."""
 
+from datetime import datetime
 from json import load
 from logging import getLogger
 
@@ -177,19 +178,19 @@ class Stop:
                         → Location
         node from a location information response.
         """
-        ident = location.Location.StopPoint.StopPointRef.value()
-        name = location.Location.StopPoint.StopPointName.Text
-        longitude = location.Location.GeoPosition.Longitude
-        latitude = location.Location.GeoPosition.Latitude
+        ident = str(location.Location.StopPoint.StopPointRef.value())
+        name = str(location.Location.StopPoint.StopPointName.Text)
+        longitude = float(location.Location.GeoPosition.Longitude)
+        latitude = float(location.Location.GeoPosition.Latitude)
         return cls(ident, name, longitude, latitude, stop_events=stop_events)
 
     @classmethod
     def from_hafas(cls, stop_location, stop_events=()):
         """Creates a stop from the respective HAFAS CoordLocation element."""
-        ident = stop_location.id
-        name = stop_location.name
-        latitude = stop_location.lat
-        longitude = stop_location.lon
+        ident = str(stop_location.id)
+        name = str(stop_location.name)
+        latitude = float(stop_location.lat)
+        longitude = float(stop_location.lon)
         return cls(ident, name, longitude, latitude, stop_events)
 
     def to_json(self):
@@ -239,23 +240,27 @@ class StopEvent:
         node from a stop event.response.
         """
         _service = stop_event_result.StopEvent.Service
-        line = _service.PublishedLineName.Text
+        line = str(_service.PublishedLineName.Text)
         _call_at_stop = stop_event_result.StopEvent.ThisCall.CallAtStop
-        scheduled = _call_at_stop.ServiceDeparture.TimetabledTime
-        estimated = _call_at_stop.ServiceDeparture.EstimatedTime
-        destination = _service.DestinationText.Text
+        scheduled = datetime.fromtimestamp(
+            _call_at_stop.ServiceDeparture.TimetabledTime.timestamp())
+        estimated = datetime.fromtimestamp(
+            _call_at_stop.ServiceDeparture.EstimatedTime.timestamp())
+        destination = str(_service.DestinationText.Text)
 
         try:
             route = _service.RouteDescription.Text
         except AttributeError:
             route = None
+        else:
+            route = str(route)
 
         return cls(line, scheduled, estimated, destination, route=route)
 
     @classmethod
     def from_hafas(cls, departure):
         """Creates a stop from the respective HAFAS Departure element."""
-        line = departure.Product.line
+        line = str(departure.Product.line)
         scheduled = '{}T{}'.format(departure.date, departure.time)
         scheduled = strpdatetime(scheduled)
 
@@ -265,7 +270,7 @@ class StopEvent:
             estimated = '{}T{}'.format(departure.rtDate, departure.rtTime)
             estimated = strpdatetime(estimated)
 
-        destination = departure.direction
+        destination = str(departure.direction)
         return cls(line, scheduled, estimated, destination)
 
     def to_json(self):
