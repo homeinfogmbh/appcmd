@@ -178,9 +178,9 @@ class Stop:
         node from a location information response.
         """
         ident = location.Location.StopPoint.StopPointRef.value()
-        name = location.Location.StopPoint.StopPointName.Text
-        longitude = location.Location.GeoPosition.Longitude
-        latitude = location.Location.GeoPosition.Latitude
+        name = location.Location.StopPoint.StopPointName.Text.value()
+        longitude = location.Location.GeoPosition.Longitude.value()
+        latitude = location.Location.GeoPosition.Latitude.value()
         return cls(ident, name, longitude, latitude, stop_events=stop_events)
 
     @classmethod
@@ -238,12 +238,13 @@ class StopEvent:
                     → StopEventResult
         node from a stop event.response.
         """
-        line = stop_event_result.StopEvent.Service.PublishedLineName.Text
-        _this_call = stop_event_result.StopEvent.ThisCall
-        scheduled = _this_call.CallAtStop.ServiceDeparture.TimetabledTime
-        estimated = _this_call.CallAtStop.ServiceDeparture.EstimatedTime
-        destination = stop_event_result.StopEvent.Service.DestinationText.Text
-        route = stop_event_result.StopEvent.Service.RouteDescription.Text
+        _service = stop_event_result.StopEvent.Service
+        line = _service.PublishedLineName.Text.value()
+        _call_at_stop = stop_event_result.StopEvent.ThisCall.CallAtStop
+        scheduled = _call_at_stop.ServiceDeparture.TimetabledTime.value()
+        estimated = _call_at_stop.ServiceDeparture.EstimatedTime.value()
+        destination = _service.DestinationText.Text.value()
+        route = _service.RouteDescription.Text.value()
         return cls(line, scheduled, estimated, destination, route=route)
 
     @classmethod
