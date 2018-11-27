@@ -178,7 +178,7 @@ class Stop:
         node from a location information response.
         """
         ident = location.Location.StopPoint.StopPointRef.value()
-        name = location.Location.StopPoint.StopPointName.Text.value()
+        name = location.Location.StopPoint.StopPointName.Text
         longitude = location.Location.GeoPosition.Longitude.value()
         latitude = location.Location.GeoPosition.Latitude.value()
         return cls(ident, name, longitude, latitude, stop_events=stop_events)
