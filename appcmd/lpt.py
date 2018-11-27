@@ -239,12 +239,12 @@ class StopEvent:
         node from a stop event.response.
         """
         _service = stop_event_result.StopEvent.Service
-        line = _service.PublishedLineName.Text.value()
+        line = _service.PublishedLineName.Text
         _call_at_stop = stop_event_result.StopEvent.ThisCall.CallAtStop
         scheduled = _call_at_stop.ServiceDeparture.TimetabledTime.value()
         estimated = _call_at_stop.ServiceDeparture.EstimatedTime.value()
-        destination = _service.DestinationText.Text.value()
-        route = _service.RouteDescription.Text.value()
+        destination = _service.DestinationText.Text
+        route = _service.RouteDescription.Text
         return cls(line, scheduled, estimated, destination, route=route)
 
     @classmethod
