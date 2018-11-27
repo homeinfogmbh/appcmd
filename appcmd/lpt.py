@@ -128,7 +128,14 @@ def get_departures():
         return ('Terminal has no address.', 400)
 
     try:
-        client = CLIENTS[address.zip_code]
+        zip_code = int(address.zip_code)
+    except TypeError:
+        return ("No ZIP code specified in terminal's address.", 400)
+    except ValueError:
+        return ('ZIP code is not an integer.', 400)
+
+    try:
+        client = CLIENTS[zip_code]
     except KeyError:
         return ('No client for ZIP code "{}".'.format(address.zip_code), 400)
 
