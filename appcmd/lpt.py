@@ -177,7 +177,7 @@ class Stop:
                         → Location
         node from a location information response.
         """
-        ident = location.Location.StopPoint.StopPointRef
+        ident = location.Location.StopPoint.StopPointRef.value()
         name = location.Location.StopPoint.StopPointName.Text
         longitude = location.Location.GeoPosition.Longitude
         latitude = location.Location.GeoPosition.Latitude
