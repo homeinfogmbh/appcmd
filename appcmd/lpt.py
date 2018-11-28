@@ -1,5 +1,6 @@
 """Local public transportation API."""
 
+from configparser import ConfigParser
 from datetime import datetime
 from json import load
 from logging import getLogger
@@ -16,7 +17,12 @@ from appcmd.dom import lpt as dom
 __all__ = ['get_departures']
 
 
-CONFIG_FILE = '/etc/lpt.json'
+CONFIG_FILE = '/etc/lpt.conf'
+CONFIG = ConfigParser()
+CONFIG.read(CONFIG_FILE)
+MAX_STOPS = int(CONFIG['limits']['stops'])
+MAX_DEPARTURES = int(CONFIG['limits']['departures'])
+CLIENTS_CONFIG = '/etc/lpt.json'
 
 
 def _load_clients_map():
@@ -25,7 +31,7 @@ def _load_clients_map():
     logger = getLogger('LPT')
 
     try:
-        with open(CONFIG_FILE, 'r') as file:
+        with open(CLIENTS_CONFIG, 'r') as file:
             json = load(file)
     except FileNotFoundError:
         logger.error('Config file "%s" not found.', CONFIG_FILE)
@@ -81,15 +87,23 @@ def get_departures_trias(client, address):
     longitude, latitude = client.geocoordinates(repr(address))
     trias = client.stops(longitude, latitude)
     payload = trias.ServiceDelivery.DeliveryPayload
+    locations = payload.LocationInformationResponse.Location
     stops = []
 
-    for location in payload.LocationInformationResponse.Location:
+    for stopc, location in enumerate(locations, start=1):
+        if stopc > MAX_STOPS:
+            break
+
         stop_point_ref = location.Location.StopPoint.StopPointRef.value()
         trias = client.stop_event(stop_point_ref)
         payload = trias.ServiceDelivery.DeliveryPayload
+        stop_event_results = payload.StopEventResponse.StopEventResult
         departures = []
 
-        for stop_event_result in payload.StopEventResponse.StopEventResult:
+        for depc, stop_event_result in enumerate(stop_event_results, start=1):
+            if depc > MAX_DEPARTURES:
+                break
+
             departure = StopEvent.from_trias(stop_event_result)
             departures.append(departure)
 
@@ -103,13 +117,20 @@ def get_departures_hafas(client, address):
     """Returns departures from the respective HAFAS client."""
 
     location_list = client.locations(repr(address))
+    stop_locations = location_list.StopLocation
     stops = []
 
-    for stop_location in location_list.StopLocation:
+    for stopc, stop_location in enumerate(stop_locations, start=1):
+        if stopc > MAX_STOPS:
+            break
+
         departure_board = client.departure_board(stop_location.id)
         departures = []
 
-        for departure in departure_board.Departure:
+        for depc, departure in enumerate(departure_board.Departure, start=1):
+            if depc > MAX_DEPARTURES:
+                break
+
             departure = StopEvent.from_hafas(departure)
             departures.append(departure)
 
