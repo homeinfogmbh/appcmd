@@ -65,7 +65,7 @@
                   </xs:documentation>
               </xs:annotation>
             </xs:element>
-            <xs:element name="departures" type="StopEvent" minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="departure" type="StopEvent" minOccurs="0" maxOccurs="unbounded">
               <xs:annotation>
                   <xs:documentation xml:lang="de">
                       Liste der nächsten Abfahrtszeiten.

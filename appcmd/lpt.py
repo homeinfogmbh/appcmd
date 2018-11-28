@@ -181,16 +181,16 @@ class Stop:
 
     __slots__ = ('ident', 'name', 'longitude', 'latitude', 'departures')
 
-    def __init__(self, ident, name, longitude, latitude, departures=()):
+    def __init__(self, ident, name, longitude, latitude, departures):
         """Creates a new stop."""
         self.ident = ident
         self.name = name
         self.longitude = longitude
         self.latitude = latitude
-        self.departures = departures or []
+        self.departures = departures
 
     @classmethod
-    def from_trias(cls, location, departures=()):
+    def from_trias(cls, location, departures):
         """Creates a stop from the respective
         Trias
             → ServiceDelivery
@@ -203,10 +203,10 @@ class Stop:
         name = str(location.Location.StopPoint.StopPointName.Text)
         longitude = float(location.Location.GeoPosition.Longitude)
         latitude = float(location.Location.GeoPosition.Latitude)
-        return cls(ident, name, longitude, latitude, departures=departures)
+        return cls(ident, name, longitude, latitude, departures)
 
     @classmethod
-    def from_hafas(cls, stop_location, departures=()):
+    def from_hafas(cls, stop_location, departures):
         """Creates a stop from the respective HAFAS CoordLocation element."""
         ident = str(stop_location.id)
         name = str(stop_location.name)
