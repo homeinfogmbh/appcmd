@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <!--
   XSD für ÖPNV Abfahrtszeiten.
 
@@ -14,30 +13,111 @@
 
 
     <xs:complexType name="Stops">
+        <xs:annotation>
+            <xs:documentation xml:lang="de">
+                Liste von Haltestellen und deren nächsten Abfahrtszeiten.
+            </xs:documentation>
+        </xs:annotation>
         <xs:sequence>
-            <xs:element name="stop" type="Stop" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="stop" type="Stop" minOccurs="0" maxOccurs="unbounded">
+              <xs:annotation>
+                  <xs:documentation xml:lang="de">
+                      Die jeweiligen Haltestellen.
+                  </xs:documentation>
+              </xs:annotation>
+            </xs:element>
         </xs:sequence>
     </xs:complexType>
 
 
     <xs:complexType name="Stop">
+        <xs:annotation>
+            <xs:documentation xml:lang="de">
+                Haltestellen.
+            </xs:documentation>
+        </xs:annotation>
         <xs:sequence>
-            <xs:element name="ident" type="xs:string"/>
-            <xs:element name="name" type="xs:string"/>
-            <xs:element name="longitude" type="xs:decimal"/>
-            <xs:element name="latitude" type="xs:decimal"/>
-            <xs:element name="stop_event" type="StopEvent" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="ident" type="xs:string">
+              <xs:annotation>
+                  <xs:documentation xml:lang="de">
+                      ID innerhalb der jeweiligen Schnittstelle.
+                  </xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="name" type="xs:string">
+              <xs:annotation>
+                  <xs:documentation xml:lang="de">
+                      Name der Haltestelle.
+                  </xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="longitude" type="xs:decimal">
+              <xs:annotation>
+                  <xs:documentation xml:lang="de">
+                      Längengrad.
+                  </xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="latitude" type="xs:decimal">
+              <xs:annotation>
+                  <xs:documentation xml:lang="de">
+                      Breitengrad.
+                  </xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="departures" type="StopEvent" minOccurs="0" maxOccurs="unbounded">
+              <xs:annotation>
+                  <xs:documentation xml:lang="de">
+                      Liste der nächsten Abfahrtszeiten.
+                  </xs:documentation>
+              </xs:annotation>
+            </xs:element>
         </xs:sequence>
     </xs:complexType>
 
 
     <xs:complexType name="StopEvent">
+        <xs:annotation>
+            <xs:documentation xml:lang="de">
+                Halt-Ereignis (Abfahrt oder Ankunft, je nach Kontext) an der jeweiligen Haltestelle.
+            </xs:documentation>
+        </xs:annotation>
         <xs:sequence>
-            <xs:element name="line" type="xs:string"/>
-            <xs:element name="scheduled" type="xs:dateTime"/>
-            <xs:element name="estimated" type="xs:dateTime" minOccurs="0"/>
-            <xs:element name="destination" type="xs:string"/>
-            <xs:element name="route" type="xs:string" minOccurs="0"/>
+            <xs:element name="line" type="xs:string">
+              <xs:annotation>
+                  <xs:documentation xml:lang="de">
+                      Name der ÖPNV Linie.
+                  </xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="scheduled" type="xs:dateTime">
+              <xs:annotation>
+                  <xs:documentation xml:lang="de">
+                      Geplante Abfahrtszeit.
+                  </xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="estimated" type="xs:dateTime" minOccurs="0">
+              <xs:annotation>
+                  <xs:documentation xml:lang="de">
+                      Voraussichtliche Abfahrtszeit.
+                  </xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="destination" type="xs:string">
+              <xs:annotation>
+                  <xs:documentation xml:lang="de">
+                      Zielhaltestelle
+                  </xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="type" type="xs:string" minOccurs="0">
+              <xs:annotation>
+                  <xs:documentation xml:lang="de">
+                      Typ des ÖPNV Fahrzeugs (Bus, Straßenbahn, etc.).
+                  </xs:documentation>
+              </xs:annotation>
+            </xs:element>
         </xs:sequence>
     </xs:complexType>
 </xs:schema>

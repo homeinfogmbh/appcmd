@@ -87,13 +87,13 @@ def get_departures_trias(client, address):
         stop_point_ref = location.Location.StopPoint.StopPointRef.value()
         trias = client.stop_event(stop_point_ref)
         payload = trias.ServiceDelivery.DeliveryPayload
-        stop_events = []
+        departures = []
 
         for stop_event_result in payload.StopEventResponse.StopEventResult:
-            stop_event = StopEvent.from_trias(stop_event_result)
-            stop_events.append(stop_event)
+            departure = StopEvent.from_trias(stop_event_result)
+            departures.append(departure)
 
-        stop = Stop.from_trias(location, stop_events)
+        stop = Stop.from_trias(location, departures)
         stops.append(stop)
 
     return stops
@@ -107,13 +107,13 @@ def get_departures_hafas(client, address):
 
     for stop_location in location_list.StopLocation:
         departure_board = client.departure_board(stop_location.id)
-        stop_events = []
+        departures = []
 
         for departure in departure_board.Departure:
-            stop_event = StopEvent.from_hafas(departure)
-            stop_events.append(stop_event)
+            departure = StopEvent.from_hafas(departure)
+            departures.append(departure)
 
-        stop = Stop.from_hafas(stop_location, stop_events)
+        stop = Stop.from_hafas(stop_location, departures)
         stops.append(stop)
 
     return stops
@@ -158,18 +158,18 @@ def get_departures():
 class Stop:
     """Represents stops."""
 
-    __slots__ = ('ident', 'name', 'longitude', 'latitude', 'stop_events')
+    __slots__ = ('ident', 'name', 'longitude', 'latitude', 'departures')
 
-    def __init__(self, ident, name, longitude, latitude, stop_events=()):
+    def __init__(self, ident, name, longitude, latitude, departures=()):
         """Creates a new stop."""
         self.ident = ident
         self.name = name
         self.longitude = longitude
         self.latitude = latitude
-        self.stop_events = stop_events or []
+        self.departures = departures or []
 
     @classmethod
-    def from_trias(cls, location, stop_events=()):
+    def from_trias(cls, location, departures=()):
         """Creates a stop from the respective
         Trias
             → ServiceDelivery
@@ -182,16 +182,16 @@ class Stop:
         name = str(location.Location.StopPoint.StopPointName.Text)
         longitude = float(location.Location.GeoPosition.Longitude)
         latitude = float(location.Location.GeoPosition.Latitude)
-        return cls(ident, name, longitude, latitude, stop_events=stop_events)
+        return cls(ident, name, longitude, latitude, departures=departures)
 
     @classmethod
-    def from_hafas(cls, stop_location, stop_events=()):
+    def from_hafas(cls, stop_location, departures=()):
         """Creates a stop from the respective HAFAS CoordLocation element."""
         ident = str(stop_location.id)
         name = str(stop_location.name)
         latitude = float(stop_location.lat)
         longitude = float(stop_location.lon)
-        return cls(ident, name, longitude, latitude, stop_events)
+        return cls(ident, name, longitude, latitude, departures)
 
     def to_json(self):
         """Returns a JSON-ish dict."""
@@ -200,8 +200,8 @@ class Stop:
             'name': self.name,
             'latitude': self.latitude,
             'longitude': self.longitude,
-            'stop_events': [
-                stop_event.to_json() for stop_event in self.stop_events]}
+            'departures': [
+                departure.to_json() for departure in self.departures]}
 
     def to_dom(self):
         """Returns an XML DOM."""
@@ -210,17 +210,16 @@ class Stop:
         stop.name = self.name
         stop.latitude = self.latitude
         stop.longitude = self.longitude
-        stop.stop_event = [
-            stop_event.to_dom() for stop_event in self.stop_events]
+        stop.departure = [departure.to_dom() for departure in self.departures]
         return stop
 
 
 class StopEvent:
     """Represents stop events."""
 
-    __slots__ = ('line', 'scheduled', 'estimated', 'destination', 'route')
+    __slots__ = ('line', 'scheduled', 'estimated', 'destination', 'type')
 
-    def __init__(self, line, scheduled, estimated, destination, route=None):
+    def __init__(self, line, scheduled, estimated, destination, type_):
         """Sets the, line name, scheduled and estimated departure,
         destination of line and an optional route description.
         """
@@ -228,7 +227,7 @@ class StopEvent:
         self.scheduled = scheduled
         self.estimated = estimated
         self.destination = destination
-        self.route = route
+        self.type = type_
 
     @classmethod
     def from_trias(cls, stop_event_result):
@@ -242,14 +241,14 @@ class StopEvent:
         _service = stop_event_result.StopEvent.Service
         line = str(_service.PublishedLineName.Text)
         _call_at_stop = stop_event_result.StopEvent.ThisCall.CallAtStop
-        scheduled = datetime.fromtimestamp(
-            _call_at_stop.ServiceDeparture.TimetabledTime.timestamp())
+        scheduled = _call_at_stop.ServiceDeparture.TimetabledTime
+        scheduled = datetime.fromtimestamp(scheduled.timestamp())
 
         if _call_at_stop.ServiceDeparture.EstimatedTime is None:
             estimated = None
         else:
-            estimated = datetime.fromtimestamp(
-                _call_at_stop.ServiceDeparture.EstimatedTime.timestamp())
+            estimated = _call_at_stop.ServiceDeparture.EstimatedTime
+            estimated = datetime.fromtimestamp(estimated.timestamp())
 
         destination = str(_service.DestinationText.Text)
 
@@ -260,7 +259,8 @@ class StopEvent:
         else:
             route = str(route)
 
-        return cls(line, scheduled, estimated, destination, route=route)
+        type_ = str(_service.Mode.Name.Text)
+        return cls(line, scheduled, estimated, destination, type_)
 
     @classmethod
     def from_hafas(cls, departure):
@@ -276,7 +276,8 @@ class StopEvent:
             estimated = strpdatetime(estimated)
 
         destination = str(departure.direction)
-        return cls(line, scheduled, estimated, destination)
+        type_ = str(departure.Product.catOut)
+        return cls(line, scheduled, estimated, destination, type_)
 
     def to_json(self):
         """Returns a JSON-ish dict."""
@@ -285,7 +286,7 @@ class StopEvent:
             'scheduled': self.scheduled.isoformat(),
             'estimated': isoformat(self.estimated),
             'destination': self.destination,
-            'route': self.route}
+            'type': self.type}
 
     def to_dom(self):
         """Returns an XML DOM."""
@@ -294,5 +295,5 @@ class StopEvent:
         stop_event.scheduled = self.scheduled
         stop_event.estimated = self.estimated
         stop_event.destination = self.destination
-        stop_event.route = self.route
+        stop_event.type = self.type
         return stop_event
