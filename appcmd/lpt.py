@@ -290,10 +290,11 @@ class StopEvent:
         scheduled = '{}T{}'.format(departure.date, departure.time)
         scheduled = strpdatetime(scheduled)
 
-        if departure.rtDate is None or departure.rtTime is None:
+        if departure.rtTime is None:
             estimated = None
         else:
-            estimated = '{}T{}'.format(departure.rtDate, departure.rtTime)
+            estimated_date = departure.rtDate or departure.date
+            estimated = '{}T{}'.format(estimated_date, departure.rtTime)
             estimated = strpdatetime(estimated)
 
         destination = str(departure.direction)
