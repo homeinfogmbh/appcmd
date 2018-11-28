@@ -97,13 +97,6 @@
                   </xs:documentation>
               </xs:annotation>
             </xs:element>
-            <xs:element name="estimated" type="xs:dateTime" minOccurs="0">
-              <xs:annotation>
-                  <xs:documentation xml:lang="de">
-                      Voraussichtliche Abfahrtszeit.
-                  </xs:documentation>
-              </xs:annotation>
-            </xs:element>
             <xs:element name="destination" type="xs:string">
               <xs:annotation>
                   <xs:documentation xml:lang="de">
@@ -111,7 +104,7 @@
                   </xs:documentation>
               </xs:annotation>
             </xs:element>
-            <xs:element name="type" type="xs:string" minOccurs="0">
+            <xs:element name="type" type="xs:string">
               <xs:annotation>
                   <xs:documentation xml:lang="de">
                       Typ des ÖPNV Fahrzeugs (Bus, Straßenbahn, etc.).
@@ -119,5 +112,12 @@
               </xs:annotation>
             </xs:element>
         </xs:sequence>
+        <xs:attribute name="estimated" type="xs:dateTime">
+          <xs:annotation>
+              <xs:documentation xml:lang="de">
+                  Voraussichtliche Abfahrtszeit.
+              </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 </xs:schema>
