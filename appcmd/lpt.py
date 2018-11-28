@@ -159,7 +159,7 @@ def get_departures():
     try:
         client = CLIENTS[zip_code]
     except KeyError:
-        return ('No API available for ZIP code "{}".'.format(zip_code), 400)
+        return ('No API available for ZIP code "{}".'.format(zip_code), 404)
 
     if isinstance(client, TriasClient):
         stops = get_departures_trias(client, address)
