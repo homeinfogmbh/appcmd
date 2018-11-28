@@ -297,7 +297,7 @@ class StopEvent:
             estimated = strpdatetime(estimated)
 
         destination = str(departure.direction)
-        type_ = str(departure.Product.catOut)
+        type_ = str(departure.Product.catOutL)
         return cls(line, scheduled, estimated, destination, type_)
 
     def to_json(self):
