@@ -1,4 +1,4 @@
-"""WSGI handlers for appcmd."""
+"""Common functions."""
 
 from json import loads
 
