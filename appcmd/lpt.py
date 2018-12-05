@@ -90,7 +90,7 @@ def _get_departures_test():
     on_time = StopEvent('18', now, None, 'Istanbul', 'S-Bahn')
     on_time_explicit = StopEvent('Pünklicher Bus', now, now, 'Katwijk', 'Bus')
     delay = timedelta(minutes=42)
-    delayed = StopEvent('Verspätetet', now, now + delay, 'Bonn', 'FliWaTüt')
+    delayed = StopEvent('Verspätetet', now, now + delay, 'Bonn', 'Fliewatüüt')
     early = StopEvent('Überpünklich', now, now - delay, 'Berlin', 'Pferd')
     departures = (on_time, on_time_explicit, delayed, early)
     stop = Stop('Nächstgelegene Haltestelle', 'Nächstgelegene Haltestelle',
