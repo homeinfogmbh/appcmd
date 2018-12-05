@@ -164,19 +164,19 @@ def _get_departures():
     address = terminal.address
 
     if address is None:
-        return ('Terminal has no address.', 400)
+        raise Error('Terminal has no address.')
 
     try:
         zip_code = int(address.zip_code)
     except TypeError:
-        return ("No ZIP code specified in terminal's address.", 400)
+        raise Error("No ZIP code specified in terminal's address.")
     except ValueError:
-        return ('ZIP code is not an integer.', 400)
+        raise Error('ZIP code is not an integer.')
 
     try:
         client = CLIENTS[zip_code]
     except KeyError:
-        return ('No API available for ZIP code "{}".'.format(zip_code), 404)
+        raise Error('No API for ZIP code "{}".'.format(zip_code), status=404)
 
     if isinstance(client, TriasClient):
         return _get_departures_trias(client, address)
