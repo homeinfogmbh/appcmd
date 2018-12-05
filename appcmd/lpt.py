@@ -1,14 +1,16 @@
 """Local public transportation API."""
 
 from configparser import ConfigParser
-from datetime import datetime
+from datetime import datetime, timedelta
 from json import load
 from logging import getLogger
+
+from flask import request
 
 from timelib import isoformat, strpdatetime
 from trias import Client as TriasClient
 from hafas import Client as HafasClient
-from wsgilib import ACCEPT, JSON, XML
+from wsgilib import ACCEPT, JSON, XML, Error
 
 from appcmd.functions import get_terminal
 from appcmd.dom import lpt as dom
@@ -81,7 +83,22 @@ def _load_clients_map():
 CLIENTS = dict(_load_clients_map())
 
 
-def get_departures_trias(client, address):
+def _get_departures_test():
+    """Returns a test set of departures."""
+
+    now = datetime.now()
+    on_time = StopEvent('18', now, None, 'Istanbul', 'S-Bahn')
+    on_time_explicit = StopEvent('Pünklicher Bus', now, now, 'Katwijk', 'Bus')
+    delay = timedelta(minutes=42)
+    delayed = StopEvent('Verspätetet', now, now + delay, 'Bonn', 'FliWaTüt')
+    early = StopEvent('Überpünklich', now, now - delay, 'Berlin', 'Pferd')
+    departures = (on_time, on_time_explicit, delayed, early)
+    stop = Stop('Nächstgelegene Haltestelle', 'Nächstgelegene Haltestelle',
+                -38.2626511, 144.5796318, departures)
+    return [stop]
+
+
+def _get_departures_trias(client, address):
     """Returns departures from the respective Trias client."""
 
     longitude, latitude = client.geocoordinates(repr(address))
@@ -113,7 +130,7 @@ def get_departures_trias(client, address):
     return stops
 
 
-def get_departures_hafas(client, address):
+def _get_departures_hafas(client, address):
     """Returns departures from the respective HAFAS client."""
 
     location_list = client.locations(repr(address))
@@ -140,7 +157,7 @@ def get_departures_hafas(client, address):
     return stops
 
 
-def get_departures():
+def _get_departures():
     """Returns a list of departures."""
 
     terminal = get_terminal()
@@ -162,11 +179,21 @@ def get_departures():
         return ('No API available for ZIP code "{}".'.format(zip_code), 404)
 
     if isinstance(client, TriasClient):
-        stops = get_departures_trias(client, address)
-    elif isinstance(client, HafasClient):
-        stops = get_departures_hafas(client, address)
+        return _get_departures_trias(client, address)
+
+    if isinstance(client, HafasClient):
+        return _get_departures_hafas(client, address)
+
+    raise Error('Invalid client "{}".'.format(type(client).__name__))
+
+
+def get_departures():
+    """Returns the respective departures."""
+
+    if 'test' in request.args:
+        stops = _get_departures_test()
     else:
-        return ('Invalid client "{}".'.format(type(client).__name__), 400)
+        stops = _get_departures()
 
     if 'application/json' in ACCEPT:
         return JSON([stop.to_json() for stop in stops])
