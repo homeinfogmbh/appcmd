@@ -1,10 +1,9 @@
 """Configuration file parsing."""
 
-from configparser import ConfigParser
+from configlib import loadcfg
 
 
 __all__ = ['CONFIG']
 
 
-CONFIG = ConfigParser()
-CONFIG.read('/usr/local/etc/appcmd.conf')
+CONFIG = loadcfg('appcmd.conf')
