@@ -1,6 +1,5 @@
 """Local public transportation API."""
 
-from configparser import ConfigParser
 from datetime import datetime, timedelta
 from json import load
 from logging import getLogger
@@ -12,6 +11,7 @@ from trias import Client as TriasClient
 from hafas import Client as HafasClient
 from wsgilib import ACCEPT, JSON, XML, Error
 
+from appcmd.config import CONFIG
 from appcmd.functions import get_terminal
 from appcmd.dom import lpt as dom
 
@@ -19,12 +19,10 @@ from appcmd.dom import lpt as dom
 __all__ = ['get_departures']
 
 
-CONFIG_FILE = '/usr/local/etc/appcmd/lpt.conf'
-CONFIG = ConfigParser()
-CONFIG.read(CONFIG_FILE)
-MAX_STOPS = int(CONFIG['limits']['stops'])
-MAX_DEPARTURES = int(CONFIG['limits']['departures'])
-CLIENTS_CONFIG = '/usr/local/etc/appcmd/lpt.json'
+CONFIG_SECTION = CONFIG['LPT']
+MAX_STOPS = int(CONFIG_SECTION.get('stops', 3))
+MAX_DEPARTURES = int(CONFIG_SECTION.get('departures', 3))
+CLIENTS_CONFIG = '/usr/local/etc/lpt.json'
 
 
 def _load_clients_map():
@@ -36,7 +34,7 @@ def _load_clients_map():
         with open(CLIENTS_CONFIG, 'r') as file:
             json = load(file)
     except FileNotFoundError:
-        logger.error('Config file "%s" not found.', CONFIG_FILE)
+        logger.error('Config file "%s" not found.', CLIENTS_CONFIG)
         return
 
     for name, config in json.items():

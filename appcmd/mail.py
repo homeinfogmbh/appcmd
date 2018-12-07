@@ -14,6 +14,7 @@ from appcmd.functions import get_json
 __all__ = ['send_contact_mail']
 
 
+CONFIG_SECTION = CONFIG['EMail']
 EMAIL_TEMP = '''Kontaktformular vom {datum}:
 -----------------------------------------------
 
@@ -76,7 +77,7 @@ class ContactFormEmail(EMail):
     def from_json(cls, dictionary):
         """Creates a new email from the provided dictionary."""
         email = cls(
-            CONFIG['mail']['subject'], CONFIG['mail']['sender'],
+            CONFIG_SECTION['subject'], CONFIG_SECTION['sender'],
             dictionary['empfaenger'], plain=get_text(dictionary))
 
         with suppress(KeyError):
@@ -91,8 +92,8 @@ class ContactFormMailer(Mailer):
     def __init__(self, logger=None):
         """Initializes the mailer with the appropriate configuration."""
         super().__init__(
-            CONFIG['mail']['host'], CONFIG['mail']['port'],
-            CONFIG['mail']['user'], CONFIG['mail']['passwd'], logger=logger)
+            CONFIG_SECTION['host'], CONFIG_SECTION['port'],
+            CONFIG_SECTION['user'], CONFIG_SECTION['passwd'], logger=logger)
 
     def send_email(self, email):
         """Sends contact form emails from JSON-like dictionary."""

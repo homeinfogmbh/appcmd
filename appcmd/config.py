@@ -1,14 +1,10 @@
 """Configuration file parsing."""
 
-from configlib import INIParser
+from configparser import ConfigParser
 
 
-__all__ = ['CONFIG', 'MAX_MSG_SIZE']
+__all__ = ['CONFIG']
 
 
-CONFIG = INIParser('/etc/appcmd.conf')
-
-try:
-    MAX_MSG_SIZE = int(CONFIG['max_msg_size'])
-except KeyError:
-    MAX_MSG_SIZE = 2048
+CONFIG = ConfigParser()
+CONFIG.read('/usr/local/etc/appcmd.conf')

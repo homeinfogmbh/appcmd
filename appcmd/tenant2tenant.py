@@ -2,13 +2,18 @@
 
 from flask import request
 
+from configlib import INIParser
 from tenant2tenant import email, TenantMessage
 
-from appcmd.config import MAX_MSG_SIZE
+from appcmd.config import CONFIG
 from appcmd.functions import get_terminal
 
 
 __all__ = ['tenant2tenant']
+
+
+CONFIG_SECTION = CONFIG['TenantToTenant']
+MAX_MSG_SIZE = int(CONFIG_SECTION.get('max_msg_size', 2048))
 
 
 def tenant2tenant(maxlen=MAX_MSG_SIZE):
