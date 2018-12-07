@@ -2,7 +2,6 @@
 
 from flask import request
 
-from configlib import INIParser
 from tenant2tenant import email, TenantMessage
 
 from appcmd.config import CONFIG
