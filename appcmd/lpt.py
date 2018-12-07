@@ -19,12 +19,12 @@ from appcmd.dom import lpt as dom
 __all__ = ['get_departures']
 
 
-CONFIG_FILE = '/etc/lpt.conf'
+CONFIG_FILE = '/usr/local/etc/appcmd/lpt.conf'
 CONFIG = ConfigParser()
 CONFIG.read(CONFIG_FILE)
 MAX_STOPS = int(CONFIG['limits']['stops'])
 MAX_DEPARTURES = int(CONFIG['limits']['departures'])
-CLIENTS_CONFIG = '/etc/lpt.json'
+CLIENTS_CONFIG = '/usr/local/etc/appcmd/lpt.json'
 
 
 def _load_clients_map():
