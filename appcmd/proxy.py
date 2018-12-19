@@ -11,7 +11,7 @@ from digsigdb import ProxyHost
 __all__ = ['proxy']
 
 
-def proxy():
+def proxy(check_hostname=True):
     """Proxies URLs."""
 
     url = urlparse(request.get_data().decode())
@@ -22,10 +22,11 @@ def proxy():
     if not url.hostname:
         return ('Host name must not be empty.', 400)
 
-    try:
-        ProxyHost.get(ProxyHost.hostname == url.hostname)
-    except ProxyHost.DoesNotExist:
-        return ('Host name is not whitelisted.', 403)
+    if check_hostname:
+        try:
+            ProxyHost.get(ProxyHost.hostname == url.hostname)
+        except ProxyHost.DoesNotExist:
+            return ('Host name is not whitelisted.', 403)
 
     reply = get(url.geturl())
     return Response(

@@ -1,5 +1,7 @@
 """WSGI private routes (VPN)."""
 
+from functools import partial
+
 from wsgilib import Application
 
 from appcmd.cleaning import list_cleanings, add_cleaning
@@ -32,7 +34,7 @@ PRIVATE_ROUTES = (
     ('POST', '/damagereport', damage_report, 'damage_report'),
     ('POST', '/statistics', add_statistics, 'add_statistics'),
     ('POST', '/cleaning', add_cleaning, 'add_cleaning'),
-    ('POST', '/proxy', proxy, 'proxy'),
+    ('POST', '/proxy', partial(proxy, check_hostname=False), 'proxy'),
     ('POST', '/screenshot', add_screenshot, 'add_screenshot'),
     ('PUT', '/screenshot', show_screenshot, 'show_screenshot'),
     ('PATCH', '/screenshot', hide_screenshot, 'hide_screenshot'))
