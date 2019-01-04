@@ -10,6 +10,7 @@ from appcmd.damage_report import damage_report
 from appcmd.garbage_collection import garbage_collection
 from appcmd.lpt import get_departures
 from appcmd.mail import send_contact_mail
+from appcmd.poll import cast_vote
 from appcmd.proxy import proxy
 from appcmd.screenshots import add_screenshot
 from appcmd.screenshots import get_screenshot
@@ -29,13 +30,14 @@ PRIVATE_ROUTES = (
     ('GET', '/garbage_collection', garbage_collection, 'garbage_collection'),
     ('GET', '/lpt', get_departures, 'get_departures'),
     ('GET', '/screenshot', get_screenshot, 'get_screenshot'),
-    ('POST', '/contactform', send_contact_mail, 'send_contact_mail'),
-    ('POST', '/tenant2tenant', tenant2tenant, 'tenant2tenant'),
-    ('POST', '/damagereport', damage_report, 'damage_report'),
-    ('POST', '/statistics', add_statistics, 'add_statistics'),
     ('POST', '/cleaning', add_cleaning, 'add_cleaning'),
+    ('POST', '/contactform', send_contact_mail, 'send_contact_mail'),
+    ('POST', '/damagereport', damage_report, 'damage_report'),
+    ('POST', '/poll', cast_vote, 'cast_vote'),
     ('POST', '/proxy', partial(proxy, check_hostname=False), 'proxy'),
     ('POST', '/screenshot', add_screenshot, 'add_screenshot'),
+    ('POST', '/statistics', add_statistics, 'add_statistics'),
+    ('POST', '/tenant2tenant', tenant2tenant, 'tenant2tenant'),
     ('PUT', '/screenshot', show_screenshot, 'show_screenshot'),
     ('PATCH', '/screenshot', hide_screenshot, 'hide_screenshot'))
 PUBLIC_ROUTES = (
