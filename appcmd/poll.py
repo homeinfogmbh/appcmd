@@ -42,7 +42,7 @@ def cast_vote():
                 (PollOption.poll == poll) & (PollOption.id == choice))
         except PollOption.DoesNotExist:
             raise Error('No such option "{}" for poll "{}".'.format(
-                choice, poll.id))
+                choice, poll.id), status=404)
 
         options.append(option)
 
