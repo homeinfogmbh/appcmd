@@ -1,6 +1,6 @@
 """Interface to participate in DSMCS4 polls."""
 
-from dscms4.orm.charts import Poll, PollMode, PollOption
+from cmslib.orm.charts import Poll, PollMode, PollOption
 from wsgilib import Error
 
 from appcmd.functions import get_json
