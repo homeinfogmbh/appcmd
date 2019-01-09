@@ -24,6 +24,9 @@ def cast_vote():
     except Poll.DoesNotExist:
         raise Error('No such poll.', status=404)
 
+    if not poll.base.active:
+        raise Error('Poll is not active.')
+
     choices = json.get('choices')
 
     if not choices:
