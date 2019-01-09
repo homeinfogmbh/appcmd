@@ -14,21 +14,26 @@ __all__ = ['proxy']
 def proxy(check_hostname=True):
     """Proxies URLs."""
 
-    url = urlparse(request.get_data().decode())
+    def _proxy():
+        """Actual proxy function."""
 
-    if url.scheme not in ('http', 'https'):
-        return ('Scheme must be HTTP or HTTPS.', 400)
+        url = urlparse(request.get_data().decode())
 
-    if not url.hostname:
-        return ('Host name must not be empty.', 400)
+        if url.scheme not in ('http', 'https'):
+            return ('Scheme must be HTTP or HTTPS.', 400)
 
-    if check_hostname:
-        try:
-            ProxyHost.get(ProxyHost.hostname == url.hostname)
-        except ProxyHost.DoesNotExist:
-            return ('Host name is not whitelisted.', 403)
+        if not url.hostname:
+            return ('Host name must not be empty.', 400)
 
-    reply = get(url.geturl())
-    return Response(
-        reply.content, status=reply.status_code,
-        content_type=reply.headers['Content-Type'])
+        if check_hostname:
+            try:
+                ProxyHost.get(ProxyHost.hostname == url.hostname)
+            except ProxyHost.DoesNotExist:
+                return ('Host name is not whitelisted.', 403)
+
+        reply = get(url.geturl())
+        return Response(
+            reply.content, status=reply.status_code,
+            content_type=reply.headers['Content-Type'])
+
+    return _proxy
