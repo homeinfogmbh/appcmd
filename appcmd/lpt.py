@@ -99,8 +99,8 @@ def _get_departures_test():
 def _get_departures_trias(client, address):
     """Returns departures from the respective Trias client."""
 
-    longitude, latitude = client.geocoordinates(repr(address))
-    trias = client.stops(longitude, latitude)
+    geo_coordinates = client.geocoordinates(repr(address))
+    trias = client.stops(geo_coordinates)
     payload = trias.ServiceDelivery.DeliveryPayload
     locations = payload.LocationInformationResponse.Location
     stops = []
