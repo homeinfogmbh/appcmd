@@ -3,9 +3,10 @@
 from datetime import datetime, timedelta
 
 from flask import request
+from lptlib import dom, get_departures as _get_departures, Stop, StopEvent
 from wsgilib import ACCEPT, JSON, XML
 
-from lptlib import dom, get_departures as _get_departures, Stop, StopEvent
+from appcmd.functions import get_terminal
 
 
 __all__ = ['get_departures']
@@ -32,7 +33,7 @@ def get_departures():
     if 'test' in request.args:
         stops = _get_departures_test()
     else:
-        stops = _get_departures()
+        stops = _get_departures(get_terminal().address)
 
     if 'application/json' in ACCEPT:
         return JSON([stop.to_json() for stop in stops])
