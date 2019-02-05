@@ -7,7 +7,6 @@ default: | pull clean generate-bindings install
 generate-bindings:
 	@ pyxbgen -u xsds/commands.xsd -m commands --module-prefix=appcmd.dom
 	@ pyxbgen -u xsds/garbage_collection.xsd -m garbage_collection --module-prefix=appcmd.dom
-	@ pyxbgen -u xsds/lpt.xsd -m lpt --module-prefix=appcmd.dom
 
 install:
 	@ ./setup.py install --record $(FILE_LIST)
