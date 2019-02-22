@@ -88,8 +88,8 @@ def get_presentation_package():
 
     terminal = get_terminal()
 
-    with TemporaryFile('w+b') as tmp:
-        with TarFile(tmp, 'w:xz') as tar:
+    with TemporaryFile(mode='w+b') as tmp:
+        with TarFile(mode='w:xz', fileobj=tmp) as tar:
             empty = True
             files = _get_files(terminal)
 
