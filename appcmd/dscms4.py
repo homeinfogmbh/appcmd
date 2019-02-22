@@ -1,10 +1,5 @@
 """Provides DSCMS4 data."""
 
-from io import BytesIO
-from tarfile import open as TarFile, TarInfo
-from tempfile import TemporaryFile
-
-from flask import make_response
 from requests.exceptions import MissingSchema
 
 from cmslib.exceptions import AmbiguousConfigurationsError
@@ -13,10 +8,9 @@ from cmslib.exceptions import NoConfigurationFound
 from cmslib.orm.charts import RSS
 from cmslib.presentation.terminal import Presentation
 from hisfs import File
-from mimeutil import FileMetaData
 from wsgilib import Error
 
-from appcmd.functions import get_terminal, changed_files
+from appcmd.functions import get_terminal, make_attachment, tar_files
 from appcmd.logger import LOGGER
 
 
@@ -29,12 +23,6 @@ def _rss_charts(charts):
     for chart in charts:
         if isinstance(chart, RSS):
             yield chart
-
-
-def _make_attachment(bytes_):
-    """Returns the respective attachment's name."""
-
-    return (FileMetaData.from_bytes(bytes_).filename, bytes_)
 
 
 def _get_files(terminal):
@@ -64,7 +52,7 @@ def _get_files(terminal):
             LOGGER.error('File not found: %i.', file_id)
             continue
 
-        yield _make_attachment(file.bytes)
+        yield make_attachment(file.bytes)
 
     # Aggregate RSS feeds.
     for chart in _rss_charts(presentation.charts):
@@ -87,24 +75,5 @@ def get_presentation_package():
     """
 
     terminal = get_terminal()
-
-    with TemporaryFile(mode='w+b') as tmp:
-        with TarFile(mode='w:xz', fileobj=tmp) as tar:
-            empty = True
-            files = _get_files(terminal)
-
-            for filename, bytes_ in changed_files(files):
-                empty = False
-                tarinfo = TarInfo(filename)
-                tarinfo.size = len(bytes_)
-                file = BytesIO(bytes_)
-                tar.addfile(tarinfo, file)
-
-        if empty:
-            return ('Nothing to do.', 304)
-
-        tmp.flush()
-        tmp.seek(0)
-        response = make_response(tmp.read())
-        response.headers.set('Content-Type', 'application/x-xz')
-        return response
+    files = _get_files(terminal)
+    return tar_files(files)
