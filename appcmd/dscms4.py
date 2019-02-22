@@ -97,7 +97,7 @@ def get_presentation_package():
                 empty = False
                 tarinfo = TarInfo(filename)
                 tarinfo.size = len(bytes_)
-                file = BytesIO(bytes)
+                file = BytesIO(bytes_)
                 tar.addfile(tarinfo, file)
 
         if empty:
