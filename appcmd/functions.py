@@ -1,7 +1,7 @@
 """Common functions."""
 
-from json import loads
-from sys import stderr
+from hashlib import sha256
+from json import dumps, loads
 
 from flask import request
 
@@ -9,13 +9,16 @@ from mdb import Customer
 from terminallib import Terminal
 from wsgilib import Error
 
+from appcmd.logger import LOGGER
+
 
 __all__ = [
     'get_json',
     'get_customer',
     'get_terminal',
     'get_customer_and_address',
-    'street_houseno']
+    'street_houseno',
+    'changed_files']
 
 
 def get_json():
@@ -74,9 +77,23 @@ def street_houseno():
         return (address.street, address.house_number)
 
 
-def logerr(message, *format_args, status=400):
-    """Logs the respective message and raises an error."""
+def changed_files(files):
+    """Yields files for the respective
+    terminal that have changed.
+    """
 
-    message = message % format_args
-    print(message, file=stderr, flush=True)
-    raise Error(message, status=status)
+    sha256sums = request.json.get('manifest', ())
+    manifest = []
+
+    for filename, bytes_ in files:
+        sha256sum = sha256(bytes_).hexdigest()
+        manifest.append(sha256sum)
+
+        if sha256sum in sha256sums:
+            LOGGER.info('Skipping unchanged file: %s.', filename)
+            continue
+
+        yield (filename, bytes_)
+
+    manifest = dumps(manifest).encode()
+    yield ('manifest.json', manifest)
