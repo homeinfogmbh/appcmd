@@ -87,18 +87,20 @@ def changed_files(files):
     except AttributeError:
         sha256sums = ()
 
-    manifest = []
+    manifest = set()
+    processed = set()
 
     for filename, bytes_ in files:
         sha256sum = sha256(bytes_).hexdigest()
-        manifest.append(sha256sum)
+        manifest.add(sha256sum)
 
         if sha256sum in sha256sums:
             LOGGER.info('Skipping unchanged file: %s.', filename)
             continue
 
+        processed.add(sha256sum)
         yield (filename, bytes_)
 
-    if manifest:
-        manifest = dumps(manifest).encode()
+    if processed:
+        manifest = dumps(tuple(manifest)).encode()
         yield ('manifest.json', manifest)
