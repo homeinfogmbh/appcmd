@@ -104,6 +104,7 @@ def get_presentation_package():
             return ('Nothing to do.', 304)
 
         tmp.flush()
+        tmp.seek(0)
         response = make_response(tmp.read())
         response.headers.set('Content-Type', 'application/x-xz')
         return response
