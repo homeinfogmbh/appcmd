@@ -82,7 +82,11 @@ def changed_files(files):
     terminal that have changed.
     """
 
-    sha256sums = request.json.get('manifest', ())
+    try:
+        sha256sums = request.json.get('manifest', ())
+    except AttributeError:
+        sha256sums = ()
+
     manifest = []
 
     for filename, bytes_ in files:
