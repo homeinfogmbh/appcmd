@@ -7,6 +7,7 @@ from wsgilib import Application
 from appcmd.cleaning import list_cleanings, add_cleaning
 from appcmd.command import list_commands, complete_command
 from appcmd.damage_report import damage_report
+from appcmd.dscms4 import get_presentation_package
 from appcmd.garbage_collection import garbage_collection
 from appcmd.lpt import get_departures
 from appcmd.mail import send_contact_mail
@@ -30,6 +31,7 @@ PRIVATE_ROUTES = (
     ('GET', '/garbage_collection', garbage_collection, 'garbage_collection'),
     ('GET', '/lpt', get_departures, 'get_departures'),
     ('GET', '/screenshot', get_screenshot, 'get_screenshot'),
+    ('GET', '/dscms4', get_presentation_package, 'get_presentation_package'),
     ('POST', '/cleaning', add_cleaning, 'add_cleaning'),
     ('POST', '/contactform', send_contact_mail, 'send_contact_mail'),
     ('POST', '/damagereport', damage_report, 'damage_report'),
