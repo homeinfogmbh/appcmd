@@ -1,6 +1,7 @@
 """Common functions."""
 
 from json import loads
+from sys import stderr
 
 from flask import request
 
@@ -71,3 +72,11 @@ def street_houseno():
             raise Error('No address specified and terminal has no address.')
 
         return (address.street, address.house_number)
+
+
+def logerr(message, *format_args, status=400):
+    """Logs the respective message and raises an error."""
+
+    message = message % format_args
+    print(message, file=stderr, flush=True)
+    raise Error(message, status=status)
