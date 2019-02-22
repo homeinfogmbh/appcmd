@@ -99,5 +99,6 @@ def changed_files(files):
 
         yield (filename, bytes_)
 
-    manifest = dumps(manifest).encode()
-    yield ('manifest.json', manifest)
+    if manifest:
+        manifest = dumps(manifest).encode()
+        yield ('manifest.json', manifest)
