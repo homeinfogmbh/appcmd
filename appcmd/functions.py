@@ -83,7 +83,6 @@ def changed_files(files):
     """
 
     sha256sums = request.json or ()
-    print('DEBUG:', sha256sums, flush=True)
     manifest = set()
     processed = set()
 
