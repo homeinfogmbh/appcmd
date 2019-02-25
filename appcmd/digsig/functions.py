@@ -12,7 +12,7 @@ from flask import request, Response
 from mimeutil import FileMetaData
 
 
-__all__ = ['make_attachment', 'tar_files']
+__all__ = ['make_attachment', 'stream_tared_files']
 
 
 def make_attachment(bytes_):
@@ -30,16 +30,9 @@ def tar_file(tarfile, filename, bytes_):
     tarfile.addfile(tarinfo, file)
 
 
-def stream(file, chunk_size=4096):
-    """Streams a file-like object."""
-
-    yield from iter(partial(file.read, chunk_size), b'')
-
-
-def tar_files(files):
+def get_tar_stream(files, *, chunk_size=4096):
     """Adds the respective files to a tar archive."""
 
-    headers = {'Content-Type': 'application/x-xz'}
     sha256sums = frozenset(request.json or ())
     manifest = []
 
@@ -58,4 +51,12 @@ def tar_files(files):
 
         tmp.flush()
         tmp.seek(0)
-        return Response(stream(tmp), headers=headers)
+        yield from iter(partial(tmp.read, chunk_size), b'')
+
+
+def stream_tared_files(files, *, chunk_size=4096):
+    """Streams the respective tar file."""
+
+    headers = {'Content-Type': 'application/x-xz'}
+    stream = get_tar_stream(files, chunk_size=chunk_size)
+    return Response(stream, headers=headers)
