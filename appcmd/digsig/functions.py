@@ -58,6 +58,5 @@ def get_tar_stream(files, *, chunk_size=4096):
 def stream_tared_files(files, *, chunk_size=4096):
     """Streams the respective tar file."""
 
-    headers = {'Content-Type': 'application/x-xz'}
     stream = get_tar_stream(files, chunk_size=chunk_size)
-    return Response(stream, headers=headers)
+    return Response(stream, mimetype='application/x-xz')
