@@ -94,24 +94,20 @@ def changed_files(files):
     terminal that have changed.
     """
 
-    sha256sums = request.json or ()
-    manifest = set()
-    processed = set()
+    sha256sums = frozenset(request.json or ())
+    manifest = []
 
     for filename, bytes_ in files:
         sha256sum = sha256(bytes_).hexdigest()
-        manifest.add(sha256sum)
+        manifest.append(filename)
 
         if sha256sum in sha256sums:
             LOGGER.info('Skipping unchanged file: %s.', filename)
             continue
 
-        processed.add(sha256sum)
         yield (filename, bytes_)
 
-    if processed:
-        manifest = dumps(tuple(manifest)).encode()
-        yield ('manifest.json', manifest)
+    yield ('manifest.json', dumps(manifest).encode())
 
 
 def tar_files(files):
