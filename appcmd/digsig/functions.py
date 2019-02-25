@@ -1,6 +1,5 @@
 """Functions for digital signage aggregation."""
 
-from functools import partial
 from hashlib import sha256
 from io import BytesIO
 from json import dumps
@@ -41,17 +40,19 @@ def get_tar_stream(files, *, chunk_size=4096):
             for filename, bytes_ in files:
                 manifest.append(filename)
 
-                if sha256(bytes_).hexdigest() in sha256sums:
-                    continue
-
-                tar_file(tar, filename, bytes_)
+                if sha256(bytes_).hexdigest() not in sha256sums:
+                    tar_file(tar, filename, bytes_)
 
             manifest = dumps(manifest).encode()
             tar_file(tar, 'manifest.json', manifest)
 
         tmp.flush()
         tmp.seek(0)
-        yield from iter(partial(tmp.read, chunk_size), b'')
+        chunk = tmp.read(chunk_size)
+
+        while chunk:
+            yield chunk
+            chunk = tmp.read(chunk_size)
 
 
 def stream_tared_files(files, *, chunk_size=4096):
