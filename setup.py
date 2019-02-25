@@ -11,5 +11,5 @@ setup(
     maintainer='Richard Neumann',
     maintainer_email='<r dot neumann at homeinfo priod de>',
     requires=['mdb', 'openimmo', 'damage_report', 'tenant2tenant'],
-    packages=['appcmd', 'appcmd.dom'],
+    packages=['appcmd', 'appcmd.digsig', 'appcmd.dom'],
     description='Digital Signange Flash Application communication interface.')

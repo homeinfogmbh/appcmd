@@ -7,7 +7,7 @@ from wsgilib import Application
 from appcmd.cleaning import list_cleanings, add_cleaning
 from appcmd.command import list_commands, complete_command
 from appcmd.damage_report import damage_report
-from appcmd.dscms4 import get_presentation_package
+from appcmd.digsig import get_digsig_pkg
 from appcmd.garbage_collection import garbage_collection
 from appcmd.lpt import get_departures
 from appcmd.mail import send_contact_mail
@@ -34,7 +34,7 @@ PRIVATE_ROUTES = (
     ('POST', '/cleaning', add_cleaning, 'add_cleaning'),
     ('POST', '/contactform', send_contact_mail, 'send_contact_mail'),
     ('POST', '/damagereport', damage_report, 'damage_report'),
-    ('POST', '/dscms4', get_presentation_package, 'get_presentation_package'),
+    ('POST', '/digsig', get_digsig_pkg, 'get_digsig_pkg'),
     ('POST', '/poll', cast_vote, 'cast_vote'),
     ('POST', '/proxy', partial(proxy, check_hostname=False), 'proxy'),
     ('POST', '/screenshot', add_screenshot, 'add_screenshot'),
