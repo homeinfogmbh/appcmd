@@ -1,12 +1,13 @@
 """Functions for digital signage aggregation."""
 
+from functools import partial
 from hashlib import sha256
 from io import BytesIO
 from json import dumps
 from tarfile import open as tar_open, TarInfo
 from tempfile import TemporaryFile
 
-from flask import make_response, request, Response
+from flask import make_response, request
 
 from mimeutil import FileMetaData
 
@@ -20,12 +21,26 @@ def make_attachment(bytes_):
     return (FileMetaData.from_bytes(bytes_).filename, bytes_)
 
 
+def tar_file(tarfile, filename, bytes_):
+    """Adds the respective bytes to the tar file."""
+
+    tarinfo = TarInfo(filename)
+    tarinfo.size = len(bytes_)
+    file = BytesIO(bytes_)
+    tarfile.addfile(tarinfo, file)
+
+
+def stream(file, chunk_size=4096):
+    """Streams a file-like object."""
+
+    yield from iter(partial(file.read, chunk_size), b'')
+
+
 def tar_files(files):
     """Adds the respective files to a tar archive."""
 
     sha256sums = frozenset(request.json or ())
     manifest = []
-    empty = True
 
     with TemporaryFile(mode='w+b') as tmp:
         with tar_open(mode='w:xz', fileobj=tmp) as tar:
@@ -35,19 +50,13 @@ def tar_files(files):
                 if sha256(bytes_).hexdigest() in sha256sums:
                     continue
 
-                empty = False
-                tarinfo = TarInfo(filename)
-                tarinfo.size = len(bytes_)
-                file = BytesIO(bytes_)
-                tar.addfile(tarinfo, file)
+                tar_file(tar, filename, bytes_)
 
-        if empty:
-            return Response(
-                dumps(manifest).encode(), status=304,
-                content_type='application/json')
+            manifest = dumps(manifest).encode()
+            tar_file(tar, 'manifest.json', manifest)
 
         tmp.flush()
         tmp.seek(0)
-        response = make_response(tmp.read())
+        response = make_response(stream(tmp))
         response.headers.set('Content-Type', 'application/x-xz')
         return response
