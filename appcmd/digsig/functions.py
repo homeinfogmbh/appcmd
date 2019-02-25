@@ -57,7 +57,7 @@ def get_difftar_stream(files, sha256sums, *, chunk_size=4096):
 
 
 def stream_tared_files(files, *, chunk_size=4096):
-    """Streams the respective tar file."""
+    """Returns a streams of tar.xz'ed files."""
 
     sha256sums = frozenset(request.json or ())
     stream = get_difftar_stream(files, sha256sums, chunk_size=chunk_size)
