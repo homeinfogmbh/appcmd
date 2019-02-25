@@ -10,7 +10,8 @@ from cmslib.presentation.terminal import Presentation
 from hisfs import File
 from wsgilib import Error
 
-from appcmd.functions import get_terminal, make_attachment, tar_files
+from appcmd.digsig.functions import make_attachment, tar_files
+from appcmd.functions import get_terminal
 from appcmd.logger import LOGGER
 
 
