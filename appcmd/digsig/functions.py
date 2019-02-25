@@ -29,10 +29,9 @@ def _tar_file(tarfile, filename, bytes_):
     tarfile.addfile(tarinfo, file)
 
 
-def get_tar_stream(files, *, chunk_size=4096):
+def get_difftar_stream(files, sha256sums, *, chunk_size=4096):
     """Adds the respective files to a tar archive."""
 
-    sha256sums = frozenset(request.json or ())
     manifest = []
 
     with TemporaryFile(mode='w+b') as tmp:
@@ -58,5 +57,6 @@ def get_tar_stream(files, *, chunk_size=4096):
 def stream_tared_files(files, *, chunk_size=4096):
     """Streams the respective tar file."""
 
-    stream = get_tar_stream(files, chunk_size=chunk_size)
+    sha256sums = frozenset(request.json or ())
+    stream = get_difftar_stream(files, sha256sums, chunk_size=chunk_size)
     return Response(stream, mimetype='application/x-xz')
