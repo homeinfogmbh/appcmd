@@ -7,7 +7,7 @@ from json import dumps
 from tarfile import open as tar_open, TarInfo
 from tempfile import TemporaryFile
 
-from flask import make_response, request
+from flask import request, Response
 
 from mimeutil import FileMetaData
 
@@ -39,6 +39,7 @@ def stream(file, chunk_size=4096):
 def tar_files(files):
     """Adds the respective files to a tar archive."""
 
+    headers = {'Content-Type': 'application/x-xz'}
     sha256sums = frozenset(request.json or ())
     manifest = []
 
@@ -57,6 +58,4 @@ def tar_files(files):
 
         tmp.flush()
         tmp.seek(0)
-        response = make_response(stream(tmp))
-        response.headers.set('Content-Type', 'application/x-xz')
-        return response
+        return Response(stream(tmp), headers=headers)
