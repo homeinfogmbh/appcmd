@@ -21,7 +21,7 @@ def make_attachment(bytes_):
 
 
 def _tar_file(tarfile, filename, bytes_):
-    """Adds the respective bytes to the tar file."""
+    """Adds the respective file to the tar archive."""
 
     tarinfo = TarInfo(filename)
     tarinfo.size = len(bytes_)
