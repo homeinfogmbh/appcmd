@@ -30,7 +30,9 @@ def _tar_file(tarfile, filename, bytes_):
 
 
 def get_difftar_stream(files, sha256sums, *, chunk_size=4096):
-    """Adds the respective files to a tar archive."""
+    """Adds files that have been changed to a tar.xz
+    archive and streams its bytes chunk-wise.
+    """
 
     manifest = []
 
