@@ -53,7 +53,7 @@ def _get_files(terminal):
             LOGGER.error('File not found: %i.', file_id)
             continue
 
-        yield make_attachment(file.bytes)
+        yield make_attachment(file)
 
     # Aggregate RSS feeds.
     for chart in _rss_charts(presentation.charts):
