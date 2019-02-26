@@ -41,10 +41,9 @@ def _tar_file(tarfile, filename, file_handler):
     tarfile.addfile(tarinfo, file_handler)
 
 
-def _tar_files(tarfile, files, *, chunk_size=4096):
+def _tar_files(tarfile, files, manifest, *, chunk_size=4096):
     """Adds the files tot the tar archive."""
 
-    manifest = request.json or {}
     file_list = []
 
     for filename, file in files:
@@ -65,14 +64,14 @@ def _tar_files(tarfile, files, *, chunk_size=4096):
     _tar_file(tarfile, 'manifest.json', file_list)
 
 
-def difftar_stream(files, *, chunk_size=4096):
+def difftar_stream(files, manifest, *, chunk_size=4096):
     """Adds files that have been changed to a tar.xz
     archive and streams its bytes chunk-wise.
     """
 
     with TemporaryFile(mode='w+b') as tmp:
         with tar_open(mode='w:xz', fileobj=tmp) as tar:
-            _tar_files(tar, files)
+            _tar_files(tar, files, manifest)
 
         tmp.flush()
         tmp.seek(0)
@@ -84,5 +83,6 @@ def difftar_stream(files, *, chunk_size=4096):
 def stream_tar_xz(files, *, chunk_size=4096):
     """Returns a streams of tar.xz'ed files."""
 
-    stream = difftar_stream(files, chunk_size=chunk_size)
+    manifest = request.json or {}
+    stream = difftar_stream(files, manifest, chunk_size=chunk_size)
     return Response(stream, mimetype='application/x-xz')
