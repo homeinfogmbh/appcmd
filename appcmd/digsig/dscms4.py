@@ -7,10 +7,10 @@ from cmslib.exceptions import FeedReadError
 from cmslib.exceptions import NoConfigurationFound
 from cmslib.orm.charts import RSS
 from cmslib.presentation.terminal import Presentation
-from hisfs import File
+from hisfs import File, NamedFileStream
 from wsgilib import Error
 
-from appcmd.digsig.functions import make_attachment, stream_tar_xz
+from appcmd.digsig.functions import stream_tar_xz
 from appcmd.functions import get_terminal
 from appcmd.logger import LOGGER
 
@@ -53,7 +53,7 @@ def _get_files(terminal):
             LOGGER.error('File not found: %i.', file_id)
             continue
 
-        yield make_attachment(file)
+        yield NamedFileStream.from_hisfs(file)
 
     # Aggregate RSS feeds.
     for chart in _rss_charts(presentation.charts):
@@ -67,7 +67,7 @@ def _get_files(terminal):
             continue
 
         filename = 'feed-{}.rss'.format(chart.id)
-        yield(filename, feed.encode())
+        yield NamedFileStream.from_bytes(feed.encode(), name=filename)
 
 
 def get_presentation_package():

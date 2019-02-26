@@ -2,7 +2,6 @@
 
 from hashlib import sha256
 from json import dumps
-from mimetypes import guess_extension
 from tarfile import open as tar_open, TarInfo
 from tempfile import TemporaryFile
 
@@ -11,13 +10,7 @@ from flask import request, Response
 from hisfs import File, NamedFileStream
 
 
-__all__ = ['make_attachment', 'stream_tar_xz']
-
-
-def make_attachment(file):
-    """Returns the respective attachment's name."""
-
-    return (file.sha256sum + guess_extension(file.mimetype), file)
+__all__ = ['stream_tar_xz']
 
 
 def _sha256sum(file):
