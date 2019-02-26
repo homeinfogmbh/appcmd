@@ -1,6 +1,5 @@
 """Functions for digital signage aggregation."""
 
-from functools import partial
 from hashlib import sha256
 from io import BytesIO
 from json import dumps
@@ -34,14 +33,23 @@ def _sha256sum(file):
     raise ValueError('Unsupported file type: %s.' % type(file))
 
 
-def _tar_file(tarfile, filename, file_handler):
+def _tar_file(tarfile, filename, file):
     """Adds the file to the tar archive."""
 
     tarinfo = TarInfo(filename)
-    tarfile.addfile(tarinfo, file_handler)
+
+    if isinstance(file, File):
+        with file.open() as file_handler:
+            tarinfo.size = file.size
+            tarfile.addfile(tarinfo, file_handler)
+    elif isinstance(file, bytes):
+        tarinfo.size = len(file)
+        tarfile.addfile(tarinfo, BytesIO(file))
+    else:
+        raise ValueError('Unsupported file type: %s.' % type(file))
 
 
-def _tar_files(tarfile, files, manifest, *, chunk_size=4096):
+def _tar_files(tarfile, files, manifest):
     """Adds the files tot the tar archive."""
 
     file_list = []
@@ -52,19 +60,13 @@ def _tar_files(tarfile, files, manifest, *, chunk_size=4096):
         if manifest.get(filename) == _sha256sum(file):
             continue
 
-        if isinstance(file, File):
-            with file.open('rb', chunk_size=chunk_size) as file_handler:
-                _tar_file(tarfile, filename, file_handler)
-        elif isinstance(file, bytes):
-            _tar_file(tarfile, filename, BytesIO(file))
-        else:
-            raise ValueError('Unsupported file type: %s.' % type(file))
+        _tar_file(tarfile, filename, file)
 
     file_list = dumps(file_list).encode()
-    _tar_file(tarfile, 'manifest.json', BytesIO(file_list))
+    _tar_file(tarfile, 'manifest.json', file_list)
 
 
-def difftar_stream(files, manifest, *, chunk_size=4096):
+def difftar_stream(files, manifest):
     """Adds files that have been changed to a tar.xz
     archive and streams its bytes chunk-wise.
     """
@@ -76,13 +78,13 @@ def difftar_stream(files, manifest, *, chunk_size=4096):
         tmp.flush()
         tmp.seek(0)
 
-        for chunk in iter(partial(tmp.read, chunk_size), b''):
+        for chunk in iter(tmp.read, b''):
             yield chunk
 
 
-def stream_tar_xz(files, *, chunk_size=4096):
+def stream_tar_xz(files):
     """Returns a streams of tar.xz'ed files."""
 
     manifest = request.json or {}
-    stream = difftar_stream(files, manifest, chunk_size=chunk_size)
+    stream = difftar_stream(files, manifest)
     return Response(stream, mimetype='application/x-xz')
