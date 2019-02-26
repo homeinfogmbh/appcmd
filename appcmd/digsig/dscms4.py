@@ -10,7 +10,7 @@ from cmslib.presentation.terminal import Presentation
 from hisfs import File
 from wsgilib import Error
 
-from appcmd.digsig.functions import make_attachment, stream_tared_files
+from appcmd.digsig.functions import make_attachment, stream_tar_xz
 from appcmd.functions import get_terminal
 from appcmd.logger import LOGGER
 
@@ -77,4 +77,4 @@ def get_presentation_package():
 
     terminal = get_terminal()
     files = _get_files(terminal)
-    return stream_tared_files(files)
+    return stream_tar_xz(files)

@@ -11,7 +11,7 @@ from flask import request, Response
 from mimeutil import FileMetaData
 
 
-__all__ = ['make_attachment', 'stream_tared_files']
+__all__ = ['make_attachment', 'stream_tar_xz']
 
 
 def make_attachment(bytes_):
@@ -29,23 +29,24 @@ def _tar_file(tarfile, filename, bytes_):
     tarfile.addfile(tarinfo, file)
 
 
-def get_difftar_stream(files, sha256sums, *, chunk_size=4096):
+def difftar_stream(files, manifest, *, chunk_size=4096):
     """Adds files that have been changed to a tar.xz
     archive and streams its bytes chunk-wise.
     """
 
-    manifest = []
+    file_list = []
 
     with TemporaryFile(mode='w+b') as tmp:
         with tar_open(mode='w:xz', fileobj=tmp) as tar:
             for filename, bytes_ in files:
-                manifest.append(filename)
+                file_list.append(filename)
+                sha256sum = manifest.get(filename)
 
-                if sha256(bytes_).hexdigest() not in sha256sums:
+                if sha256(bytes_).hexdigest() != sha256sum:
                     _tar_file(tar, filename, bytes_)
 
-            manifest = dumps(manifest).encode()
-            _tar_file(tar, 'manifest.json', manifest)
+            file_list = dumps(file_list).encode()
+            _tar_file(tar, 'manifest.json', file_list)
 
         tmp.flush()
         tmp.seek(0)
@@ -56,9 +57,9 @@ def get_difftar_stream(files, sha256sums, *, chunk_size=4096):
             chunk = tmp.read(chunk_size)
 
 
-def stream_tared_files(files, *, chunk_size=4096):
+def stream_tar_xz(files, *, chunk_size=4096):
     """Returns a streams of tar.xz'ed files."""
 
-    sha256sums = frozenset(request.json or ())
-    stream = get_difftar_stream(files, sha256sums, chunk_size=chunk_size)
+    manifest = request.json or {}
+    stream = difftar_stream(files, manifest, chunk_size=chunk_size)
     return Response(stream, mimetype='application/x-xz')
