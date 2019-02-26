@@ -53,7 +53,7 @@ def _tar_files(tarfile, files, manifest, *, chunk_size=4096):
             continue
 
         if isinstance(file, File):
-            with File.open('rb', chunk_size=chunk_size) as file_handler:
+            with file.open('rb', chunk_size=chunk_size) as file_handler:
                 _tar_file(tarfile, filename, file_handler)
         elif isinstance(file, bytes):
             _tar_file(tarfile, filename, BytesIO(file))
