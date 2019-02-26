@@ -42,8 +42,8 @@ def _get_files(terminal):
         LOGGER.error(message)
         raise Error(message, status=420)
 
-    presentation_bytes = presentation_dom.toxml(encoding='utf-8')
-    yield ('presentation.xml', presentation_bytes)
+    bytes_ = presentation_dom.toxml(encoding='utf-8')
+    yield NamedFileStream.from_bytes(bytes_, name='presentation.xml')
 
     # Aggregate files.
     for file_id in presentation.files:
