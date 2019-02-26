@@ -1,7 +1,6 @@
 """Functions for digital signage aggregation."""
 
 from hashlib import sha256
-from io import BytesIO
 from json import dumps
 from mimetypes import guess_extension
 from tarfile import open as tar_open, TarInfo
@@ -9,7 +8,7 @@ from tempfile import TemporaryFile
 
 from flask import request, Response
 
-from hisfs import File
+from hisfs import File, NamedFileStream
 
 
 __all__ = ['make_attachment', 'stream_tar_xz']
@@ -33,47 +32,40 @@ def _sha256sum(file):
     raise ValueError('Unsupported file type: %s.' % type(file))
 
 
-def _tar_file(tarfile, filename, file):
+def _tar_stream(tarfile, stream):
     """Adds the file to the tar archive."""
 
-    tarinfo = TarInfo(filename)
-
-    if isinstance(file, File):
-        with file.open() as file_handler:
-            tarinfo.size = file.size
-            tarfile.addfile(tarinfo, file_handler)
-    elif isinstance(file, bytes):
-        tarinfo.size = len(file)
-        tarfile.addfile(tarinfo, BytesIO(file))
-    else:
-        raise ValueError('Unsupported file type: %s.' % type(file))
+    tarinfo = TarInfo(stream.name)
+    tarinfo.size = stream.size
+    tarfile.addfile(tarinfo, stream.file)
 
 
-def _tar_files(tarfile, files, manifest):
+def _tar_streams(tarfile, streams, manifest):
     """Adds the files tot the tar archive."""
 
     file_list = []
 
-    for filename, file in files:
-        file_list.append(filename)
+    for stream in streams:
+        file_list.append(stream.name)
 
-        if manifest.get(filename) == _sha256sum(file):
+        if manifest.get(stream.name) == stream.sha256sum:
             continue
 
-        _tar_file(tarfile, filename, file)
+        _tar_stream(tarfile, stream)
 
     file_list = dumps(file_list).encode()
-    _tar_file(tarfile, 'manifest.json', file_list)
+    stream = NamedFileStream.from_bytes(file_list, name='manifest.json')
+    _tar_stream(tarfile, stream)
 
 
-def difftar_stream(files, manifest):
+def difftar_stream(streams, manifest):
     """Adds files that have been changed to a tar.xz
     archive and streams its bytes chunk-wise.
     """
 
     with TemporaryFile(mode='w+b') as tmp:
         with tar_open(mode='w:xz', fileobj=tmp) as tar:
-            _tar_files(tar, files, manifest)
+            _tar_streams(tar, streams, manifest)
 
         tmp.flush()
         tmp.seek(0)
@@ -82,9 +74,9 @@ def difftar_stream(files, manifest):
             yield chunk
 
 
-def stream_tar_xz(files):
+def stream_tar_xz(streams):
     """Returns a streams of tar.xz'ed files."""
 
     manifest = request.json or {}
-    stream = difftar_stream(files, manifest)
+    stream = difftar_stream(streams, manifest)
     return Response(stream, mimetype='application/x-xz')
