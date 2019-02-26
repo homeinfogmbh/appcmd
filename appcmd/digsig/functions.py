@@ -61,7 +61,7 @@ def _tar_files(tarfile, files, manifest, *, chunk_size=4096):
             raise ValueError('Unsupported file type: %s.' % type(file))
 
     file_list = dumps(file_list).encode()
-    _tar_file(tarfile, 'manifest.json', file_list)
+    _tar_file(tarfile, 'manifest.json', BytesIO(file_list))
 
 
 def difftar_stream(files, manifest, *, chunk_size=4096):
