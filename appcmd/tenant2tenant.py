@@ -15,7 +15,7 @@ CONFIG_SECTION = CONFIG['TenantToTenant']
 MAX_MSG_SIZE = int(CONFIG_SECTION.get('max_msg_size', 2048))
 
 
-def tenant2tenant(maxlen=MAX_MSG_SIZE):
+def tenant2tenant(private=False, maxlen=MAX_MSG_SIZE):
     """Stores tenant info."""
 
     message = request.get_data().decode()
@@ -23,7 +23,7 @@ def tenant2tenant(maxlen=MAX_MSG_SIZE):
     if len(message) > maxlen:
         return ('Maximum text length exceeded.', 413)
 
-    terminal = get_terminal()
+    terminal = get_terminal(private=private)
 
     try:
         record = TenantMessage.from_terminal(terminal, message)

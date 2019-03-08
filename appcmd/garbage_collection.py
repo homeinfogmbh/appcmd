@@ -60,11 +60,13 @@ def _response(solutions):
     return ('Invalid content type.', 406)
 
 
-def garbage_collection():
+def garbage_collection(private=False):
     """Returns information about the garbage collection."""
 
+    street, house_number = street_houseno(private=private)
+
     try:
-        solutions = tuple(AHA_CLIENT.by_street_houseno(*street_houseno()))
+        solutions = tuple(AHA_CLIENT.by_street_houseno(street, house_number))
     except ConnectionError_:
         return ('Could not connect to AHA API.', 503)
     except LocationNotFound:

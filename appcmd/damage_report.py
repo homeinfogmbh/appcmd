@@ -10,10 +10,10 @@ from wsgilib import Error
 __all__ = ['damage_report']
 
 
-def damage_report():
+def damage_report(private=False):
     """Stores damage reports."""
 
-    customer, address = get_customer_and_address()
+    customer, address = get_customer_and_address(private=private)
 
     try:
         record = DamageReport.from_json(get_json(), customer, address)

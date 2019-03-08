@@ -8,7 +8,8 @@ from appcmd.functions import get_terminal
 __all__ = ['get_departures']
 
 
-def get_departures():
+def get_departures(private=False):
     """Returns stops for the respective terminal."""
 
-    return get_response(get_terminal().address)
+    terminal = get_terminal(private=private)
+    return get_response(terminal.address)
