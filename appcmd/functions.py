@@ -14,8 +14,6 @@ from wsgilib import Error
 __all__ = [
     'get_json',
     'get_customer',
-    'get_terminal_by_ip',
-    'get_terminal_by_args',
     'get_terminal',
     'get_customer_and_address',
     'street_houseno']
