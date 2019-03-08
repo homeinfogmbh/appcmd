@@ -49,7 +49,21 @@ def get_terminal_by_args():
     """Returns the respective terminal."""
 
     try:
-        return Terminal.by_ids(request.args['cid'], request.args['tid'])
+        cid = int(request.args['cid'])
+    except KeyError:
+        raise Error('No customer ID specified.')
+    except ValueError:
+        raise Error('Customer ID is not an integer.')
+
+    try:
+        tid = int(request.args['tid'])
+    except KeyError:
+        raise Error('No terminal ID specified.')
+    except ValueError:
+        raise Error('Terminal ID is not an integer.')
+
+    try:
+        return Terminal.by_ids(cid, tid)
     except Terminal.DoesNotExist:
         raise Error('No such terminal.', status=404)
 
