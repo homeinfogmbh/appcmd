@@ -28,10 +28,11 @@ def _response(cleaning_dates):
     return XML(xml)
 
 
-def list_cleanings():
+def list_cleanings(private=False):
     """Lists cleaning entries for the respective terminal."""
 
-    address = get_terminal().address
+    terminal = get_terminal(private=private)
+    address = terminal.address
 
     if address is None:
         raise Error('Terminal has no address.')
@@ -39,10 +40,10 @@ def list_cleanings():
     return _response(CleaningDate.by_address(address, limit=10))
 
 
-def add_cleaning():
+def add_cleaning(private=False):
     """Adds a cleaning entry."""
 
-    terminal = get_terminal()
+    terminal = get_terminal(private=private)
 
     try:
         user = CleaningUser.get(

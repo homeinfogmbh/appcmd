@@ -8,9 +8,9 @@ from appcmd.functions import get_terminal
 __all__ = ['get_departures']
 
 
-def get_departures():
+def get_departures(private=False):
     """Returns stops for the respective terminal."""
 
-    terminal = get_terminal()
+    terminal = get_terminal(private=private)
     address = terminal.lpt_address or terminal.address
-    return get_response()
+    return get_response(address)

@@ -62,7 +62,7 @@ def get_text(dictionary, template=EMAIL_TEMP):
 def send_contact_mail():
     """Sends contact form emails."""
 
-    email = ContactFormEmail.json(get_json())
+    email = ContactFormEmail.from_json(get_json())
 
     try:
         return MAILER.send_email(email)

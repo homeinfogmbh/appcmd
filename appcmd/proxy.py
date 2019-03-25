@@ -11,7 +11,7 @@ from digsigdb import ProxyHost
 __all__ = ['proxy']
 
 
-def proxy(check_hostname=True):
+def proxy(private=False):
     """Proxies URLs."""
 
     url = urlparse(request.get_data().decode())
@@ -22,7 +22,7 @@ def proxy(check_hostname=True):
     if not url.hostname:
         return ('Host name must not be empty.', 400)
 
-    if check_hostname:
+    if not private:
         try:
             ProxyHost.get(ProxyHost.hostname == url.hostname)
         except ProxyHost.DoesNotExist:

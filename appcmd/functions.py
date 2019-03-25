@@ -1,11 +1,13 @@
 """Common functions."""
 
+from contextlib import suppress
+from ipaddress import IPv4Address
 from json import loads
 
 from flask import request
 
 from mdb import Customer
-from terminallib import Terminal
+from terminallib import Terminal, VPN
 from wsgilib import Error
 
 
@@ -36,21 +38,52 @@ def get_customer():
         raise Error('No such customer.', status=404)
 
 
-def get_terminal():
+def get_terminal_by_ip():
+    """Returns the terminal by its source IP address."""
+
+    address = IPv4Address(request.remote_addr)
+    return Terminal.select().join(VPN).where(VPN.ipv4addr == address).get()
+
+
+def get_terminal_by_args():
     """Returns the respective terminal."""
 
     try:
-        return Terminal.by_ids(request.args['cid'], request.args['tid'])
+        cid = int(request.args['cid'])
+    except KeyError:
+        raise Error('No customer ID specified.')
+    except ValueError:
+        raise Error('Customer ID is not an integer.')
+
+    try:
+        tid = int(request.args['tid'])
+    except KeyError:
+        raise Error('No terminal ID specified.')
+    except ValueError:
+        raise Error('Terminal ID is not an integer.')
+
+    try:
+        return Terminal.by_ids(cid, tid)
     except Terminal.DoesNotExist:
         raise Error('No such terminal.', status=404)
 
 
-def get_customer_and_address():
+def get_terminal(private=False):
+    """Returns the respective terminal."""
+
+    if private:
+        with suppress(ValueError, Terminal.DoesNotExist):
+            return get_terminal_by_ip()
+
+    return get_terminal_by_args()
+
+
+def get_customer_and_address(private=False):
     """Returns customer and address by
     the respective terminal arguments.
     """
 
-    terminal = get_terminal()
+    terminal = get_terminal(private=private)
     address = terminal.address
 
     if address is None:
@@ -59,13 +92,14 @@ def get_customer_and_address():
     return (terminal.customer, address)
 
 
-def street_houseno():
+def street_houseno(private=False):
     """Returns street and house number."""
 
     try:
         return (request.args['street'], request.args['house_number'])
     except KeyError:
-        address = get_terminal().address
+        terminal = get_terminal(private=private)
+        address = terminal.address
 
         if address is None:
             raise Error('No address specified and terminal has no address.')
