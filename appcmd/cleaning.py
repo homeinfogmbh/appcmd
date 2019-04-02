@@ -34,10 +34,17 @@ def list_cleanings(private=False):
     terminal = get_terminal(private=private)
     address = terminal.address
 
+    try:
+        limit = int(request.args['limit'])
+    except KeyError:
+        limit = 10
+    else:
+        limit = limit or None
+
     if address is None:
         raise Error('Terminal has no address.')
 
-    return _response(CleaningDate.by_address(address, limit=10))
+    return _response(CleaningDate.by_address(address, limit=limit))
 
 
 def add_cleaning(private=False):
