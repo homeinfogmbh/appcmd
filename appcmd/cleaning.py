@@ -17,7 +17,8 @@ def _response(cleaning_dates):
 
     if 'application/json' in ACCEPT or '*/*' in ACCEPT:
         return JSON([
-            cleaning_date.to_json() for cleaning_date in cleaning_dates])
+            cleaning_date.to_json(short=True)
+            for cleaning_date in cleaning_dates])
 
     xml = cleanings()
 
