@@ -9,7 +9,7 @@ __all__ = ['get_departures']
 
 
 def get_departures(private=False):
-    """Returns stops for the respective terminal."""
+    """Returns stops for the respective system."""
 
     system = get_system(private=private)
     location = system.location
