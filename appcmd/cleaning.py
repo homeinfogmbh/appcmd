@@ -6,7 +6,7 @@ from digsigdb import CleaningUser, CleaningDate
 from digsigdb.dom import cleanings
 from wsgilib import ACCEPT, Error, JSON, XML
 
-from appcmd.functions import get_json, get_terminal
+from appcmd.functions import get_json, get_system
 
 
 __all__ = ['list_cleanings', 'add_cleaning']
@@ -29,10 +29,13 @@ def _response(cleaning_dates):
 
 
 def list_cleanings(private=False):
-    """Lists cleaning entries for the respective terminal."""
+    """Lists cleaning entries for the respective system."""
 
-    terminal = get_terminal(private=private)
-    address = terminal.address
+    system = get_system(private=private)
+    location = system.location
+
+    if location is None:
+        raise Error('System is not located.')
 
     try:
         limit = int(request.args['limit'])
@@ -41,28 +44,25 @@ def list_cleanings(private=False):
     else:
         limit = limit or None
 
-    if address is None:
-        raise Error('Terminal has no address.')
-
-    return _response(CleaningDate.by_address(address, limit=limit))
+    return _response(CleaningDate.by_address(location.address, limit=limit))
 
 
 def add_cleaning(private=False):
     """Adds a cleaning entry."""
 
-    terminal = get_terminal(private=private)
+    system = get_system(private=private)
 
     try:
         user = CleaningUser.get(
             (CleaningUser.pin == request.args['pin']) &
-            (CleaningUser.customer == terminal.customer))
+            (CleaningUser.customer == system.customer))
     except CleaningUser.DoesNotExist:
         return ('Invalid PIN.', 403)
 
-    address = terminal.address
+    location = system.location
 
-    if address is None:
-        return ('Terminal has no address.', 400)
+    if location is None:
+        return ('System is not located.', 400)
 
     try:
         json = get_json()
@@ -71,5 +71,5 @@ def add_cleaning(private=False):
     else:
         annotations = json.get('annotations')
 
-    CleaningDate.add(user, address, annotations=annotations)
+    CleaningDate.add(user, location.address, annotations=annotations)
     return ('Cleaning date added.', 201)

@@ -5,7 +5,7 @@ from flask import request
 from tenant2tenant import email, TenantMessage
 
 from appcmd.config import CONFIG
-from appcmd.functions import get_terminal
+from appcmd.functions import get_system
 
 
 __all__ = ['tenant2tenant']
@@ -23,12 +23,12 @@ def tenant2tenant(private=False, maxlen=MAX_MSG_SIZE):
     if len(message) > maxlen:
         return ('Maximum text length exceeded.', 413)
 
-    terminal = get_terminal(private=private)
+    system = get_system(private=private)
 
     try:
-        record = TenantMessage.from_terminal(terminal, message)
+        record = TenantMessage.from_system(system, message)
     except AttributeError:
-        return ('Terminal has no address.', 400)
+        return ('System has no address.', 400)
 
     record.save()
     email(record)

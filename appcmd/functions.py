@@ -7,14 +7,14 @@ from json import loads
 from flask import request
 
 from mdb import Customer
-from terminallib import Terminal, VPN
+from terminallib import OpenVPN, System
 from wsgilib import Error
 
 
 __all__ = [
     'get_json',
     'get_customer',
-    'get_terminal',
+    'get_system',
     'get_customer_and_address',
     'street_houseno']
 
@@ -38,58 +38,52 @@ def get_customer():
         raise Error('No such customer.', status=404)
 
 
-def get_terminal_by_ip():
-    """Returns the terminal by its source IP address."""
+def get_system_by_ip():
+    """Returns the system by its source IP address."""
 
     address = IPv4Address(request.remote_addr)
-    return Terminal.select().join(VPN).where(VPN.ipv4addr == address).get()
+    return System.select().join(OpenVPN).where(
+        OpenVPN.ipv4address == address).get()
 
 
-def get_terminal_by_args():
-    """Returns the respective terminal."""
+def get_system_by_args():
+    """Returns the respective system."""
 
     try:
-        cid = int(request.args['cid'])
+        system = int(request.args['system'])
     except KeyError:
         raise Error('No customer ID specified.')
     except ValueError:
         raise Error('Customer ID is not an integer.')
 
     try:
-        tid = int(request.args['tid'])
-    except KeyError:
-        raise Error('No terminal ID specified.')
-    except ValueError:
-        raise Error('Terminal ID is not an integer.')
-
-    try:
-        return Terminal.by_ids(cid, tid)
-    except Terminal.DoesNotExist:
-        raise Error('No such terminal.', status=404)
+        return System[system]
+    except System.DoesNotExist:
+        raise Error('No such system.', status=404)
 
 
-def get_terminal(private=False):
-    """Returns the respective terminal."""
+def get_system(private=False):
+    """Returns the respective system."""
 
     if private:
-        with suppress(ValueError, Terminal.DoesNotExist):
-            return get_terminal_by_ip()
+        with suppress(ValueError, System.DoesNotExist):
+            return get_system_by_ip()
 
-    return get_terminal_by_args()
+    return get_system_by_args()
 
 
 def get_customer_and_address(private=False):
     """Returns customer and address by
-    the respective terminal arguments.
+    the respective system arguments.
     """
 
-    terminal = get_terminal(private=private)
-    address = terminal.address
+    system = get_system(private=private)
+    location = system.location
 
-    if address is None:
-        raise Error('Terminal has no address.')
+    if location is None:
+        raise Error('System is not located.')
 
-    return (terminal.customer, address)
+    return (system.customer, location.address)
 
 
 def street_houseno(private=False):
@@ -98,10 +92,9 @@ def street_houseno(private=False):
     try:
         return (request.args['street'], request.args['house_number'])
     except KeyError:
-        terminal = get_terminal(private=private)
-        address = terminal.address
+        location = get_system(private=private).location
 
-        if address is None:
-            raise Error('No address specified and terminal has no address.')
+        if location is None:
+            raise Error('No address specified and system is not located.')
 
-        return (address.street, address.house_number)
+        return (location.address.street, location.address.house_number)

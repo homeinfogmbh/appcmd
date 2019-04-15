@@ -4,24 +4,20 @@ from flask import request
 
 from digsigdb import Statistics
 
-from appcmd.functions import get_customer, get_terminal
+from appcmd.functions import get_system
 
 
 __all__ = ['add_statistics']
 
 
-def add_statistics(private=False):
+def add_statistics():
     """Adds a new statistics entry."""
 
-    if private:
-        terminal = get_terminal()
-        customer = terminal.customer
-        tid = terminal.tid
-        vid = terminal.vid
-    else:
-        customer = get_customer()
-        tid = request.args.get('tid')
-        vid = request.args['vid']
+    system = get_system()
+    location = system.location
 
-    Statistics.add(customer, vid, tid, request.args['document'])
+    if location is None:
+        return ('System is not located.', 400)
+
+    Statistics.add(location.address, request.args['document'])
     return ('Statistics added.', 201)
