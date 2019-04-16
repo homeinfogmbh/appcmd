@@ -24,12 +24,12 @@ def tenant2tenant(private=False, maxlen=MAX_MSG_SIZE):
         return ('Maximum text length exceeded.', 413)
 
     system = get_system(private=private)
-    location = system.location
+    deployment = system.deployment
 
-    if location is None:
-        return ('System has no address.', 400)
+    if deployment is None:
+        return ('System has no deployed.', 400)
 
-    record = TenantMessage.from_location(location, message)
+    record = TenantMessage.from_deployment(deployment, message)
     record.save()
     email(record)
     return ('Tenant message added.', 201)

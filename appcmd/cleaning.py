@@ -32,10 +32,10 @@ def list_cleanings(private=False):
     """Lists cleaning entries for the respective system."""
 
     system = get_system(private=private)
-    location = system.location
+    deployment = system.deployment
 
-    if location is None:
-        raise Error('System is not located.')
+    if deployment is None:
+        raise Error('System is not deployed.')
 
     try:
         limit = int(request.args['limit'])
@@ -44,7 +44,7 @@ def list_cleanings(private=False):
     else:
         limit = limit or None
 
-    return _response(CleaningDate.by_address(location.address, limit=limit))
+    return _response(CleaningDate.by_address(deployment.address, limit=limit))
 
 
 def add_cleaning(private=False):
@@ -59,10 +59,10 @@ def add_cleaning(private=False):
     except CleaningUser.DoesNotExist:
         return ('Invalid PIN.', 403)
 
-    location = system.location
+    deployment = system.deployment
 
-    if location is None:
-        return ('System is not located.', 400)
+    if deployment is None:
+        return ('System is not deployed.', 400)
 
     try:
         json = get_json()
@@ -71,5 +71,5 @@ def add_cleaning(private=False):
     else:
         annotations = json.get('annotations')
 
-    CleaningDate.add(user, location.address, annotations=annotations)
+    CleaningDate.add(user, deployment.address, annotations=annotations)
     return ('Cleaning date added.', 201)

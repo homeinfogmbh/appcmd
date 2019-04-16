@@ -78,12 +78,12 @@ def get_customer_and_address(private=False):
     """
 
     system = get_system(private=private)
-    location = system.location
+    deployment = system.deployment
 
-    if location is None:
-        raise Error('System is not located.')
+    if deployment is None:
+        raise Error('System is not deployed.')
 
-    return (system.customer, location.address)
+    return (deployment.customer, deployment.address)
 
 
 def street_houseno(private=False):
@@ -92,9 +92,9 @@ def street_houseno(private=False):
     try:
         return (request.args['street'], request.args['house_number'])
     except KeyError:
-        location = get_system(private=private).location
+        deployment = get_system(private=private).deployment
 
-        if location is None:
-            raise Error('No address specified and system is not located.')
+        if deployment is None:
+            raise Error('No address specified and system is not deployed.')
 
-        return (location.address.street, location.address.house_number)
+        return (deployment.address.street, deployment.address.house_number)

@@ -14,10 +14,10 @@ def add_statistics():
     """Adds a new statistics entry."""
 
     system = get_system()
-    location = system.location
+    deployment = system.deployment
 
-    if location is None:
-        return ('System is not located.', 400)
+    if deployment is None:
+        return ('System is not deployed.', 400)
 
-    Statistics.add(location.address, request.args['document'])
+    Statistics.add(deployment.address, request.args['document'])
     return ('Statistics added.', 201)

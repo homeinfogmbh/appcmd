@@ -12,10 +12,10 @@ def get_departures(private=False):
     """Returns stops for the respective system."""
 
     system = get_system(private=private)
-    location = system.location
+    deployment = system.deployment
 
-    if location is None:
-        return ('System is not located.', 400)
+    if deployment is None:
+        return ('System is not deployed.', 400)
 
-    address = location.lpt_address or location.address
+    address = deployment.lpt_address or deployment.address
     return get_response(address)
