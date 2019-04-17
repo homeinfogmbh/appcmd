@@ -51,18 +51,17 @@ def add_cleaning():
     """Adds a cleaning entry."""
 
     system = get_system()
-
-    try:
-        user = CleaningUser.get(
-            (CleaningUser.pin == request.args['pin']) &
-            (CleaningUser.customer == system.customer))
-    except CleaningUser.DoesNotExist:
-        return ('Invalid PIN.', 403)
-
     deployment = system.deployment
 
     if deployment is None:
         return ('System is not deployed.', 400)
+
+    try:
+        user = CleaningUser.get(
+            (CleaningUser.pin == request.args['pin']) &
+            (CleaningUser.customer == deployment.customer))
+    except CleaningUser.DoesNotExist:
+        return ('Invalid PIN.', 403)
 
     try:
         json = get_json()
