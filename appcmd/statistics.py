@@ -19,5 +19,5 @@ def add_statistics():
     if deployment is None:
         return ('System is not deployed.', 400)
 
-    Statistics.add(deployment.address, request.args['document'])
+    Statistics.add(deployment, request.args['document'])
     return ('Statistics added.', 201)
