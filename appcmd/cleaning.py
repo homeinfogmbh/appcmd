@@ -28,10 +28,10 @@ def _response(cleaning_dates):
     return XML(xml)
 
 
-def list_cleanings(private=False):
+def list_cleanings():
     """Lists cleaning entries for the respective system."""
 
-    system = get_system(private=private)
+    system = get_system()
     deployment = system.deployment
 
     if deployment is None:
@@ -44,7 +44,7 @@ def list_cleanings(private=False):
     else:
         limit = limit or None
 
-    return _response(CleaningDate.by_address(deployment.address, limit=limit))
+    return _response(CleaningDate.by_deployment(deployment, limit=limit))
 
 
 def add_cleaning():
@@ -71,5 +71,5 @@ def add_cleaning():
     else:
         annotations = json.get('annotations')
 
-    CleaningDate.add(user, deployment.address, annotations=annotations)
+    CleaningDate.add(user, deployment, annotations=annotations)
     return ('Cleaning date added.', 201)
