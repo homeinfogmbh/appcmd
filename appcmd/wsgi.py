@@ -21,16 +21,16 @@ __all__ = ['PRIVATE', 'PUBLIC']
 PRIVATE = Application('private', cors=True, debug=True)
 PUBLIC = Application('public', cors=True)
 PRIVATE_ROUTES = (
-    ('GET', '/cleaning', partial(list_cleanings, private=True)),
-    ('GET', '/garbage_collection', partial(garbage_collection, private=True)),
-    ('GET', '/lpt', partial(get_departures, private=True)),
-    ('POST', '/cleaning', partial(add_cleaning, private=True)),
+    ('GET', '/cleaning', list_cleanings),
+    ('GET', '/garbage_collection', garbage_collection),
+    ('GET', '/lpt', get_departures),
+    ('POST', '/cleaning', add_cleaning),
     ('POST', '/contactform', send_contact_mail),
-    ('POST', '/damagereport', partial(damage_report, private=True)),
+    ('POST', '/damagereport', damage_report),
     ('POST', '/poll', cast_vote),
-    ('POST', '/proxy', partial(proxy, private=True)),
+    ('POST', '/proxy', proxy),
     ('POST', '/statistics', add_statistics),
-    ('POST', '/tenant2tenant', partial(tenant2tenant, private=True))
+    ('POST', '/tenant2tenant', tenant2tenant)
 )
 PUBLIC_ROUTES = (('POST', '/proxy', partial(proxy, private=False)),)
 PRIVATE.add_routes(PRIVATE_ROUTES)

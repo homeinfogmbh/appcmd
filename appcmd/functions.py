@@ -62,7 +62,7 @@ def get_system_by_args():
         raise Error('No such system.', status=404)
 
 
-def get_system(private=False):
+def get_system(private=True):
     """Returns the respective system."""
 
     if private:
@@ -72,12 +72,12 @@ def get_system(private=False):
     return get_system_by_args()
 
 
-def get_customer_and_address(private=False):
+def get_customer_and_address():
     """Returns customer and address by
     the respective system arguments.
     """
 
-    system = get_system(private=private)
+    system = get_system()
     deployment = system.deployment
 
     if deployment is None:
@@ -86,13 +86,13 @@ def get_customer_and_address(private=False):
     return (deployment.customer, deployment.address)
 
 
-def street_houseno(private=False):
+def street_houseno():
     """Returns street and house number."""
 
     try:
         return (request.args['street'], request.args['house_number'])
     except KeyError:
-        deployment = get_system(private=private).deployment
+        deployment = get_system().deployment
 
         if deployment is None:
             raise Error('No address specified and system is not deployed.')

@@ -11,7 +11,7 @@ from digsigdb import ProxyHost
 __all__ = ['proxy']
 
 
-def proxy(private=False):
+def proxy(private=True):
     """Proxies URLs."""
 
     url = urlparse(request.get_data().decode())

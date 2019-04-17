@@ -47,10 +47,10 @@ def list_cleanings(private=False):
     return _response(CleaningDate.by_address(deployment.address, limit=limit))
 
 
-def add_cleaning(private=False):
+def add_cleaning():
     """Adds a cleaning entry."""
 
-    system = get_system(private=private)
+    system = get_system()
 
     try:
         user = CleaningUser.get(

@@ -60,10 +60,10 @@ def _response(solutions):
     return ('Invalid content type.', 406)
 
 
-def garbage_collection(private=False):
+def garbage_collection():
     """Returns information about the garbage collection."""
 
-    street, house_number = street_houseno(private=private)
+    street, house_number = street_houseno()
 
     try:
         solutions = tuple(AHA_CLIENT.by_street_houseno(street, house_number))

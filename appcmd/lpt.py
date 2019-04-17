@@ -8,10 +8,10 @@ from appcmd.functions import get_system
 __all__ = ['get_departures']
 
 
-def get_departures(private=False):
+def get_departures():
     """Returns stops for the respective system."""
 
-    system = get_system(private=private)
+    system = get_system()
     deployment = system.deployment
 
     if deployment is None:
