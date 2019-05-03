@@ -33,7 +33,14 @@ def get_customer():
     """Returns the respective customer."""
 
     try:
-        return Customer.get(Customer.id == request.args['cid'])
+        cid = int(request.args['cid'])
+    except KeyError:
+        raise Error('No customer ID specified.')
+    except ValueError:
+        raise Error('Customer ID is not an integer.')
+
+    try:
+        return Customer[cid]
     except Customer.DoesNotExist:
         raise Error('No such customer.', status=404)
 
@@ -52,9 +59,9 @@ def get_system_by_args():
     try:
         system = int(request.args['system'])
     except KeyError:
-        raise Error('No customer ID specified.')
+        raise Error('No system ID specified.')
     except ValueError:
-        raise Error('Customer ID is not an integer.')
+        raise Error('System ID is not an integer.')
 
     try:
         return System[system]
