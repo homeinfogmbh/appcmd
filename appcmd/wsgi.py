@@ -11,6 +11,7 @@ from appcmd.lpt import get_departures
 from appcmd.mail import send_contact_mail
 from appcmd.poll import cast_vote
 from appcmd.proxy import proxy
+from appcmd.renting import rent
 from appcmd.statistics import add_statistics
 from appcmd.tenant2tenant import tenant2tenant
 
@@ -29,6 +30,7 @@ PRIVATE_ROUTES = (
     ('POST', '/damagereport', damage_report),
     ('POST', '/poll', cast_vote),
     ('POST', '/proxy', proxy),
+    ('POST', '/rent', rent),
     ('POST', '/statistics', add_statistics),
     ('POST', '/tenant2tenant', tenant2tenant)
 )
