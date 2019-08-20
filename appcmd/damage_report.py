@@ -18,13 +18,13 @@ def damage_report():
     try:
         record = DamageReport.from_json(get_json(), customer, address)
     except InvalidKeys as invalid_keys:
-        raise Error('Invalid keys: {}.'.format(invalid_keys.invalid_keys))
+        raise Error(f'Invalid keys: {invalid_keys.invalid_keys}.')
     except FieldNotNullable as field_not_nullable:
-        raise Error('Field "{}" is not nullable.'.format(
-            field_not_nullable.field))
+        raise Error(f'Field "{field_not_nullable.field}" is not nullable.')
     except FieldValueError as field_value_error:
-        raise Error('Invalid value for field "{}": "{}".'.format(
-            field_value_error.field, field_value_error.value))
+        raise Error(
+            f'Invalid value for field "{field_value_error.field}": '
+            f'"{field_value_error.value}".')
 
     record.save()
     email(record)
