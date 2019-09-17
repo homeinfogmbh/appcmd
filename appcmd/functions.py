@@ -16,7 +16,8 @@ __all__ = [
     'get_customer',
     'get_system',
     'get_customer_and_address',
-    'street_houseno']
+    'street_houseno'
+]
 
 
 def get_json():

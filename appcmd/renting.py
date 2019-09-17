@@ -1,7 +1,5 @@
 """Renting."""
 
-from flask import request
-
 from rentallib import dom
 from rentallib import AlreadyRented
 from rentallib import EndBeforeStart
@@ -12,7 +10,7 @@ from rentallib import Renting
 from timelib import strpdatetime
 from wsgilib import Error, OK, XML
 
-from appcmd.functions import get_customer_and_address
+from appcmd.functions import get_json, get_customer_and_address
 
 
 __all__ = ['list_rentables', 'list_rentings', 'submit_renting']
@@ -46,26 +44,28 @@ def list_rentings():
 def submit_renting():
     """Rents a rentable."""
 
+    json = get_json()
+
     try:
-        rentable = request.json['rentable']
+        rentable = json['rentable']
     except KeyError:
         return Error('No rentable specified.')
 
     try:
-        start = strpdatetime(request.json['start'])
+        start = strpdatetime(json['start'])
     except KeyError:
         return Error('No start datetime specified.')
     except ValueError:
         return Error('Datetime must be in ISO format.')
 
     try:
-        end = strpdatetime(request.json['end'])
+        end = strpdatetime(json['end'])
     except KeyError:
         return Error('No end datetime specified.')
     except ValueError:
         return Error('Datetime must be in ISO format.')
 
-    rentee = request.json.get('rentee')
+    rentee = json.get('rentee')
 
     if not rentee:
         return Error('No rentee specified.')
