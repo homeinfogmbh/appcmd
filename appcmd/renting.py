@@ -70,10 +70,7 @@ def submit_rent():
     if not rentee:
         return Error('No rentee specified.')
 
-    customer = request.json.get('customer')
-
-    if not customer:
-        return Error('No customer specified.')
+    customer, _ = get_customer_and_address()
 
     try:
         rentable = Rentable.get(
