@@ -10,7 +10,7 @@ from rentallib import DurationTooShort
 from rentallib import Rentable
 from rentallib import Renting
 from timelib import strpdatetime
-from wsgilib import Error, OK
+from wsgilib import Error, OK, XML
 
 from appcmd.functions import get_customer_and_address
 
@@ -27,7 +27,7 @@ def list_rentables():
     for rentable in Rentable.select().where(Rentable.customer == customer):
         xml.rentable.append(rentable.to_dom())
 
-    return xml
+    return XML(xml)
 
 
 def list_rentings():
@@ -40,7 +40,7 @@ def list_rentings():
             Rentable.customer == customer):
         xml.renting.append(renting.to_dom())
 
-    return xml
+    return XML(xml)
 
 
 def submit_renting():
