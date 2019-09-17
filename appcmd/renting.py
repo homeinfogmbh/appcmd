@@ -15,7 +15,7 @@ from wsgilib import Error, OK
 from appcmd.functions import get_customer_and_address
 
 
-__all__ = ['list_rentables', 'list_rentings', 'submit_rent']
+__all__ = ['list_rentables', 'list_rentings', 'submit_renting']
 
 
 def list_rentables():
@@ -43,7 +43,7 @@ def list_rentings():
     return xml
 
 
-def submit_rent():
+def submit_renting():
     """Rents a rentable."""
 
     try:
