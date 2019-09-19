@@ -38,7 +38,7 @@ def list_rentings():
 
     for renting in Renting.select().join(Rentable).where(
             (Rentable.customer == customer)
-            & (Renting.start >= datetime.now())).order_by(Renting.start):
+            & (Renting.end >= datetime.now())).order_by(Renting.start):
         xml.renting.append(renting.to_dom())
 
     return XML(xml)
