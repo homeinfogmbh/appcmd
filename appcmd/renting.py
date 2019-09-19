@@ -1,5 +1,7 @@
 """Renting."""
 
+from datetime import datetime
+
 from rentallib import dom
 from rentallib import AlreadyRented
 from rentallib import EndBeforeStart
@@ -31,17 +33,18 @@ def list_rentables():
 def list_rentings():
     """Lists stored rentings."""
 
-    customer, _ = get_customer_and_address()
     xml = dom.rentings()
+    customer, _ = get_customer_and_address()
 
     for renting in Renting.select().join(Rentable).where(
-            Rentable.customer == customer):
+            (Rentable.customer == customer)
+            & (Renting.start >= datetime.now())).order_by(Renting.start):
         xml.renting.append(renting.to_dom())
 
     return XML(xml)
 
 
-def submit_renting():
+def submit_renting():   # pylint: disable=R0911
     """Rents a rentable."""
 
     json = get_json()
