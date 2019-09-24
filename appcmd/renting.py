@@ -3,6 +3,7 @@
 from datetime import datetime
 
 from rentallib import dom
+from rentallib import email
 from rentallib import AlreadyRented
 from rentallib import EndBeforeStart
 from rentallib import DurationTooLong
@@ -82,7 +83,7 @@ def submit_renting():   # pylint: disable=R0911
         return Error('No such rentable.', status=404)
 
     try:
-        rentable.rent(rentee, start, end)
+        renting = rentable.rent(rentee, start, end)
     except EndBeforeStart:
         return Error('Start date must be before end date.')
     except DurationTooLong:
@@ -92,4 +93,5 @@ def submit_renting():   # pylint: disable=R0911
     except AlreadyRented:
         return Error('Rentable has already been rented.', status=409)
 
-    return OK(f'{rentable.id}')
+    email(renting)
+    return OK(f'{renting.id}')
