@@ -3,7 +3,7 @@ Maximized=1
 Geometry=1920x983+0+27
 
 [File Loader]
-Files=../../appcmd/renting.py#28%%%../../appcmd/functions.py#83%%%../../appcmd/wsgi.py#35%%%../../appcmd/lpt.py#1%%%../../appcmd/damage_report.py#1
+Files=../../appcmd/renting.py#95%%%../../appcmd/functions.py#83%%%../../appcmd/wsgi.py#27%%%../../appcmd/lpt.py#1%%%../../appcmd/damage_report.py#27%%%../../appcmd/booking.py#49%%%../../appcmd/config.py#1
 
 [Document Manager]
 bookmarks=<?xml version="1.0" encoding="UTF-8"?>\n<bookmarks/>\n
@@ -12,9 +12,6 @@ bookmarks=<?xml version="1.0" encoding="UTF-8"?>\n<bookmarks/>\n
 Run in terminal=2
 Working directories=../../.
 
-[Debugger]
-Stop at beginning=2
-
 [Build]
 Configuration list=1:Default:%%%1:Debug:Debug%%%1:Profiling:Profiling%%%1:Optimized:Optimized
 Selected Configuration=Default
@@ -22,3 +19,6 @@ BuildArgs/Default=--enable-maintainer-mode
 BuildArgs/Debug=--enable-maintainer-mode 'CFLAGS=-g -O0' 'CXXFLAGS=-g -O0' 'JFLAGS=-g -O0' 'FFLAGS=-g -O0'
 BuildArgs/Profiling=--enable-maintainer-mode 'CFLAGS=-g -pg' 'CXXFLAGS=-g -pg' 'JFLAGS=-g -pg' 'FFLAGS=-g -pg'
 BuildArgs/Optimized=--enable-maintainer-mode 'CFLAGS=-O2' 'CXXFLAGS=-O2' 'JFLAGS=-O2' 'FFLAGS=-O2'
+
+[Debugger]
+Stop at beginning=2
