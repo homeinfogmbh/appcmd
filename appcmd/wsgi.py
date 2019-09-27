@@ -13,6 +13,7 @@ from appcmd.mail import send_contact_mail
 from appcmd.poll import cast_vote
 from appcmd.proxy import proxy
 from appcmd.statistics import add_statistics
+from appcmd.sysdep import get_deployment
 from appcmd.tenant2tenant import tenant2tenant
 
 
@@ -34,6 +35,7 @@ PRIVATE_ROUTES = (
     ('POST', '/poll', cast_vote),
     ('POST', '/proxy', proxy),
     ('POST', '/statistics', add_statistics),
+    ('GET', '/deployment', get_deployment),
     ('POST', '/tenant2tenant', tenant2tenant)
 )
 PUBLIC_ROUTES = (('POST', '/proxy', partial(proxy, private=False)),)
