@@ -2,8 +2,7 @@
 
 from flask import request
 
-from digsigdb import CleaningUser, CleaningDate
-from digsigdb.dom import cleanings
+from cleaninglog import cleanings, CleaningUser, CleaningDate
 from wsgilib import ACCEPT, Error, JSON, XML
 
 from appcmd.functions import get_json, get_system
