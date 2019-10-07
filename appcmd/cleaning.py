@@ -2,29 +2,13 @@
 
 from flask import request
 
-from cleaninglog import cleanings, CleaningUser, CleaningDate
-from wsgilib import ACCEPT, Error, JSON, XML
+from cleaninglog import make_response, CleaningUser, CleaningDate
+from wsgilib import Error
 
 from appcmd.functions import get_json, get_system
 
 
 __all__ = ['list_cleanings', 'add_cleaning']
-
-
-def _response(cleaning_dates):
-    """Creates a response from the respective dictionary."""
-
-    if 'application/json' in ACCEPT or '*/*' in ACCEPT:
-        return JSON([
-            cleaning_date.to_json(short=True)
-            for cleaning_date in cleaning_dates])
-
-    xml = cleanings()
-
-    for cleaning_date in cleaning_dates:
-        xml.cleaning.append(cleaning_date.to_dom())
-
-    return XML(xml)
 
 
 def list_cleanings():
@@ -43,7 +27,7 @@ def list_cleanings():
     else:
         limit = limit or None
 
-    return _response(CleaningDate.by_deployment(deployment, limit=limit))
+    return make_response(CleaningDate.by_deployment(deployment, limit=limit))
 
 
 def add_cleaning():
