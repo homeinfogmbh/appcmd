@@ -1,9 +1,9 @@
 [Anjuta]
 Maximized=1
-Geometry=1920x983+0+27
+Geometry=1920x983+0+0
 
 [File Loader]
-Files=../../appcmd/functions.py#83%%%../../appcmd/wsgi.py#27%%%../../appcmd/lpt.py#1%%%../../appcmd/damage_report.py#27%%%../../appcmd/booking.py#49%%%../../appcmd/config.py#1%%%../../appcmd/tenant2tenant.py#24
+Files=../../appcmd/functions.py#83%%%../../appcmd/wsgi.py#27%%%../../appcmd/lpt.py#1%%%../../appcmd/damage_report.py#27%%%../../appcmd/booking.py#49%%%../../appcmd/config.py#1%%%../../appcmd/tenant2tenant.py#24%%%../../appcmd/cleaning.py#32
 
 [Document Manager]
 bookmarks=<?xml version="1.0" encoding="UTF-8"?>\n<bookmarks/>\n
