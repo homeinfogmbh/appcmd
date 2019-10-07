@@ -2,7 +2,7 @@
 
 from flask import request
 
-from cleaninglog import make_response, CleaningUser, CleaningDate
+from cleaninglog import by_deployment, CleaningUser, CleaningDate
 from wsgilib import Error
 
 from appcmd.functions import get_json, get_system
@@ -20,14 +20,7 @@ def list_cleanings():
     if deployment is None:
         raise Error('System is not deployed.')
 
-    try:
-        limit = int(request.args['limit'])
-    except KeyError:
-        limit = 10
-    else:
-        limit = limit or None
-
-    return make_response(CleaningDate.by_deployment(deployment, limit=limit))
+    return by_deployment(deployment)
 
 
 def add_cleaning():
