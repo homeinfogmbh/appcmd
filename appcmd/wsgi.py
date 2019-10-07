@@ -27,6 +27,7 @@ PRIVATE_ROUTES = (
     ('GET', '/bookings', list_bookings),
     ('POST', '/bookings', book),
     ('GET', '/cleaning', list_cleanings),
+    ('GET', '/deployment', get_deployment),
     ('GET', '/garbage_collection', garbage_collection),
     ('GET', '/lpt', get_departures),
     ('POST', '/cleaning', add_cleaning),
@@ -35,7 +36,6 @@ PRIVATE_ROUTES = (
     ('POST', '/poll', cast_vote),
     ('POST', '/proxy', proxy),
     ('POST', '/statistics', add_statistics),
-    ('GET', '/deployment', get_deployment),
     ('POST', '/tenant2tenant', tenant2tenant)
 )
 PUBLIC_ROUTES = (('POST', '/proxy', partial(proxy, private=False)),)
