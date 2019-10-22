@@ -70,11 +70,8 @@ def book():     # pylint: disable=R0911
     except ValueError:
         return Error('Datetime must be in ISO format.')
 
-    rentee = json.get('rentee')
-
-    if not rentee:
-        return Error('No rentee specified.')
-
+    rentee = json.get('rentee') or None
+    prupose = json.get('prupose') or None
     customer, _ = get_customer_and_address()
 
     try:
@@ -84,18 +81,15 @@ def book():     # pylint: disable=R0911
         return Error('No such bookable.', status=404)
 
     try:
-        booking = bookable.book(rentee, start, end)
+        booking = bookable.book(start, end, rentee=rentee, prupose=prupose)
     except EndBeforeStart:
         return Error('Start date must be before end date.')
     except DurationTooLong:
         return Error('Rent duration is too long.')
     except DurationTooShort:
         return Error('Rent duration is too short.')
-    except AlreadyBooked as booked:
-        start = booked.booking.start.isoformat()
-        end = booked.booking.end.isoformat()
-        message = f'Bookable has already been booked from {start} to {end}.'
-        return Error(message, status=409)
+    except AlreadyBooked:
+        return Error('Bookable has already been booked.', status=409)
 
     email(booking)
     return OK(f'{booking.id}')
