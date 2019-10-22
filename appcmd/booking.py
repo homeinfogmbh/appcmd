@@ -71,7 +71,7 @@ def book():     # pylint: disable=R0911
         return Error('Datetime must be in ISO format.')
 
     rentee = json.get('rentee') or None
-    prupose = json.get('prupose') or None
+    purpose = json.get('purpose') or None
     customer, _ = get_customer_and_address()
 
     try:
@@ -81,7 +81,7 @@ def book():     # pylint: disable=R0911
         return Error('No such bookable.', status=404)
 
     try:
-        booking = bookable.book(start, end, rentee=rentee, prupose=prupose)
+        booking = bookable.book(start, end, rentee=rentee, purpose=purpose)
     except EndBeforeStart:
         return Error('Start date must be before end date.')
     except DurationTooLong:
