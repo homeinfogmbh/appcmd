@@ -11,3 +11,5 @@ __pycache__
 .buildconfig
 appcmd/dom/*.py
 !appcmd/dom/__init__.py
+*.anjuta
+.anjuta*
