@@ -102,7 +102,8 @@ def cancel(ident):
 
     try:
         booking = Booking.select().join(Bookable).where(
-            (Booking.id == ident) & (Bookable.customer == customer))
+            (Booking.id == ident) & (Bookable.customer == customer)
+        ).get()
     except Booking.DoesNotExist:
         return Error('No such booking.', status=404)
 
