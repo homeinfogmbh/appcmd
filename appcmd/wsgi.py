@@ -4,7 +4,7 @@ from functools import partial
 
 from wsgilib import Application
 
-from appcmd.booking import list_bookables, list_bookings, book
+from appcmd.booking import list_bookables, list_bookings, book, cancel
 from appcmd.cleaning import list_cleanings, add_cleaning
 from appcmd.damage_report import damage_report
 from appcmd.garbage_collection import garbage_collection
@@ -26,6 +26,7 @@ PRIVATE_ROUTES = (
     ('GET', '/bookables', list_bookables),
     ('GET', '/bookings', list_bookings),
     ('POST', '/bookings', book),
+    ('DELETE', '/bookings/<int:ident>', cancel),
     ('GET', '/cleaning', list_cleanings),
     ('GET', '/deployment', get_deployment),
     ('GET', '/garbage_collection', garbage_collection),

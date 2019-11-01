@@ -16,7 +16,7 @@ from wsgilib import Error, OK, XML
 from appcmd.functions import get_json, get_customer_and_address
 
 
-__all__ = ['list_bookables', 'list_bookings', 'book']
+__all__ = ['list_bookables', 'list_bookings', 'book', 'cancel']
 
 
 def list_bookables():
@@ -93,3 +93,18 @@ def book():     # pylint: disable=R0911
 
     email(booking)
     return OK(f'{booking.id}')
+
+
+def cancel(ident):
+    """Cancels a booking."""
+
+    customer, _ = get_customer_and_address()
+
+    try:
+        booking = Booking.select().join(Bookable).where(
+            (Booking.id == ident) & (Bookable.customer == customer))
+    except Booking.DoesNotExist:
+        return Error('No such booking.', status=404)
+
+    booking.delete_instance()
+    return OK('Booking cancelled.')
