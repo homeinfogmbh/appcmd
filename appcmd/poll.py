@@ -1,6 +1,6 @@
 """Interface to participate in DSMCS4 polls."""
 
-from cmslib.orm.charts import Poll, PollMode, PollOption
+from cmslib.orm.charts import Mode, Poll, Option
 from wsgilib import Error
 
 from appcmd.functions import get_json
@@ -31,19 +31,19 @@ def cast_vote():
 
     if not choices:
         raise Error('No choice provided.')
-    elif not isinstance(choices, list):
+
+    if not isinstance(choices, list):
         raise Error('Choices is not a list.')
 
-    if poll.mode == PollMode.SINGLE_CHOICE and len(choices) > 1:
+    if poll.mode == Mode.SINGLE_CHOICE and len(choices) > 1:
         raise Error('Only one option is allowed in single choice mode.')
 
     options = []
 
     for choice in choices:
         try:
-            option = PollOption.get(
-                (PollOption.poll == poll) & (PollOption.id == choice))
-        except PollOption.DoesNotExist:
+            option = Option.get((Option.poll == poll) & (Option.id == choice))
+        except Option.DoesNotExist:
             raise Error('No such option "{}" for poll "{}".'.format(
                 choice, poll.id), status=404)
 
