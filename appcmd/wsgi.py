@@ -7,6 +7,7 @@ from wsgilib import Application
 from appcmd.booking import list_bookables, list_bookings, book, cancel
 from appcmd.cleaning import list_cleanings, add_cleaning
 from appcmd.damage_report import damage_report
+from appcmd.digsigclt import update as update_digsigclt
 from appcmd.garbage_collection import garbage_collection
 from appcmd.lpt import get_departures
 from appcmd.mail import send_contact_mail
@@ -34,6 +35,7 @@ PRIVATE_ROUTES = (
     ('POST', '/cleaning', add_cleaning),
     ('POST', '/contactform', send_contact_mail),
     ('POST', '/damagereport', damage_report),
+    ('POST', '/digsigclt', update_digsigclt),
     ('POST', '/poll', cast_vote),
     ('POST', '/proxy', proxy),
     ('POST', '/statistics', add_statistics),
