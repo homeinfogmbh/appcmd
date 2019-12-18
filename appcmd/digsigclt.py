@@ -30,7 +30,7 @@ def update():
     latest_sha256sum = sha256(digsigclt).hexdigest()
 
     try:
-        current_sha256sum = request.data.decode()
+        current_sha256sum = request.get_data().decode()
     except (TypeError, AttributeError, ValueError):
         return ('Did not receive a proper SHA-256 sum.', 400)
 
