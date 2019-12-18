@@ -13,8 +13,11 @@ from appcmd.config import CONFIG
 __all__ = ['update']
 
 
-def update():
-    """Returns an update, iff available."""
+NO_UPDATE_AVAILABLE = ('', 204)
+
+
+def update_digsigclt():
+    """Returns an update of the digital signage client iff available."""
 
     try:
         path = Path(CONFIG['digsigclt']['path'])
@@ -35,6 +38,37 @@ def update():
         return ('Did not receive a proper SHA-256 sum.', 400)
 
     if latest_sha256sum == current_sha256sum:
-        return ('', 204)
+        return NO_UPDATE_AVAILABLE
 
     return Binary(digsigclt)
+
+
+def update_application():
+    """Returns an update of the digital
+    signage Flash application iff available.
+    """
+
+    raise NotImplementedError()
+
+
+def update_h5ds():
+    """Returns an update of the digital
+    signage HTML5 application iff available.
+    """
+
+    raise NotImplementedError()
+
+
+def update(target=None):
+    """Returns an update, iff available."""
+
+    if target is None or target == 'digsigclt':
+        return update_digsigclt()
+
+    if target == 'application':
+        return update_application()
+
+    if target == 'h5ds':
+        return update_h5ds()
+
+    return ('Invalid target specified.', 400)
