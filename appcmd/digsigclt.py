@@ -34,7 +34,8 @@ def update():
     except (TypeError, AttributeError, ValueError):
         return ('Did not receive a proper SHA-256 sum.', 400)
 
-    print('Sent:', current_sha256sum, '/ latest:' latest_sha256sum, flush=True)
+    print('Version sent:  ', current_sha256sum, flush=True)
+    print('Latest version:', latest_sha256sum, flush=True)
 
     if latest_sha256sum == current_sha256sum:
         return ('', 204)
