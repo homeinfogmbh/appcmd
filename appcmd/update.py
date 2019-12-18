@@ -59,10 +59,10 @@ def update_h5ds():
     raise NotImplementedError()
 
 
-def update(target=None):
+def update(target='digsigclt'):
     """Returns an update, iff available."""
 
-    if target is None or target == 'digsigclt':
+    if target == 'digsigclt':
         return update_digsigclt()
 
     if target == 'application':
