@@ -40,7 +40,7 @@ PRIVATE_ROUTES = (
     ('POST', '/statistics', add_statistics),
     ('POST', '/tenant2tenant', tenant2tenant),
     ('POST', '/digsigclt', update),     # XXX: Legacy interface.
-    ('POST', '/update/<str:target>', update)
+    ('POST', '/update/<target>', update)
 )
 PUBLIC_ROUTES = (('POST', '/proxy', partial(proxy, private=False)),)
 PRIVATE.add_routes(PRIVATE_ROUTES)
