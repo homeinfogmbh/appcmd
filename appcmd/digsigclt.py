@@ -27,7 +27,6 @@ def update():
     except FileNotFoundError:
         return ('Latest file not found on server.', 500)
 
-
     latest_sha256sum = sha256(digsigclt).hexdigest()
 
     try:
@@ -35,6 +34,7 @@ def update():
     except (TypeError, AttributeError, ValueError):
         return ('Did not receive a proper SHA-256 sum.', 400)
 
+    print('Sent:', current_sha256sum, '/ latest:' latest_sha256sum, flush=True)
 
     if latest_sha256sum == current_sha256sum:
         return ('', 204)
