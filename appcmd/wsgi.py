@@ -14,6 +14,7 @@ from appcmd.poll import cast_vote
 from appcmd.proxy import proxy
 from appcmd.statistics import add_statistics
 from appcmd.sysdep import get_deployment
+from appcmd.tenant2landlord import tenant2landlord
 from appcmd.tenant2tenant import tenant2tenant
 from appcmd.update import update
 
@@ -38,6 +39,7 @@ PRIVATE_ROUTES = (
     ('POST', '/poll', cast_vote),
     ('POST', '/proxy', proxy),
     ('POST', '/statistics', add_statistics),
+    ('POST', '/tenant2landlord', tenant2landlord),
     ('POST', '/tenant2tenant', tenant2tenant),
     ('POST', '/digsigclt', update),     # XXX: Legacy interface.
     ('POST', '/update/<target>', update)
