@@ -52,7 +52,9 @@ def get_system_by_ip():
     address = IPv4Address(request.remote_addr)
     condition = OpenVPN.ipv4address == address
     condition |= WireGuard.ipv4address == address
-    return System.select().join(WireGuard).join(OpenVPN).where(condition).get()
+    select = System.select().join(WireGuard, JOIN.LEFT_OUTER)
+    select = select.join(OpenVPN, JOIN.LEFT_OUTER)
+    return select.where(condition).get()
 
 
 def get_system_by_args():
