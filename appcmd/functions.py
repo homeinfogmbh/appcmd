@@ -7,7 +7,7 @@ from json import loads
 from flask import request
 
 from mdb import Customer
-from terminallib import OpenVPN, System
+from terminallib import OpenVPN, System, WireGuard
 from wsgilib import Error
 
 
@@ -50,8 +50,13 @@ def get_system_by_ip():
     """Returns the system by its source IP address."""
 
     address = IPv4Address(request.remote_addr)
-    return System.select().join(OpenVPN).where(
-        OpenVPN.ipv4address == address).get()
+
+    try:
+        return System.select().join(WireGuard).where(
+            WireGuard.ipv4address == address).get()
+    except System.DoesNotExist:
+        return System.select().join(OpenVPN).where(
+            OpenVPN.ipv4address == address).get()
 
 
 def get_system_by_args():
