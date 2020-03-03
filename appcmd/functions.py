@@ -5,7 +5,6 @@ from ipaddress import IPv4Address
 from json import loads
 
 from flask import request
-from peewee import JOIN
 
 from mdb import Customer
 from terminallib import OpenVPN, System, WireGuard
@@ -53,8 +52,8 @@ def get_system_by_ip():
     address = IPv4Address(request.remote_addr)
     condition = OpenVPN.ipv4address == address
     condition |= WireGuard.ipv4address == address
-    select = System.select().join(WireGuard, JOIN.FULL)
-    select = select.join(OpenVPN, JOIN.FULL)
+    select = System.select().join(WireGuard)
+    select = select.switch(System).select.join(OpenVPN)
     return select.where(condition).get()
 
 
