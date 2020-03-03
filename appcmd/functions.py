@@ -53,7 +53,7 @@ def get_system_by_ip():
     condition = OpenVPN.ipv4address == address
     condition |= WireGuard.ipv4address == address
     select = System.select().join(WireGuard)
-    select = select.switch(System).select.join(OpenVPN)
+    select = select.switch(System).join(OpenVPN)
     return select.where(condition).get()
 
 
