@@ -105,7 +105,7 @@ def street_houseno():
     except KeyError:
         deployment = get_system().deployment
 
-        if deployment is None:
-            raise Error('No address specified and system is not deployed.')
+    if deployment is None:
+        raise Error('No address specified and system is not deployed.')
 
-        return (deployment.address.street, deployment.address.house_number)
+    return (deployment.address.street, deployment.address.house_number)
