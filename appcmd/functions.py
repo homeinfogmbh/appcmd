@@ -50,13 +50,9 @@ def get_system_by_ip():
     """Returns the system by its source IP address."""
 
     address = IPv4Address(request.remote_addr)
-
-    try:
-        return System.select().join(WireGuard).where(
-            WireGuard.ipv4address == address).get()
-    except System.DoesNotExist:
-        return System.select().join(OpenVPN).where(
-            OpenVPN.ipv4address == address).get()
+    condition = OpenVPN.ipv4address == address
+    condition |= WireGuard.ipv4address == address
+    return System.select().join(WireGuard).join(OpenVPN).where(condition).get()
 
 
 def get_system_by_args():
