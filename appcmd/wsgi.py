@@ -8,6 +8,7 @@ from appcmd.booking import list_bookables, list_bookings, book, cancel
 from appcmd.cleaning import list_cleanings, add_cleaning
 from appcmd.damage_report import damage_report
 from appcmd.garbage_collection import garbage_collection
+from appcmd.logger import init_logger
 from appcmd.lpt import get_departures
 from appcmd.mail import send_contact_mail
 from appcmd.poll import cast_vote
@@ -47,3 +48,5 @@ PRIVATE_ROUTES = (
 PUBLIC_ROUTES = (('POST', '/proxy', partial(proxy, private=False)),)
 PRIVATE.add_routes(PRIVATE_ROUTES)
 PUBLIC.add_routes(PUBLIC_ROUTES)
+PRIVATE.before_first_request(init_logger)
+PUBLIC.before_first_request(init_logger)
