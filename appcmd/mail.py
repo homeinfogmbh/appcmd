@@ -56,7 +56,8 @@ def get_text(dictionary, template=EMAIL_TEMP):
         freitext=dictionary.get('freitext'),
         rueckruf=bool2lang(dictionary.get('rueckruf')),
         besichtigungstermin=bool2lang(dictionary.get('besichtigungstermin')),
-        objektbeschreibung=bool2lang(dictionary.get('objektbeschreibung')))
+        objektbeschreibung=bool2lang(dictionary.get('objektbeschreibung'))
+    )
 
 
 def send_contact_mail():
@@ -98,7 +99,7 @@ class ContactFormMailer(Mailer):
     def send_email(self, email):
         """Sends contact form emails from JSON-like dictionary."""
         try:
-            self.send([email])
+            self.send([email], background=False)
         except Exception:
             stacktrace = format_exc()
             self.logger.error('Error while sending email.')
