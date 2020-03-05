@@ -42,7 +42,6 @@ PRIVATE_ROUTES = (
     ('POST', '/statistics', add_statistics),
     ('POST', '/tenant2landlord', tenant2landlord),
     ('POST', '/tenant2tenant', tenant2tenant),
-    ('POST', '/digsigclt', update),     # XXX: Legacy interface.
     ('POST', '/update/<target>', update)
 )
 PUBLIC_ROUTES = (('POST', '/proxy', partial(proxy, private=False)),)
