@@ -44,8 +44,7 @@ def cast_vote():
         try:
             option = Option.get((Option.poll == poll) & (Option.id == choice))
         except Option.DoesNotExist:
-            raise Error(f'No option #{choice} for poll #{poll.id}.',
-                        status=404)
+            raise Error(f'No option {choice} for poll {poll.id}.', status=404)
 
         options.append(option)
 
