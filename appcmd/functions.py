@@ -90,7 +90,7 @@ def get_deployment(private=True):
     deployment = get_system(private=private).deployment
 
     if deployment is None:
-        return Error('System is not deployed.')
+        raise Error('System is not deployed.')
 
     return deployment
 
