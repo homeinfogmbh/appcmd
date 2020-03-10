@@ -60,7 +60,7 @@ def get_system(private=True):
     """Returns the respective system."""
 
     if private:
-        with suppress(ValueError, System.DoesNotExist):
+        with suppress(System.DoesNotExist):
             return get_system_by_ip()
 
     return get_system_by_args()
