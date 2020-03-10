@@ -15,6 +15,7 @@ __all__ = [
     'get_json',
     'get_customer',
     'get_system',
+    'get_deployment',
     'get_customer_and_address',
     'street_houseno'
 ]
@@ -81,6 +82,17 @@ def get_system(private=True):
             return get_system_by_ip()
 
     return get_system_by_args()
+
+
+def get_deployment(private=True):
+    """Returns the respective deployment."""
+
+    deployment = get_system(private=private).deployment
+
+    if deployment is None:
+        return Error('System is not deployed.')
+
+    return deployment
 
 
 def get_customer_and_address():
