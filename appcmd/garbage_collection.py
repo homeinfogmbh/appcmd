@@ -6,7 +6,7 @@ from aha import LocationNotFound, AhaDisposalClient
 from wsgilib import ACCEPT, JSON, XML
 
 from appcmd import dom
-from appcmd.functions import street_houseno
+from appcmd.functions import get_address
 
 
 __all__ = ['garbage_collection']
@@ -63,10 +63,11 @@ def _response(solutions):
 def garbage_collection():
     """Returns information about the garbage collection."""
 
-    street, house_number = street_houseno()
+    address = get_address()
 
     try:
-        solutions = tuple(AHA_CLIENT.by_street_houseno(street, house_number))
+        solutions = tuple(AHA_CLIENT.by_street_houseno(
+            address.street, address.houseno))
     except ConnectionError_:
         return ('Could not connect to AHA API.', 503)
     except LocationNotFound:

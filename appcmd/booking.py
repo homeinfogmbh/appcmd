@@ -13,7 +13,7 @@ from bookings import Booking
 from timelib import strpdatetime
 from wsgilib import Error, OK, XML
 
-from appcmd.functions import get_json, get_customer_and_address
+from appcmd.functions import get_json, get_customer
 
 
 __all__ = ['list_bookables', 'list_bookings', 'book', 'cancel']
@@ -22,10 +22,10 @@ __all__ = ['list_bookables', 'list_bookings', 'book', 'cancel']
 def list_bookables():
     """Lists available bookables."""
 
-    customer, _ = get_customer_and_address()
     xml = dom.bookables()
 
-    for bookable in Bookable.select().where(Bookable.customer == customer):
+    for bookable in Bookable.select().where(
+            Bookable.customer == get_customer()):
         xml.bookable.append(bookable.to_dom())
 
     return XML(xml)
@@ -35,10 +35,9 @@ def list_bookings():
     """Lists stored bookings."""
 
     xml = dom.bookings()
-    customer, _ = get_customer_and_address()
 
     for booking in Booking.select().join(Bookable).where(
-            (Bookable.customer == customer)
+            (Bookable.customer == get_customer())
             & (Booking.end >= datetime.now())).order_by(
                 Booking.start):
         xml.booking.append(booking.to_dom())
@@ -72,11 +71,10 @@ def book():     # pylint: disable=R0911
 
     rentee = json.get('rentee') or None
     purpose = json.get('purpose') or None
-    customer, _ = get_customer_and_address()
 
     try:
         bookable = Bookable.get(
-            (Bookable.id == rentable) & (Bookable.customer == customer))
+            (Bookable.id == rentable) & (Bookable.customer == get_customer()))
     except Bookable.DoesNotExist:
         return Error('No such bookable.', status=404)
 
@@ -98,11 +96,9 @@ def book():     # pylint: disable=R0911
 def cancel(ident):
     """Cancels a booking."""
 
-    customer, _ = get_customer_and_address()
-
     try:
         booking = Booking.select().join(Bookable).where(
-            (Booking.id == ident) & (Bookable.customer == customer)
+            (Booking.id == ident) & (Bookable.customer == get_customer())
         ).get()
     except Booking.DoesNotExist:
         return Error('No such booking.', status=404)

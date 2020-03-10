@@ -1,6 +1,6 @@
 """Damage report submission."""
 
-from appcmd.functions import get_json, get_customer_and_address
+from appcmd.functions import get_json, get_customer, get_address
 
 from damage_report import email, DamageReport
 from peeweeplus import FieldValueError, FieldNotNullable, InvalidKeys
@@ -13,10 +13,9 @@ __all__ = ['damage_report']
 def damage_report():
     """Stores damage reports."""
 
-    customer, address = get_customer_and_address()
-
     try:
-        record = DamageReport.from_json(get_json(), customer, address)
+        record = DamageReport.from_json(
+            get_json(), get_customer(), get_address())
     except InvalidKeys as invalid_keys:
         raise Error(f'Invalid keys: {invalid_keys.invalid_keys}.')
     except FieldNotNullable as field_not_nullable:

@@ -12,11 +12,10 @@ from wsgilib import Error
 
 __all__ = [
     'get_json',
-    'get_customer',
     'get_system',
     'get_deployment',
-    'get_customer_and_address',
-    'get_street_and_houseno'
+    'get_customer',
+    'get_address'
 ]
 
 
@@ -88,19 +87,3 @@ def get_address(private=True):
     """Returns the respective address."""
 
     return get_deployment(private=private).address
-
-
-def get_customer_and_address(private=True):
-    """Returns customer and address by
-    the respective system arguments.
-    """
-
-    deployment = get_deployment(private=private)
-    return (deployment.customer, deployment.address)
-
-
-def get_street_and_houseno(private=True):
-    """Returns street and house number."""
-
-    address = get_address(private=private)
-    return (address.street, address.house_number)
