@@ -7,7 +7,7 @@ from flask import request
 from tenant2landlord import email, Configuration, TenantMessage
 
 from appcmd.config import CONFIG
-from appcmd.functions import get_system
+from appcmd.functions import get_deployment
 
 
 __all__ = ['tenant2landlord']
@@ -25,12 +25,7 @@ def tenant2landlord(maxlen=MAX_MSG_SIZE):
     if len(message) > maxlen:
         return ('Maximum text length exceeded.', 413)
 
-    system = get_system()
-    deployment = system.deployment
-
-    if deployment is None:
-        return ('System has no deployed.', 400)
-
+    deployment = get_deployment()
     record = TenantMessage.from_deployment(deployment, message)
     configuration = Configuration.for_customer(deployment.customer)
 

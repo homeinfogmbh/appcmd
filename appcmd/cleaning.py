@@ -3,9 +3,8 @@
 from flask import request
 
 from cleaninglog import by_deployment, CleaningUser, CleaningDate
-from wsgilib import Error
 
-from appcmd.functions import get_json, get_system
+from appcmd.functions import get_json, get_deployment
 
 
 __all__ = ['list_cleanings', 'add_cleaning']
@@ -14,23 +13,13 @@ __all__ = ['list_cleanings', 'add_cleaning']
 def list_cleanings():
     """Lists cleaning entries for the respective system."""
 
-    system = get_system()
-    deployment = system.deployment
-
-    if deployment is None:
-        raise Error('System is not deployed.')
-
-    return by_deployment(deployment)
+    return by_deployment(get_deployment())
 
 
 def add_cleaning():
     """Adds a cleaning entry."""
 
-    system = get_system()
-    deployment = system.deployment
-
-    if deployment is None:
-        return ('System is not deployed.', 400)
+    deployment = get_deployment()
 
     try:
         user = CleaningUser.get(

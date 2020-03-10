@@ -14,7 +14,7 @@ from appcmd.mail import send_contact_mail
 from appcmd.poll import cast_vote
 from appcmd.proxy import proxy
 from appcmd.statistics import add_statistics
-from appcmd.sysdep import get_deployment
+from appcmd.sysdep import deployment_info
 from appcmd.tenant2landlord import tenant2landlord
 from appcmd.tenant2tenant import tenant2tenant
 from appcmd.update import update
@@ -31,7 +31,7 @@ PRIVATE_ROUTES = (
     ('POST', '/bookings', book),
     ('DELETE', '/bookings/<int:ident>', cancel),
     ('GET', '/cleaning', list_cleanings),
-    ('GET', '/deployment', get_deployment),
+    ('GET', '/deployment', deployment_info),
     ('GET', '/garbage_collection', garbage_collection),
     ('GET', '/lpt', get_departures),
     ('POST', '/cleaning', add_cleaning),

@@ -1,19 +1,14 @@
 """Return information about the system and deployment."""
 
-from wsgilib import Error, JSON
+from wsgilib import JSON
 
-from appcmd.functions import get_system
-
-
-__all__ = ['get_deployment']
+from appcmd.functions import get_deployment
 
 
-def get_deployment():
+__all__ = ['deployment_info']
+
+
+def deployment_info():
     """Returns information about the system's deployment."""
 
-    deployment = get_system().deployment
-
-    if deployment is None:
-        return Error('System is not deployed.')
-
-    return JSON(deployment.to_json(cascade=2))
+    return JSON(get_deployment().to_json(cascade=2))
