@@ -6,7 +6,6 @@ from json import loads
 
 from flask import request
 
-from mdb import Customer
 from terminallib import OpenVPN, System, WireGuard
 from wsgilib import Error
 
@@ -17,7 +16,7 @@ __all__ = [
     'get_system',
     'get_deployment',
     'get_customer_and_address',
-    'street_houseno'
+    'get_street_and_houseno'
 ]
 
 
@@ -29,22 +28,6 @@ def get_json():
     """
 
     return loads(request.get_data(as_text=True))
-
-
-def get_customer():
-    """Returns the respective customer."""
-
-    try:
-        cid = int(request.args['cid'])
-    except KeyError:
-        raise Error('No customer ID specified.')
-    except ValueError:
-        raise Error('Customer ID is not an integer.')
-
-    try:
-        return Customer[cid]
-    except Customer.DoesNotExist:
-        raise Error('No such customer.', status=404)
 
 
 def get_system_by_ip():
@@ -95,29 +78,29 @@ def get_deployment(private=True):
     return deployment
 
 
-def get_customer_and_address():
+def get_customer(private=True):
+    """Returns the respective customer."""
+
+    return get_deployment(private=private).customer
+
+
+def get_address(private=True):
+    """Returns the respective address."""
+
+    return get_deployment(private=private).address
+
+
+def get_customer_and_address(private=True):
     """Returns customer and address by
     the respective system arguments.
     """
 
-    system = get_system()
-    deployment = system.deployment
-
-    if deployment is None:
-        raise Error('System is not deployed.')
-
+    deployment = get_deployment(private=private)
     return (deployment.customer, deployment.address)
 
 
-def street_houseno():
+def get_street_and_houseno(private=True):
     """Returns street and house number."""
 
-    try:
-        return (request.args['street'], request.args['house_number'])
-    except KeyError:
-        deployment = get_system().deployment
-
-    if deployment is None:
-        raise Error('No address specified and system is not deployed.')
-
-    return (deployment.address.street, deployment.address.house_number)
+    address = get_address(private=private)
+    return (address.street, address.house_number)
