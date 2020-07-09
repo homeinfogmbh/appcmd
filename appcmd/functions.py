@@ -6,7 +6,7 @@ from json import loads
 
 from flask import request
 
-from terminallib import OpenVPN, System, WireGuard
+from hwdb import OpenVPN, System, WireGuard
 from wsgilib import Error
 
 
