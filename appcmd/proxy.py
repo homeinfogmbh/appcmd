@@ -11,12 +11,15 @@ from digsigdb import ProxyHost
 __all__ = ['proxy']
 
 
+ALLOWED_SCHEMES = {'http', 'https'}
+
+
 def proxy(private=True):
     """Proxies URLs."""
 
     url = urlparse(request.get_data().decode())
 
-    if url.scheme not in ('http', 'https'):
+    if url.scheme not in ALLOWED_SCHEMES:
         return ('Scheme must be HTTP or HTTPS.', 400)
 
     if not url.hostname:
