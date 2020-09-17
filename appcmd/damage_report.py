@@ -10,7 +10,7 @@ from appcmd.functions import get_json, get_customer, get_address
 __all__ = ['damage_report']
 
 
-SKIP = {'annotation'}
+ALLOWED_FIELD = {'message', 'name', 'contact', 'damage_type'}
 
 
 def damage_report():
@@ -18,7 +18,7 @@ def damage_report():
 
     try:
         record = DamageReport.from_json(
-            get_json(), get_customer(), get_address(), skip=SKIP)
+            get_json(), get_customer(), get_address(), only=ALLOWED_FIELD)
     except InvalidKeys as invalid_keys:
         raise Error(f'Invalid keys: {invalid_keys.invalid_keys}.')
     except FieldNotNullable as field_not_nullable:
