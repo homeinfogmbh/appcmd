@@ -35,8 +35,7 @@ def get_system_by_ip():
     address = IPv4Address(request.remote_addr)
     condition = OpenVPN.ipv4address == address
     condition |= WireGuard.ipv4address == address
-    select = System.select().join(WireGuard)
-    select = select.switch(System).join(OpenVPN)
+    select = System.select().join(WireGuard).join_from(System, OpenVPN)
     return select.where(condition).get()
 
 
@@ -46,14 +45,14 @@ def get_system_by_args():
     try:
         system = int(request.args['system'])
     except KeyError:
-        raise Error('No system ID specified.')
+        raise Error('No system ID specified.') from None
     except ValueError:
-        raise Error('System ID is not an integer.')
+        raise Error('System ID is not an integer.') from None
 
     try:
         return System[system]
     except System.DoesNotExist:
-        raise Error('No such system.', status=404)
+        raise Error('No such system.', status=404) from None
 
 
 def get_system(private=True):
