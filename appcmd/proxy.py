@@ -20,7 +20,7 @@ def proxy(private=True):
     url = urlparse(request.get_data().decode())
 
     if url.scheme not in ALLOWED_SCHEMES:
-        return ('Scheme must be HTTP or HTTPS.', 400)
+        return ('URL scheme not allowed.', 400)
 
     if not url.hostname:
         return ('Host name must not be empty.', 400)
