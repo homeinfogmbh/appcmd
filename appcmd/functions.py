@@ -15,7 +15,8 @@ __all__ = [
     'get_system',
     'get_deployment',
     'get_customer',
-    'get_address'
+    'get_address',
+    'get_lpt_address'
 ]
 
 
@@ -86,3 +87,14 @@ def get_address(private=True):
     """Returns the respective address."""
 
     return get_deployment(private=private).address
+
+
+def get_lpt_address(private=True):
+    """Returns the address for local public transport."""
+
+    deployment = get_system(private=private).dataset
+
+    if deployment is None:
+        deployment = get_deployment(private=private)
+
+    return deployment.lpt_address or deployment.address
