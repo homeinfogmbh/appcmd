@@ -19,13 +19,73 @@ from appcmd.functions import get_json, get_customer
 __all__ = ['list_bookables', 'list_bookings', 'book', 'cancel']
 
 
+def get_booking(ident):
+    """Returns the respective booking."""
+
+    condition = Booking.id == ident
+    condition &= Bookable.customer == get_customer()
+
+    try:
+        return Booking.select().join(Bookable).where(condition).get()
+    except Booking.DoesNotExist:
+        raise Error('No such booking.', status=404) from None
+
+
+def get_bookable(json):
+    """Returns the respective bookable."""
+
+    condition = Bookable.customer == get_customer()
+
+    try:
+        condition &= Bookable.id == json['bookable']
+    except KeyError:
+        raise Error('No bookable specified.') from None
+
+    try:
+        return Bookable.get(condition)
+    except Bookable.DoesNotExist:
+        raise Error('No such bookable.', status=404) from None
+
+
+def make_booking(bookable, json):
+    """Adds a booking."""
+
+    try:
+        start = strpdatetime(json['start'])
+    except KeyError:
+        raise Error('No start datetime specified.') from None
+    except ValueError:
+        raise Error('Datetime must be in ISO format.') from None
+
+    try:
+        end = strpdatetime(json['end'])
+    except KeyError:
+        raise Error('No end datetime specified.') from None
+    except ValueError:
+        raise Error('Datetime must be in ISO format.') from None
+
+    rentee = json.get('rentee') or None
+    purpose = json.get('purpose') or None
+
+    try:
+        return bookable.book(start, end, rentee=rentee, purpose=purpose)
+    except EndBeforeStart:
+        raise Error('Start date must be before end date.') from None
+    except DurationTooLong:
+        raise Error('Rent duration is too long.') from None
+    except DurationTooShort:
+        raise Error('Rent duration is too short.') from None
+    except AlreadyBooked:
+        raise Error('Bookable has already been booked.', status=409) from None
+
+
 def list_bookables():
     """Lists available bookables."""
 
+    bookables = Bookable.select().where(Bookable.customer == get_customer())
     xml = dom.bookables()
 
-    for bookable in Bookable.select().where(
-            Bookable.customer == get_customer()):
+    for bookable in bookables:
         xml.bookable.append(bookable.to_dom())
 
     return XML(xml)
@@ -34,12 +94,12 @@ def list_bookables():
 def list_bookings():
     """Lists stored bookings."""
 
+    condition = Bookable.customer == get_customer()
+    condition &= Booking.end >= datetime.now()
+    bookings = Booking.select().join(Bookable).where(condition)
     xml = dom.bookings()
 
-    for booking in Booking.select().join(Bookable).where(
-            (Bookable.customer == get_customer())
-            & (Booking.end >= datetime.now())).order_by(
-                Booking.start):
+    for booking in bookings.order_by(Booking.start):
         xml.booking.append(booking.to_dom())
 
     return XML(xml)
@@ -49,46 +109,8 @@ def book():     # pylint: disable=R0911
     """Books a bookable."""
 
     json = get_json()
-
-    try:
-        rentable = json['bookable']
-    except KeyError:
-        return Error('No bookable specified.')
-
-    try:
-        start = strpdatetime(json['start'])
-    except KeyError:
-        return Error('No start datetime specified.')
-    except ValueError:
-        return Error('Datetime must be in ISO format.')
-
-    try:
-        end = strpdatetime(json['end'])
-    except KeyError:
-        return Error('No end datetime specified.')
-    except ValueError:
-        return Error('Datetime must be in ISO format.')
-
-    rentee = json.get('rentee') or None
-    purpose = json.get('purpose') or None
-
-    try:
-        bookable = Bookable.get(
-            (Bookable.id == rentable) & (Bookable.customer == get_customer()))
-    except Bookable.DoesNotExist:
-        return Error('No such bookable.', status=404)
-
-    try:
-        booking = bookable.book(start, end, rentee=rentee, purpose=purpose)
-    except EndBeforeStart:
-        return Error('Start date must be before end date.')
-    except DurationTooLong:
-        return Error('Rent duration is too long.')
-    except DurationTooShort:
-        return Error('Rent duration is too short.')
-    except AlreadyBooked:
-        return Error('Bookable has already been booked.', status=409)
-
+    bookable = get_bookable(json)
+    booking = make_booking(bookable, json)
     email(booking)
     return OK(f'{booking.id}')
 
@@ -96,12 +118,5 @@ def book():     # pylint: disable=R0911
 def cancel(ident):
     """Cancels a booking."""
 
-    try:
-        booking = Booking.select().join(Bookable).where(
-            (Booking.id == ident) & (Bookable.customer == get_customer())
-        ).get()
-    except Booking.DoesNotExist:
-        return Error('No such booking.', status=404)
-
-    booking.delete_instance()
+    get_booking(ident).delete_instance()
     return OK('Booking cancelled.')
