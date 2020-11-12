@@ -68,7 +68,7 @@ def send_contact_mail():
     try:
         return MAILER.send_email(email)
     except CouldNotSendMail:
-        raise Error('Could not send email.', status=500)
+        raise Error('Could not send email.', status=500) from None
 
 
 class ContactFormEmail(EMail):
@@ -104,7 +104,7 @@ class ContactFormMailer(Mailer):
             stacktrace = format_exc()
             self.logger.error('Error while sending email.')
             self.logger.debug(stacktrace)
-            raise CouldNotSendMail(stacktrace)
+            raise CouldNotSendMail(stacktrace) from None
 
         return 'Sent email to: "{}".'.format(email.recipient)
 

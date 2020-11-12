@@ -17,12 +17,12 @@ def cast_vote():
     try:
         poll = json['poll']
     except KeyError:
-        raise Error('No poll ID specified.')
+        raise Error('No poll ID specified.') from None
 
     try:
         poll = Poll[poll]
     except Poll.DoesNotExist:
-        raise Error('No such poll.', status=404)
+        raise Error('No such poll.', status=404) from None
 
     if not poll.base.active:
         raise Error('Poll is not active.')
@@ -44,7 +44,8 @@ def cast_vote():
         try:
             option = Option.get((Option.poll == poll) & (Option.id == choice))
         except Option.DoesNotExist:
-            raise Error(f'No option {choice} for poll {poll.id}.', status=404)
+            msg = f'No option {choice} for poll {poll.id}.'
+            raise Error(msg, status=404) from None
 
         options.append(option)
 
