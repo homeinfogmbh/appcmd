@@ -63,7 +63,11 @@ def update(target='digsigclt'):
     """Returns an update, iff available."""
 
     if target == 'digsigclt':
-        return update_digsigclt()
+        # New versions are incompatible with Windows XP.
+        # Disable updates for now.
+        # 2020-11-12: Richard Neumann
+        #return update_digsigclt()
+        return NO_UPDATE_AVAILABLE
 
     if target == 'application':
         return update_application()
