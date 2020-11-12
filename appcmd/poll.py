@@ -9,10 +9,8 @@ from appcmd.functions import get_json
 __all__ = ['cast_vote']
 
 
-def cast_vote():
-    """Vote for a respective poll."""
-
-    json = get_json()
+def get_poll(json):
+    """Returns the respective poll."""
 
     try:
         poll = json['poll']
@@ -27,6 +25,12 @@ def cast_vote():
     if not poll.base.active:
         raise Error('Poll is not active.')
 
+    return poll
+
+
+def get_choices(json, mode):
+    """Returns the choices for the respective poll."""
+
     choices = json.get('choices')
 
     if not choices:
@@ -35,22 +39,36 @@ def cast_vote():
     if not isinstance(choices, list):
         raise Error('Choices is not a list.')
 
-    if poll.mode == Mode.SINGLE_CHOICE and len(choices) > 1:
+    if mode == Mode.SINGLE_CHOICE and len(choices) > 1:
         raise Error('Only one option is allowed in single choice mode.')
 
-    options = []
+    return choices
+
+
+def get_poll_and_choices(json):
+    """Returns the poll and choices."""
+
+    poll = get_poll(json)
+    return (poll, get_choices(json, poll.mode))
+
+
+def get_options(poll, choices):
+    """Gets the corresponding poll options for the given choices."""
 
     for choice in choices:
         try:
-            option = Option.get((Option.poll == poll) & (Option.id == choice))
+            yield Option.get((Option.poll == poll) & (Option.id == choice))
         except Option.DoesNotExist:
-            msg = f'No option {choice} for poll {poll.id}.'
-            raise Error(msg, status=404) from None
+            message = f'Invalid choice {choice} for poll {poll.id}.'
+            raise Error(message, status=404) from None
 
-        options.append(option)
 
-    for option in options:
-        option.votes += 1
-        option.save()
+def cast_vote():
+    """Vote for a respective poll."""
+
+    poll, choices = get_poll_and_choices(get_json())
+
+    for option in get_options(poll, choices):
+        option.vote()
 
     return 'Vote casted.'
