@@ -64,7 +64,7 @@ def send_contact_mail():
 
     email = ContactFormEmail.from_json(get_json())
 
-    if MAILER.send(email, background=False):
+    if MAILER.send(email):
         return 'Sent email to: "{}".'.format(email.recipient)
 
     raise Error('Could not send email.', status=500) from None
