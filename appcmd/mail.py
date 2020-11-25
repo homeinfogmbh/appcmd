@@ -2,7 +2,6 @@
 
 from contextlib import suppress
 from datetime import datetime
-from traceback import format_exc
 
 from emaillib import Mailer, EMail
 from wsgilib import Error
@@ -65,10 +64,10 @@ def send_contact_mail():
 
     email = ContactFormEmail.from_json(get_json())
 
-    try:
-        return MAILER.send_email(email)
-    except CouldNotSendMail:
-        raise Error('Could not send email.', status=500) from None
+    if MAILER.send(email, background=False):
+        return 'Sent email to: "{}".'.format(email.recipient)
+
+    raise Error('Could not send email.', status=500) from None
 
 
 class ContactFormEmail(EMail):
@@ -87,26 +86,7 @@ class ContactFormEmail(EMail):
         return email
 
 
-class ContactFormMailer(Mailer):
-    """A contact form mailer."""
-
-    def __init__(self, logger=None):
-        """Initializes the mailer with the appropriate configuration."""
-        super().__init__(
-            CONFIG_SECTION['host'], CONFIG_SECTION['port'],
-            CONFIG_SECTION['user'], CONFIG_SECTION['passwd'], logger=logger)
-
-    def send_email(self, email):
-        """Sends contact form emails from JSON-like dictionary."""
-        try:
-            self.send([email], background=False)
-        except Exception:
-            stacktrace = format_exc()
-            self.logger.error('Error while sending email.')
-            self.logger.debug(stacktrace)
-            raise CouldNotSendMail(stacktrace) from None
-
-        return 'Sent email to: "{}".'.format(email.recipient)
-
-
-MAILER = ContactFormMailer()
+MAILER = Mailer(
+    CONFIG_SECTION['host'], CONFIG_SECTION['port'], CONFIG_SECTION['user'],
+    CONFIG_SECTION['passwd']
+)
