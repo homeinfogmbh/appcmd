@@ -1,6 +1,7 @@
 """Tenant-to-tenant messaging."""
 
 from datetime import datetime
+from typing import Tuple
 
 from flask import request
 
@@ -17,7 +18,7 @@ CONFIG_SECTION = CONFIG['TenantToTenant']
 MAX_MSG_SIZE = int(CONFIG_SECTION.get('max_msg_size', 2048))
 
 
-def tenant2tenant(maxlen=MAX_MSG_SIZE):
+def tenant2tenant(maxlen: int = MAX_MSG_SIZE) -> Tuple[str, int]:
     """Stores tenant info."""
 
     message = request.get_data().decode()

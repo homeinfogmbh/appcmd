@@ -1,5 +1,7 @@
 """Interface to participate in DSMCS4 polls."""
 
+from typing import Generator, Iterable, List, Tuple
+
 from cmslib.orm.charts.poll import Mode, Poll, Option
 from wsgilib import Error
 
@@ -9,7 +11,7 @@ from appcmd.functions import get_json
 __all__ = ['cast_vote']
 
 
-def get_poll(json):
+def get_poll(json: dict) -> Poll:
     """Returns the respective poll."""
 
     try:
@@ -28,7 +30,7 @@ def get_poll(json):
     return poll
 
 
-def get_choices(json, mode):
+def get_choices(json: dict, mode: Mode) -> List[int]:
     """Returns the choices for the respective poll."""
 
     choices = json.get('choices')
@@ -45,14 +47,15 @@ def get_choices(json, mode):
     return choices
 
 
-def get_poll_and_choices(json):
+def get_poll_and_choices(json: dict) -> Tuple[Poll, List[int]]:
     """Returns the poll and choices."""
 
     poll = get_poll(json)
     return (poll, get_choices(json, poll.mode))
 
 
-def get_options(poll, choices):
+def get_options(poll: Poll, choices: Iterable[int]) \
+        -> Generator[Option, None, None]:
     """Gets the corresponding poll options for the given choices."""
 
     for choice in choices:
@@ -63,7 +66,7 @@ def get_options(poll, choices):
             raise Error(message, status=404) from None
 
 
-def cast_vote():
+def cast_vote() -> str:
     """Vote for a respective poll."""
 
     poll, choices = get_poll_and_choices(get_json())

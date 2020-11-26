@@ -2,8 +2,9 @@
 
 from hashlib import sha256
 from pathlib import Path
+from typing import Tuple, Union
 
-from flask import request
+from flask import request, Response
 
 from wsgilib import Binary
 
@@ -16,7 +17,7 @@ __all__ = ['update']
 NO_UPDATE_AVAILABLE = ('', 204)
 
 
-def update_digsigclt():
+def update_digsigclt() -> Union[Binary, Tuple[str, int]]:
     """Returns an update of the digital signage client iff available."""
 
     try:
@@ -59,7 +60,7 @@ def update_h5ds():
     raise NotImplementedError()
 
 
-def update(target='digsigclt'):
+def update(target: str = 'digsigclt') -> Response:
     """Returns an update, iff available."""
 
     if target == 'digsigclt':

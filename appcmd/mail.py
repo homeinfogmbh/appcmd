@@ -1,7 +1,9 @@
 """Contact form E-Mail API."""
 
+from __future__ import annotations
 from contextlib import suppress
 from datetime import datetime
+from typing import Union
 
 from emaillib import Mailer, EMail
 from wsgilib import Error
@@ -31,19 +33,19 @@ Objektbeschreibung:            {objektbeschreibung}
 class CouldNotSendMail(Exception):
     """Indicates that emails could not be sent."""
 
-    def __init__(self, stacktrace):
+    def __init__(self, stacktrace: str):
         """Sets the stacktrace."""
         super().__init__(stacktrace)
         self.stacktrace = stacktrace
 
 
-def bool2lang(boolean, true='ja', false='nein'):
+def bool2lang(boolean: bool, true: str = 'ja', false: str = 'nein') -> str:
     """Converts a boolean value into natural language words."""
 
     return true if boolean else false
 
 
-def get_text(dictionary, template=EMAIL_TEMP):
+def get_text(dictionary: dict, template: str = EMAIL_TEMP) -> str:
     """Returns the formatted text template."""
 
     return template.format(
@@ -59,22 +61,22 @@ def get_text(dictionary, template=EMAIL_TEMP):
     )
 
 
-def send_contact_mail():
+def send_contact_mail() -> Union[str, Error]:
     """Sends contact form emails."""
 
     email = ContactFormEmail.from_json(get_json())
 
     if MAILER.send(email):
-        return 'Sent email to: "{}".'.format(email.recipient)
+        return f'Sent email to: {email.recipient}'
 
-    raise Error('Could not send email.', status=500) from None
+    return Error('Could not send email.', status=500)
 
 
 class ContactFormEmail(EMail):
     """An email for the contact form."""
 
     @classmethod
-    def from_json(cls, dictionary):
+    def from_json(cls, dictionary: dict) -> ContactFormEmail:
         """Creates a new email from the provided dictionary."""
         email = cls(
             CONFIG_SECTION['subject'], CONFIG_SECTION['sender'],

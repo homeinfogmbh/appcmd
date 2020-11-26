@@ -1,8 +1,11 @@
 """Garbage collection info retrieval."""
 
+from typing import Iterable, Tuple
+
+from flask import Response
 from requests import ConnectionError as ConnectionError_
 
-from aha import LocationNotFound, AhaDisposalClient
+from aha import LocationNotFound, AhaDisposalClient, PickupSolution
 from wsgilib import ACCEPT, JSON, XML
 
 from appcmd import dom
@@ -13,9 +16,10 @@ __all__ = ['garbage_collection']
 
 
 AHA_CLIENT = AhaDisposalClient()
+Solutions = dom.garbage_collection.solutions.typeDefinition()
 
 
-def _to_dom(solutions_):
+def _to_dom(solutions_: Iterable[PickupSolution]) -> Solutions:
     """Returns an XML or JSON response."""
 
     solutions = dom.garbage_collection.solutions()
@@ -48,7 +52,7 @@ def _to_dom(solutions_):
     return solutions
 
 
-def _response(solutions):
+def _response(solutions: Iterable[PickupSolution]) -> Tuple[str, int]:
     """Returns an XML or JSON response."""
 
     if 'application/xml' in ACCEPT or '*/*' in ACCEPT:
@@ -60,7 +64,7 @@ def _response(solutions):
     return ('Invalid content type.', 406)
 
 
-def garbage_collection():
+def garbage_collection() -> Response:
     """Returns information about the garbage collection."""
 
     address = get_address()

@@ -19,7 +19,7 @@ from appcmd.functions import get_json, get_customer
 __all__ = ['list_bookables', 'list_bookings', 'book', 'cancel']
 
 
-def get_booking(ident):
+def get_booking(ident: int) -> Booking:
     """Returns the respective booking."""
 
     condition = Booking.id == ident
@@ -31,7 +31,7 @@ def get_booking(ident):
         raise Error('No such booking.', status=404) from None
 
 
-def get_bookable(json):
+def get_bookable(json: dict) -> Bookable:
     """Returns the respective bookable."""
 
     condition = Bookable.customer == get_customer()
@@ -47,7 +47,7 @@ def get_bookable(json):
         raise Error('No such bookable.', status=404) from None
 
 
-def make_booking(bookable, json):
+def make_booking(bookable: Bookable, json: dict) -> Booking:
     """Adds a booking."""
 
     try:
@@ -79,7 +79,7 @@ def make_booking(bookable, json):
         raise Error('Bookable has already been booked.', status=409) from None
 
 
-def list_bookables():
+def list_bookables() -> dom.bookables.typeDefinition():
     """Lists available bookables."""
 
     bookables = Bookable.select().where(Bookable.customer == get_customer())
@@ -91,7 +91,7 @@ def list_bookables():
     return XML(xml)
 
 
-def list_bookings():
+def list_bookings() -> XML:
     """Lists stored bookings."""
 
     condition = Bookable.customer == get_customer()
@@ -105,7 +105,7 @@ def list_bookings():
     return XML(xml)
 
 
-def book():     # pylint: disable=R0911
+def book() -> OK:     # pylint: disable=R0911
     """Books a bookable."""
 
     json = get_json()
@@ -115,7 +115,7 @@ def book():     # pylint: disable=R0911
     return OK(f'{booking.id}')
 
 
-def cancel(ident):
+def cancel(ident: int) -> OK:
     """Cancels a booking."""
 
     get_booking(ident).delete_instance()

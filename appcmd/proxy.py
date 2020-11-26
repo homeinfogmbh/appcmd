@@ -14,7 +14,7 @@ __all__ = ['proxy']
 ALLOWED_SCHEMES = {'http', 'https'}
 
 
-def proxy(private=True):
+def proxy(private: bool = True) -> Response:
     """Proxies URLs."""
 
     url = urlparse(request.get_data().decode())
