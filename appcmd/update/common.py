@@ -1,5 +1,6 @@
 """Common stuff."""
 
+from __future__ import annotations
 from datetime import datetime
 from functools import total_ordering
 from hashlib import sha256
@@ -22,11 +23,11 @@ class FileInfo(NamedTuple):
     sha256sum: str
     ctime: datetime
 
-    def __eq__(self, other):
+    def __eq__(self, other: FileInfo) -> bool:
         """Determines whether a file is considered newer than the other."""
         return self.sha256sum == other.sha256sum
 
-    def __gt__(self, other):
+    def __gt__(self, other: FileInfo) -> bool:
         """Determines whether a file is considered newer than the other."""
         if self == other:
             return False
@@ -34,7 +35,7 @@ class FileInfo(NamedTuple):
         return self.ctime > other.ctime
 
     @classmethod
-    def from_request(cls):
+    def from_request(cls) -> FileInfo:
         """Returns the file info from the current request context."""
         json = request.json
 
@@ -54,7 +55,7 @@ class FileInfo(NamedTuple):
         return cls(sha256sum, datetime.fromtimestamp(ctime))
 
     @classmethod
-    def from_file(cls, filename: Path):
+    def from_file(cls, filename: Path) -> FileInfo:
         """Returns the file info from the provided file name or path."""
         with open(filename, 'rb') as file:
             sha256sum = sha256(file.read()).hexdigest()

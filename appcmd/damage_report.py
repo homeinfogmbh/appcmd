@@ -1,5 +1,7 @@
 """Damage report submission."""
 
+from typing import Tuple
+
 from damage_report import email, DamageReport
 from peeweeplus import FieldValueError, FieldNotNullable, InvalidKeys
 from wsgilib import Error
@@ -13,7 +15,7 @@ __all__ = ['damage_report']
 ALLOWED_FIELDS = {'message', 'name', 'contact', 'damage_type'}
 
 
-def damage_report():
+def damage_report() -> Tuple[str, int]:
     """Stores damage reports."""
 
     try:

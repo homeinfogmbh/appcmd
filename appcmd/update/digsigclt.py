@@ -2,6 +2,8 @@
 
 from pathlib import Path
 
+from flask import Response
+
 from wsgilib import Binary
 
 from appcmd.config import CONFIG
@@ -14,7 +16,7 @@ __all__ = ['update']
 NO_UPDATE_AVAILABLE = ('No update available.', 204)
 
 
-def update():
+def update() -> Response:
     """Returns an update of the digital signage client iff available."""
 
     current_file = FileInfo.from_request()

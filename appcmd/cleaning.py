@@ -1,6 +1,8 @@
 """Cleaning submission and retrieval."""
 
-from flask import request
+from typing import Tuple
+
+from flask import request, Response
 
 from cleaninglog import by_deployment, CleaningUser, CleaningDate
 
@@ -10,13 +12,13 @@ from appcmd.functions import get_json, get_deployment
 __all__ = ['list_cleanings', 'add_cleaning']
 
 
-def list_cleanings():
+def list_cleanings() -> Response:
     """Lists cleaning entries for the respective system."""
 
     return by_deployment(get_deployment())
 
 
-def add_cleaning():
+def add_cleaning() -> Tuple[str, int]:
     """Adds a cleaning entry."""
 
     deployment = get_deployment()
