@@ -10,10 +10,10 @@ __all__ = ['update']
 def update(target='digsigclt'):
     """Returns an update, iff available."""
 
-    if target == 'digsigclt':
-        return update_digsigclt()
-
     if target == 'application':
         return update_application()
+
+    if target == 'digsigclt':
+        return update_digsigclt()
 
     return ('Invalid target specified.', 400)
