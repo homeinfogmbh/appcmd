@@ -11,7 +11,7 @@ def update(target='digsigclt'):
     """Returns an update, iff available."""
 
     if target == 'digsigclt':
-        return update_application()
+        return update_digsigclt()
 
     if target == 'application':
         return update_application()
