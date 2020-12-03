@@ -14,14 +14,19 @@ from appcmd.functions import get_deployment
 __all__ = ['tenant2tenant']
 
 
-CONFIG_SECTION = CONFIG['TenantToTenant']
-MAX_MSG_SIZE = int(CONFIG_SECTION.get('max_msg_size', 2048))
+MAX_MSG_SIZE = CONFIG.getint('TenantToTenant', 'max_msg_size', fallback=2048)
 
 
 def tenant2tenant(maxlen: int = MAX_MSG_SIZE) -> Tuple[str, int]:
     """Stores tenant info."""
 
-    message = request.get_data().decode()
+    try:
+        message = request.get_data().decode()
+    except UnicodeDecodeError:
+        return ('Non-UTF-8 text provided. Refusing.', 415)
+
+    if not message:
+        return ('Refusing to add empty message.', 406)
 
     if len(message) > maxlen:
         return ('Maximum text length exceeded.', 413)
