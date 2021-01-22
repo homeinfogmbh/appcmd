@@ -17,7 +17,6 @@ from appcmd.statistics import add_statistics
 from appcmd.sysdep import deployment_info
 from appcmd.tenant2landlord import tenant2landlord
 from appcmd.tenant2tenant import tenant2tenant
-from appcmd.update import update
 
 
 __all__ = ['PRIVATE', 'PUBLIC']
@@ -41,9 +40,7 @@ PRIVATE_ROUTES = (
     ('POST', '/proxy', proxy),
     ('POST', '/statistics', add_statistics),
     ('POST', '/tenant2landlord', tenant2landlord),
-    ('POST', '/tenant2tenant', tenant2tenant),
-    ('POST', '/update/<target>', update),
-    ('POST', '/digsigclt', update)  # Legacy update.
+    ('POST', '/tenant2tenant', tenant2tenant)
 )
 PUBLIC_ROUTES = (('POST', '/proxy', partial(proxy, private=False)),)
 PRIVATE.add_routes(PRIVATE_ROUTES)

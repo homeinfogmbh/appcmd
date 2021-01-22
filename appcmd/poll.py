@@ -1,6 +1,6 @@
 """Interface to participate in DSMCS4 polls."""
 
-from typing import Generator, Iterable, List, Tuple
+from typing import Iterable, Iterator, List, Tuple
 
 from cmslib.orm.charts.poll import Mode, Poll, Option
 from wsgilib import Error
@@ -54,8 +54,7 @@ def get_poll_and_choices(json: dict) -> Tuple[Poll, List[int]]:
     return (poll, get_choices(json, poll.mode))
 
 
-def get_options(poll: Poll, choices: Iterable[int]) \
-        -> Generator[Option, None, None]:
+def get_options(poll: Poll, choices: Iterable[int]) -> Iterator[Option]:
     """Gets the corresponding poll options for the given choices."""
 
     for choice in choices:
