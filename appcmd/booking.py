@@ -10,6 +10,7 @@ from bookings import DurationTooLong
 from bookings import DurationTooShort
 from bookings import Bookable
 from bookings import Booking
+from mdb import Company, Customer
 from timelib import strpdatetime
 from wsgilib import Error, OK, XML
 
@@ -26,7 +27,8 @@ def get_booking(ident: int) -> Booking:
     condition &= Bookable.customer == get_customer()
 
     try:
-        return Booking.select().join(Bookable).where(condition).get()
+        return Booking.select(Booking, Bookable, Customer, Company).join(
+            Bookable).join(Customer).join(Company).where(condition).get()
     except Booking.DoesNotExist:
         raise Error('No such booking.', status=404) from None
 
@@ -42,7 +44,8 @@ def get_bookable(json: dict) -> Bookable:
         raise Error('No bookable specified.') from None
 
     try:
-        return Bookable.get(condition)
+        return Bookable.select(Bookable, Customer, Company).join(
+            Customer).join(Company).where(condition).get()
     except Bookable.DoesNotExist:
         raise Error('No such bookable.', status=404) from None
 
@@ -82,7 +85,8 @@ def make_booking(bookable: Bookable, json: dict) -> Booking:
 def list_bookables() -> dom.bookables.typeDefinition():
     """Lists available bookables."""
 
-    bookables = Bookable.select().where(Bookable.customer == get_customer())
+    bookables = Bookable.select(Bookable, Customer, Company).join(
+        Customer).join(Company).where(Bookable.customer == get_customer())
     xml = dom.bookables()
 
     for bookable in bookables:
@@ -96,7 +100,8 @@ def list_bookings() -> XML:
 
     condition = Bookable.customer == get_customer()
     condition &= Booking.end >= datetime.now()
-    bookings = Booking.select().join(Bookable).where(condition)
+    bookings = Booking.select(Booking, Bookable, Customer, Company).join(
+        Bookable).join(Customer).join(Company).where(condition)
     xml = dom.bookings()
 
     for booking in bookings.order_by(Booking.start):

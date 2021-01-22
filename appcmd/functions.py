@@ -6,9 +6,10 @@ from json import loads
 from typing import Union
 
 from flask import request
+from peewee import JOIN
 
 from hwdb import Deployment, OpenVPN, System, WireGuard
-from mdb import Address
+from mdb import Address, Company, Customer
 from wsgilib import Error
 
 
@@ -36,10 +37,21 @@ def get_system_by_ip() -> System:
     """Returns the system by its source IP address."""
 
     address = ip_address(request.remote_addr)
-    condition = OpenVPN.ipv4address == address
-    condition |= WireGuard.ipv4address == address
-    select = System.select().join(WireGuard).join_from(System, OpenVPN)
-    return select.where(condition).get()
+    lpt_address = Address.alias()
+    return System.select(
+        System, OpenVPN, WireGuard, Deployment, Customer, Company,
+        Address).join(WireGuard).join_from(System, OpenVPN).join_from(
+        System, Deployment, join_type=JOIN.LEFT_OUTER).join(
+        Customer, join_type=JOIN.LEFT_OUTER).join(
+        Company, join_type=JOIN.LEFT_OUTER).join_from(
+        Deployment, Address, on=Deployment.address == Address.id,
+        join_type=JOIN.LEFT_OUTER).join_from(
+        Deployment, lpt_address, on=Deployment.lpt_address == lpt_address.id,
+        join_type=JOIN.LEFT_OUTER
+    ).where(
+        (OpenVPN.ipv4address == address)
+        | (WireGuard.ipv4address == address)
+    ).get()
 
 
 def get_system_by_args() -> System:
