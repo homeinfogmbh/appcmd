@@ -40,7 +40,8 @@ def get_system_by_ip() -> System:
     lpt_address = Address.alias()
     return System.select(
         System, OpenVPN, WireGuard, Deployment, Customer, Company,
-        Address).join(WireGuard).join_from(System, OpenVPN).join_from(
+        Address).join(WireGuard, join_type=JOIN.LEFT_OUTER).join_from(
+        System, OpenVPN, join_type=JOIN.LEFT_OUTER).join_from(
         System, Deployment, join_type=JOIN.LEFT_OUTER).join(
         Customer, join_type=JOIN.LEFT_OUTER).join(
         Company, join_type=JOIN.LEFT_OUTER).join_from(
