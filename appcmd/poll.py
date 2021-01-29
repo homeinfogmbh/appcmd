@@ -2,7 +2,7 @@
 
 from typing import Iterable, Iterator, List, Tuple
 
-from cmslib.orm.charts.poll import Mode, Poll, Option
+from cmslib import Poll, PollMode, PollOption
 from wsgilib import Error
 
 from appcmd.functions import get_json
@@ -30,7 +30,7 @@ def get_poll(json: dict) -> Poll:
     return poll
 
 
-def get_choices(json: dict, mode: Mode) -> List[int]:
+def get_choices(json: dict, mode: PollMode) -> List[int]:
     """Returns the choices for the respective poll."""
 
     choices = json.get('choices')
@@ -41,7 +41,7 @@ def get_choices(json: dict, mode: Mode) -> List[int]:
     if not isinstance(choices, list):
         raise Error('Choices is not a list.')
 
-    if mode == Mode.SINGLE_CHOICE and len(choices) > 1:
+    if mode == PollMode.SINGLE_CHOICE and len(choices) > 1:
         raise Error('Only one option is allowed in single choice mode.')
 
     return choices
@@ -54,13 +54,15 @@ def get_poll_and_choices(json: dict) -> Tuple[Poll, List[int]]:
     return (poll, get_choices(json, poll.mode))
 
 
-def get_options(poll: Poll, choices: Iterable[int]) -> Iterator[Option]:
+def get_options(poll: Poll, choices: Iterable[int]) -> Iterator[PollOption]:
     """Gets the corresponding poll options for the given choices."""
 
     for choice in choices:
         try:
-            yield Option.get((Option.poll == poll) & (Option.id == choice))
-        except Option.DoesNotExist:
+            yield PollOption.select().where(
+                (PollOption.poll == poll) & (PollOption.id == choice)
+            ).get()
+        except PollOption.DoesNotExist:
             message = f'Invalid choice {choice} for poll {poll.id}.'
             raise Error(message, status=404) from None
 
