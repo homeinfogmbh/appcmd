@@ -53,7 +53,7 @@ def get_system_by_args() -> System:
         raise Error('System ID is not an integer.') from None
 
     try:
-        return System[system]
+        return System.select(cascade=True).where(System.id == system).get()
     except System.DoesNotExist:
         raise Error('No such system.', status=404) from None
 
