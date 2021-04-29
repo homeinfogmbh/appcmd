@@ -64,20 +64,19 @@ def get_system_by_args() -> System:
         raise Error('No such system.', status=404) from None
 
 
-def get_system(private: bool = True) -> System:
+def get_system() -> System:
     """Returns the respective system."""
 
-    if private:
-        with suppress(System.DoesNotExist):
-            return get_system_by_ip()
+    with suppress(System.DoesNotExist):
+        return get_system_by_ip()
 
     return get_system_by_args()
 
 
-def get_deployment(private: bool = True) -> Deployment:
+def get_deployment() -> Deployment:
     """Returns the respective deployment."""
 
-    deployment = get_system(private=private).deployment
+    deployment = get_system().deployment
 
     if deployment is None:
         raise Error('System is not deployed.')
@@ -88,21 +87,21 @@ def get_deployment(private: bool = True) -> Deployment:
 def get_customer(private: bool = True) -> Deployment:
     """Returns the respective customer."""
 
-    return get_deployment(private=private).customer
+    return get_deployment().customer
 
 
 def get_address(private: bool = True) -> Address:
     """Returns the respective address."""
 
-    return get_deployment(private=private).address
+    return get_deployment().address
 
 
 def get_lpt_address(private: bool = True) -> Address:
     """Returns the address for local public transport."""
 
-    deployment = get_system(private=private).dataset
+    deployment = get_system().dataset
 
     if deployment is None:
-        deployment = get_deployment(private=private)
+        deployment = get_deployment()
 
     return deployment.lpt_address or deployment.address
