@@ -1,7 +1,7 @@
 """Common functions."""
 
 from contextlib import suppress
-from ipaddress import ip_address
+from ipaddress import IPv4Network, ip_address
 from json import loads
 from typing import Union
 
@@ -20,6 +20,9 @@ __all__ = [
     'get_address',
     'get_lpt_address'
 ]
+
+
+INTRANET = IPv4Network('10.200.200.0/24')
 
 
 def get_json() -> Union[dict, list]:
@@ -44,6 +47,9 @@ def get_system_by_ip() -> System:
 
 def get_system_by_args() -> System:
     """Returns the respective system."""
+
+    if ip_address(request.remote_addr) not in INTRANET:
+        raise Error('Can only query system by ID from within the intranet.')
 
     try:
         system = int(request.args['system'])
