@@ -84,19 +84,19 @@ def get_deployment() -> Deployment:
     return deployment
 
 
-def get_customer(private: bool = True) -> Deployment:
+def get_customer() -> Deployment:
     """Returns the respective customer."""
 
     return get_deployment().customer
 
 
-def get_address(private: bool = True) -> Address:
+def get_address() -> Address:
     """Returns the respective address."""
 
     return get_deployment().address
 
 
-def get_lpt_address(private: bool = True) -> Address:
+def get_lpt_address() -> Address:
     """Returns the address for local public transport."""
 
     deployment = get_system().dataset
