@@ -7,7 +7,7 @@ from typing import Union
 
 from flask import request
 
-from hwdb import Deployment, OpenVPN, System, WireGuard
+from hwdb import Deployment, OpenVPN, System
 from mdb import Address
 from wsgilib import Error
 
@@ -41,7 +41,7 @@ def get_system_by_ip() -> System:
     address = ip_address(request.remote_addr)
     return System.select(cascade=True).where(
         (OpenVPN.ipv4address == address)
-        | (WireGuard.ipv4address == address)
+        | (System.ipv6address == address)
     ).get()
 
 
