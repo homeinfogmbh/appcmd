@@ -1,7 +1,7 @@
 """Common functions."""
 
 from contextlib import suppress
-from ipaddress import IPv4Network, ip_address
+from ipaddress import IPv4Address, IPv6Address, IPv4Network, ip_address
 from json import loads
 from typing import Union
 
@@ -39,10 +39,15 @@ def get_system_by_ip() -> System:
     """Returns the system by its source IP address."""
 
     address = ip_address(request.remote_addr)
-    return System.select(cascade=True).where(
-        (OpenVPN.ipv4address == address)
-        | (System.ipv6address == address)
-    ).get()
+
+    if isinstance(address, IPv4Address):
+        condition = OpenVPN.ipv4address == address
+    elif isinstance(address, IPv6Address):
+        condition = System.ipv6address == address
+    else:
+        raise TypeError('Unexpected IP type:', type(address))
+
+    return System.select(cascade=True).where(condition).get()
 
 
 def get_system_by_args() -> System:
