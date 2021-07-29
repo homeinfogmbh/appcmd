@@ -104,9 +104,6 @@ def get_address() -> Address:
 def get_lpt_address() -> Address:
     """Returns the address for local public transport."""
 
-    deployment = get_system().dataset
-
-    if deployment is None:
-        deployment = get_deployment()
-
+    system = get_system()
+    deployment = system.dataset or system.deployment
     return deployment.lpt_address or deployment.address
