@@ -33,13 +33,13 @@ def get_booking(ident: int) -> Booking:
         raise Error('No such booking.', status=404) from None
 
 
-def get_bookable(json: dict) -> Bookable:
+def get_bookable(ident: int) -> Bookable:
     """Returns the respective bookable."""
 
     condition = Bookable.customer == get_customer()
 
     try:
-        condition &= Bookable.id == json['bookable']
+        condition &= Bookable.id == ident
     except KeyError:
         raise Error('No bookable specified.') from None
 
@@ -114,7 +114,12 @@ def book() -> OK:     # pylint: disable=R0911
     """Books a bookable."""
 
     json = get_json()
-    bookable = get_bookable(json)
+
+    try:
+        bookable = get_bookable(json['bookable'])
+    except KeyError:
+        raise Error('No bookable specified.') from None
+
     booking = make_booking(bookable, json)
     email(booking)
     return OK(f'{booking.id}')
