@@ -2,6 +2,8 @@
 
 from datetime import datetime
 
+from flask import Response
+
 from bookings import dom
 from bookings import email
 from bookings import AlreadyBooked
@@ -110,7 +112,7 @@ def list_bookings() -> XML:
     return XML(xml)
 
 
-def book() -> OK:     # pylint: disable=R0911
+def book() -> Response:     # pylint: disable=R0911
     """Books a bookable."""
 
     json = get_json()
@@ -118,7 +120,7 @@ def book() -> OK:     # pylint: disable=R0911
     try:
         bookable = get_bookable(json['bookable'])
     except KeyError:
-        raise Error('No bookable specified.') from None
+        return Error('No bookable specified.')
 
     booking = make_booking(bookable, json)
     email(booking)
