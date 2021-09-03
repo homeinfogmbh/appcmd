@@ -39,7 +39,7 @@ class CouldNotSendMail(Exception):
         self.stacktrace = stacktrace
 
 
-def bool2lang(boolean: bool, true: str = 'ja', false: str = 'nein') -> str:
+def bool2lang(boolean: bool, *, true: str = 'ja', false: str = 'nein') -> str:
     """Converts a boolean value into natural language words."""
 
     return true if boolean else false
