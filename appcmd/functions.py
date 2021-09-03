@@ -81,9 +81,7 @@ def get_system() -> System:
 def get_deployment() -> Deployment:
     """Returns the respective deployment."""
 
-    deployment = get_system().deployment
-
-    if deployment is None:
+    if (deployment := get_system().deployment) is None:
         raise Error('System is not deployed.')
 
     return deployment
