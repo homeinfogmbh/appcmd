@@ -15,5 +15,10 @@ __all__ = ['add_statistics']
 def add_statistics() -> Tuple[str, int]:
     """Adds a new statistics entry."""
 
-    Statistics.add(get_deployment(), request.args['document'])
+    try:
+        text = request.args['document']
+    except KeyError:
+        text = request.get_data(as_text=True)
+
+    Statistics.add(get_deployment(), text)
     return ('Statistics added.', 201)
