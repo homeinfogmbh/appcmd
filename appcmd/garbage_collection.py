@@ -1,6 +1,6 @@
 """Garbage collection info retrieval."""
 
-from typing import Iterable, Tuple
+from typing import Iterable
 
 from flask import Response
 from requests import ConnectionError as ConnectionError_
@@ -52,7 +52,7 @@ def _to_dom(solutions_: Iterable[PickupSolution]) -> Solutions:
     return solutions
 
 
-def _response(solutions: Iterable[PickupSolution]) -> Tuple[str, int]:
+def _response(solutions: Iterable[PickupSolution]) -> tuple[str, int]:
     """Returns an XML or JSON response."""
 
     if 'application/xml' in ACCEPT or '*/*' in ACCEPT:

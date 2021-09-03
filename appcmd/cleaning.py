@@ -1,7 +1,5 @@
 """Cleaning submission and retrieval."""
 
-from typing import Tuple
-
 from flask import request, Response
 
 from cleaninglog import by_deployment, CleaningUser, CleaningDate
@@ -18,7 +16,7 @@ def list_cleanings() -> Response:
     return by_deployment(get_deployment())
 
 
-def add_cleaning() -> Tuple[str, int]:
+def add_cleaning() -> tuple[str, int]:
     """Adds a cleaning entry."""
 
     deployment = get_deployment()

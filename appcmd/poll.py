@@ -1,6 +1,6 @@
 """Interface to participate in DSMCS4 polls."""
 
-from typing import Iterable, Iterator, List, Tuple
+from typing import Iterable, Iterator
 
 from cmslib import Poll, PollMode, PollOption
 from wsgilib import Error
@@ -30,7 +30,7 @@ def get_poll(json: dict) -> Poll:
     return poll
 
 
-def get_choices(json: dict, mode: PollMode) -> List[int]:
+def get_choices(json: dict, mode: PollMode) -> list[int]:
     """Returns the choices for the respective poll."""
 
     choices = json.get('choices')
@@ -47,7 +47,7 @@ def get_choices(json: dict, mode: PollMode) -> List[int]:
     return choices
 
 
-def get_poll_and_choices(json: dict) -> Tuple[Poll, List[int]]:
+def get_poll_and_choices(json: dict) -> tuple[Poll, list[int]]:
     """Returns the poll and choices."""
 
     poll = get_poll(json)
