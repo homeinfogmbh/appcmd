@@ -33,9 +33,7 @@ def get_poll(json: dict) -> Poll:
 def get_choices(json: dict, mode: PollMode) -> list[int]:
     """Returns the choices for the respective poll."""
 
-    choices = json.get('choices')
-
-    if not choices:
+    if not (choices := json.get('choices')):
         raise Error('No choice provided.')
 
     if not isinstance(choices, list):
@@ -50,8 +48,7 @@ def get_choices(json: dict, mode: PollMode) -> list[int]:
 def get_poll_and_choices(json: dict) -> tuple[Poll, list[int]]:
     """Returns the poll and choices."""
 
-    poll = get_poll(json)
-    return (poll, get_choices(json, poll.mode))
+    return (poll := get_poll(json), get_choices(json, poll.mode))
 
 
 def get_options(poll: Poll, choices: Iterable[int]) -> Iterator[PollOption]:
