@@ -13,8 +13,7 @@ from appcmd.functions import get_deployment
 __all__ = ['tenant2landlord']
 
 
-CONFIG_SECTION = CONFIG['TenantToLandlord']
-MAX_MSG_SIZE = int(CONFIG_SECTION.get('max_msg_size', 2048))
+MAX_MSG_SIZE = CONFIG.getint('TenantToLandlord', 'max_msg_size', fallback=2048)
 
 
 def tenant2landlord(maxlen: int = MAX_MSG_SIZE) -> tuple[str, int]:
