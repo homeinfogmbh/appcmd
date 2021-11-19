@@ -1,6 +1,6 @@
 """Tenant calendar information."""
 
-from tenantcalendar import events, get_customer_events
+from tenantcalendar import events, list_customer_events
 from wsgilib import XML
 
 from appcmd.functions import get_customer
@@ -14,7 +14,7 @@ def list_events() -> XML:
 
     dom = events()
 
-    for customer_event in get_customer_events(get_customer()):
+    for customer_event in list_customer_events(get_customer()):
         dom.event.append(customer_event.to_dom())
 
     return XML(dom)
