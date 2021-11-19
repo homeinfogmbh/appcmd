@@ -17,6 +17,7 @@ from appcmd.statistics import add_statistics
 from appcmd.sysdep import deployment_info
 from appcmd.tenant2landlord import tenant2landlord
 from appcmd.tenant2tenant import tenant2tenant
+from appcmd.tenantcalendar import list_events
 
 
 __all__ = ['PRIVATE', 'PUBLIC']
@@ -33,6 +34,7 @@ PRIVATE_ROUTES = (
     ('GET', '/deployment', deployment_info),
     ('GET', '/garbage_collection', garbage_collection),
     ('GET', '/lpt', get_departures),
+    ('GET', '/tenantcalendar', list_events),
     ('POST', '/cleaning', add_cleaning),
     ('POST', '/contactform', send_contact_mail),
     ('POST', '/damagereport', damage_report),
