@@ -1,7 +1,11 @@
 """Common functions."""
 
 from contextlib import suppress
-from ipaddress import IPv4Address, IPv6Address, IPv4Network, ip_address
+from ipaddress import IPv4Address
+from ipaddress import IPv6Address
+from ipaddress import IPv4Network
+from ipaddress import IPv6Network
+from ipaddress import ip_address
 from json import loads
 from typing import Union
 
@@ -22,7 +26,20 @@ __all__ = [
 ]
 
 
-INTRANET = IPv4Network('10.200.200.0/24')
+INTRANET_IPV4 = IPv4Network('10.200.200.0/24')
+INTRANET_IPV6 = IPv6Network('fdbc:83e9:4512:ea57::/64')
+
+
+def is_intranet(ip_addr: Union[IPv4Address, IPv6Address]) -> bool:
+    """Checks whether the IP address is within the intranet."""
+
+    if isinstance(ip_addr, IPv4Address):
+        return ip_addr in INTRANET_IPV4
+
+    if isinstance(ip_addr, IPv6Address):
+        return ip_addr in INTRANET_IPV6
+
+    raise TypeError('ip_addr must be IPv4Address or IPv6Address.')
 
 
 def get_json() -> Union[dict, list]:
@@ -53,7 +70,7 @@ def get_system_by_ip() -> System:
 def get_system_by_args() -> System:
     """Returns the respective system."""
 
-    if ip_address(request.remote_addr) not in INTRANET:
+    if not is_intranet(ip_address(request.remote_addr)):
         raise Error('Can only query system by ID from within the intranet.')
 
     try:
