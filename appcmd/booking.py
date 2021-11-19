@@ -1,8 +1,7 @@
 """Renting."""
 
 from datetime import datetime
-
-from flask import Response
+from typing import Union
 
 from bookings import dom
 from bookings import email
@@ -84,7 +83,7 @@ def make_booking(bookable: Bookable, json: dict) -> Booking:
         raise Error('Bookable has already been booked.', status=409) from None
 
 
-def list_bookables() -> dom.bookables.typeDefinition():
+def list_bookables() -> XML:
     """Lists available bookables."""
 
     bookables = Bookable.select(Bookable, Customer, Company).join(
@@ -112,7 +111,7 @@ def list_bookings() -> XML:
     return XML(xml)
 
 
-def book() -> Response:     # pylint: disable=R0911
+def book() -> Union[Error, OK]:
     """Books a bookable."""
 
     json = get_json()
