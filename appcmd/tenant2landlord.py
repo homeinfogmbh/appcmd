@@ -20,7 +20,7 @@ def tenant2landlord(maxlen: int = MAX_MSG_SIZE) -> tuple[str, int]:
     message = request.get_data().decode()
 
     if len(message) > maxlen:
-        return (f'Maximum text length of {MAX_MSG_SIZE} exceeded.', 413)
+        return (f'Maximum text length of {maxlen} exceeded.', 413)
 
     deployment = get_deployment()
     record = TenantMessage.from_deployment(deployment, message)
