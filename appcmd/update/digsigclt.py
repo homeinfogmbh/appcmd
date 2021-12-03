@@ -6,7 +6,7 @@ from flask import Response
 
 from wsgilib import Binary
 
-from appcmd.config import CONFIG
+from appcmd.config import get_config
 from appcmd.update.common import FileInfo
 
 
@@ -22,7 +22,7 @@ def update() -> Response:
     current_file = FileInfo.from_request()
 
     try:
-        path = Path(CONFIG['digsigclt']['path'])
+        path = Path(get_config().get('digsigclt', 'path'))
     except (KeyError, TypeError, ValueError):
         return ('File path not properly configured on server.', 500)
 

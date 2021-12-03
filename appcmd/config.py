@@ -1,9 +1,11 @@
 """Configuration file parsing."""
 
-from configlib import loadcfg
+from functools import cache, partial
+
+from configlib import load_config
 
 
-__all__ = ['CONFIG']
+__all__ = ['get_config']
 
 
-CONFIG = loadcfg('appcmd.conf')
+get_config = partial(cache(load_config), 'appcmd.conf')

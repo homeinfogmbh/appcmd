@@ -8,14 +8,13 @@ from typing import Union
 from emaillib import Mailer, EMail
 from wsgilib import Error
 
-from appcmd.config import CONFIG
+from appcmd.config import get_config
 from appcmd.functions import get_json
 
 
 __all__ = ['send_contact_mail']
 
 
-CONFIG_SECTION = CONFIG['EMail']
 EMAIL_TEMP = '''Kontaktformular vom {datum}:
 -----------------------------------------------
 
@@ -28,6 +27,17 @@ Rückruf erbeten:               {rueckruf}
 Besichtigungstermin erwünscht: {besichtigungstermin}
 Objektbeschreibung:            {objektbeschreibung}
 '''
+
+
+def get_mailer() -> Mailer:
+    """Returns the mailer."""
+
+    return Mailer(
+        (config := get_config()).get('EMail', 'host'),
+        config.get('EMail', 'port'),
+        config.get('EMail', 'user'),
+        config.get('EMail', 'passwd')
+    )
 
 
 class CouldNotSendMail(Exception):
@@ -66,7 +76,7 @@ def send_contact_mail() -> Union[str, Error]:
 
     email = ContactFormEmail.from_json(get_json())
 
-    if MAILER.send(email):
+    if get_mailer().send(email):
         return f'Sent email to: {email.recipient}'
 
     return Error('Could not send email.', status=500)
@@ -79,16 +89,13 @@ class ContactFormEmail(EMail):
     def from_json(cls, dictionary: dict) -> ContactFormEmail:
         """Creates a new email from the provided dictionary."""
         email = cls(
-            CONFIG_SECTION['subject'], CONFIG_SECTION['sender'],
-            dictionary['empfaenger'], plain=get_text(dictionary))
+            (config := get_config()).get('EMail', 'subject'),
+            config.get('EMail', 'sender'),
+            dictionary['empfaenger'],
+            plain=get_text(dictionary)
+        )
 
         with suppress(KeyError):
             email['Reply-To'] = dictionary['email']
 
         return email
-
-
-MAILER = Mailer(
-    CONFIG_SECTION['host'], CONFIG_SECTION['port'], CONFIG_SECTION['user'],
-    CONFIG_SECTION['passwd']
-)
