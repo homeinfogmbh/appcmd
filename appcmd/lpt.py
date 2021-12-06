@@ -2,7 +2,10 @@
 
 from flask import Response
 
-from lptlib import NoGeoCoordinatesForAddress, get_response
+from lptlib import NoGeoCoordinatesForAddress
+from lptlib import get_response
+from lptlib import get_max_departures
+from lptlib import get_max_stops
 from wsgilib import JSONMessage
 
 from appcmd.functions import get_lpt_address
@@ -15,7 +18,8 @@ def get_departures() -> Response:
     """Returns stops for the respective system."""
 
     try:
-        return get_response(get_lpt_address())
+        return get_response(get_lpt_address(), stops=get_max_stops(),
+                            departures=get_max_departures)
     except NoGeoCoordinatesForAddress as error:
         return JSONMessage('No geo coordinates for address.',
                            address=error.address, status=404)
