@@ -19,7 +19,7 @@ def get_departures() -> Response:
 
     try:
         return get_response(get_lpt_address(), stops=get_max_stops(),
-                            departures=get_max_departures)
+                            departures=get_max_departures())
     except NoGeoCoordinatesForAddress as error:
         return JSONMessage('No geo coordinates for address.',
                            address=error.address, status=404)
