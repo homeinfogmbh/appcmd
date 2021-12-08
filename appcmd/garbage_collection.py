@@ -1,80 +1,39 @@
 """Garbage collection info retrieval."""
 
-from typing import Iterable
+from typing import Union
 
-from flask import Response
-from requests import ConnectionError as ConnectionError_
+from aha import AmbiguousLocations
+from aha import HTTPError
+from aha import NoLocationFound
+from aha import ScrapingError
+from aha import find_location
+from aha import get_pickups
+from wsgilib import JSON, JSONMessage
 
-from aha import LocationNotFound, AhaDisposalClient, PickupSolution
-from wsgilib import ACCEPT, JSON, XML
-
-from appcmd import dom
 from appcmd.functions import get_address
 
 
 __all__ = ['garbage_collection']
 
 
-AHA_CLIENT = AhaDisposalClient()
-Solutions = dom.garbage_collection.solutions.typeDefinition()
-
-
-def _to_dom(solutions_: Iterable[PickupSolution]) -> Solutions:
-    """Returns an XML or JSON response."""
-
-    solutions = dom.garbage_collection.solutions()
-
-    for location_, pickups in solutions_:
-        location = dom.garbage_collection.Location()
-        location.code = location_.code
-        location.street = location_.street
-        location.houseNumber = location_.house_number
-        location.district = location_.district
-
-        for pickup_ in pickups:
-            pickup = dom.garbage_collection.Pickup()
-            pickup.interval = pickup_.interval
-            pickup.imageLink = pickup_.image_link
-            pickup.type = pickup_.type
-            pickup.weekday = pickup_.weekday
-
-            for pickup_date_ in pickup_.next_dates:
-                pickup_date = dom.garbage_collection.PickupDate(
-                    pickup_date_.date)
-                pickup_date.exceptional = pickup_date_.exceptional
-                pickup_date.weekday = pickup_date_.weekday
-                pickup.date.append(pickup_date)
-
-            location.pickup.append(pickup)
-
-        solutions.location.append(location)
-
-    return solutions
-
-
-def _response(solutions: Iterable[PickupSolution]) -> tuple[str, int]:
-    """Returns an XML or JSON response."""
-
-    if 'application/xml' in ACCEPT or '*/*' in ACCEPT:
-        return XML(_to_dom(solutions))
-
-    if 'application/json' in ACCEPT:
-        return JSON([solution.to_json() for solution in solutions])
-
-    return ('Invalid content type.', 406)
-
-
-def garbage_collection() -> Response:
+def garbage_collection() -> Union[JSON, JSONMessage]:
     """Returns information about the garbage collection."""
 
     address = get_address()
 
     try:
-        solutions = tuple(AHA_CLIENT.by_street_houseno(
-            address.street, address.houseno))
-    except ConnectionError_:
-        return ('Could not connect to AHA API.', 503)
-    except LocationNotFound:
-        return ('Location not found.', 404)
+        location = find_location(address.street)
+    except NoLocationFound:
+        return JSONMessage('No matching locations found.')
+    except AmbiguousLocations as locations:
+        return JSONMessage('Multiple matching locations found.',
+                           locations=[l.name for l in locations])
 
-    return _response(solutions)
+    try:
+        pickups = get_pickups(location, address.house_number)
+    except HTTPError as error:
+        return JSONMessage('HTTP error.', status_code=error.status_code)
+    except ScrapingError as error:
+        return JSONMessage('Scraping error.', error=error.message)
+
+    return JSON([pickup.to_json() for pickup in pickups])
