@@ -1,11 +1,8 @@
 FILE_LIST = ./.installed_files.txt
 
-.PHONY: pull push clean generate-bindings install uninstall
+.PHONY: pull push clean install uninstall
 
-default: | pull clean generate-bindings install
-
-generate-bindings:
-	@ pyxbgen -u xsds/garbage_collection.xsd -m garbage_collection --module-prefix=appcmd.dom
+default: | pull clean install
 
 install:
 	@ ./setup.py install --record $(FILE_LIST)
