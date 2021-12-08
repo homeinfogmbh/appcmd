@@ -13,10 +13,10 @@ from wsgilib import JSON, JSONMessage
 from appcmd.functions import get_address
 
 
-__all__ = ['garbage_collection']
+__all__ = ['garbage_pickup']
 
 
-def garbage_collection() -> Union[JSON, JSONMessage]:
+def garbage_pickup() -> Union[JSON, JSONMessage]:
     """Returns information about the garbage collection."""
 
     address = get_address()

@@ -7,7 +7,7 @@ from wsgilib import Application
 from appcmd.booking import list_bookables, list_bookings, book, cancel
 from appcmd.cleaning import list_cleanings, add_cleaning
 from appcmd.damage_report import damage_report
-from appcmd.garbage_collection import garbage_collection
+from appcmd.garbage_pickup import garbage_pickup
 from appcmd.logger import init_logger
 from appcmd.lpt import get_departures
 from appcmd.mail import send_contact_mail
@@ -32,7 +32,7 @@ PRIVATE_ROUTES = (
     ('DELETE', '/bookings/<int:ident>', cancel),
     ('GET', '/cleaning', list_cleanings),
     ('GET', '/deployment', deployment_info),
-    ('GET', '/garbage_collection', garbage_collection),
+    ('GET', '/garbage-pickup', garbage_pickup),
     ('GET', '/lpt', get_departures),
     ('GET', '/tenantcalendar', list_events),
     ('POST', '/cleaning', add_cleaning),
