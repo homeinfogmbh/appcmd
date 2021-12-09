@@ -25,6 +25,7 @@ def proxy() -> Response:
     if not url.hostname:
         return ('Host name must not be empty.', 400)
 
+    # Avoid SSRF.
     try:
         ProxyHost.get(ProxyHost.hostname == url.hostname)
     except ProxyHost.DoesNotExist:
