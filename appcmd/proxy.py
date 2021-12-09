@@ -14,7 +14,7 @@ __all__ = ['proxy']
 ALLOWED_SCHEMES = {'http', 'https'}
 
 
-def proxy(private: bool = True) -> Response:
+def proxy() -> Response:
     """Proxies URLs."""
 
     url = urlparse(request.get_data().decode())
@@ -25,11 +25,10 @@ def proxy(private: bool = True) -> Response:
     if not url.hostname:
         return ('Host name must not be empty.', 400)
 
-    if not private:
-        try:
-            ProxyHost.get(ProxyHost.hostname == url.hostname)
-        except ProxyHost.DoesNotExist:
-            return ('Host name is not whitelisted.', 403)
+    try:
+        ProxyHost.get(ProxyHost.hostname == url.hostname)
+    except ProxyHost.DoesNotExist:
+        return ('Host name is not whitelisted.', 403)
 
     reply = get(url.geturl())
     return Response(

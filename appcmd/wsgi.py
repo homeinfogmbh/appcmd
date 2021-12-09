@@ -1,7 +1,5 @@
 """WSGI private routes (VPN)."""
 
-from functools import partial
-
 from wsgilib import Application
 
 from appcmd.booking import list_bookables, list_bookings, book, cancel
@@ -44,7 +42,7 @@ PRIVATE_ROUTES = (
     ('POST', '/tenant2landlord', tenant2landlord),
     ('POST', '/tenant2tenant', tenant2tenant)
 )
-PUBLIC_ROUTES = (('POST', '/proxy', partial(proxy, private=False)),)
+PUBLIC_ROUTES = ('POST', '/proxy', proxy,)
 PRIVATE.add_routes(PRIVATE_ROUTES)
 PUBLIC.add_routes(PUBLIC_ROUTES)
 PRIVATE.before_first_request(init_logger)
