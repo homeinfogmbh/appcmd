@@ -42,7 +42,7 @@ PRIVATE_ROUTES = [
     ('POST', '/tenant2landlord', tenant2landlord),
     ('POST', '/tenant2tenant', tenant2tenant)
 ]
-PUBLIC_ROUTES = ['POST', '/proxy', proxy]
+PUBLIC_ROUTES = [('POST', '/proxy', proxy)]
 PRIVATE.add_routes(PRIVATE_ROUTES)
 PUBLIC.add_routes(PUBLIC_ROUTES)
 PRIVATE.before_first_request(init_logger)
