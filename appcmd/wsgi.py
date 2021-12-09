@@ -23,7 +23,7 @@ __all__ = ['PRIVATE', 'PUBLIC']
 
 PRIVATE = Application('private', cors=True, debug=True)
 PUBLIC = Application('public', cors=True)
-PRIVATE_ROUTES = (
+PRIVATE_ROUTES = [
     ('GET', '/bookables', list_bookables),
     ('GET', '/bookings', list_bookings),
     ('POST', '/bookings', book),
@@ -41,8 +41,8 @@ PRIVATE_ROUTES = (
     ('POST', '/statistics', add_statistics),
     ('POST', '/tenant2landlord', tenant2landlord),
     ('POST', '/tenant2tenant', tenant2tenant)
-)
-PUBLIC_ROUTES = ('POST', '/proxy', proxy,)
+]
+PUBLIC_ROUTES = ['POST', '/proxy', proxy]
 PRIVATE.add_routes(PRIVATE_ROUTES)
 PUBLIC.add_routes(PUBLIC_ROUTES)
 PRIVATE.before_first_request(init_logger)
