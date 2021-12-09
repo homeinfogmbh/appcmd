@@ -21,7 +21,7 @@ from appcmd.tenantcalendar import list_events
 __all__ = ['PRIVATE', 'PUBLIC']
 
 
-PRIVATE = Application('private', cors=True, debug=True)
+PRIVATE = Application('private', cors=True)
 PUBLIC = Application('public', cors=True)
 PRIVATE_ROUTES = [
     ('GET', '/bookables', list_bookables),
