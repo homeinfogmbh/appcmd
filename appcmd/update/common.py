@@ -37,19 +37,13 @@ class FileInfo(NamedTuple):
     @classmethod
     def from_request(cls) -> FileInfo:
         """Returns the file info from the current request context."""
-        json = request.json
-
-        if json is None:
+        if (json := request.json) is None:
             raise Error('Outdated protocol.', status=204)
 
-        sha256sum = json.get('sha256sum')
-
-        if sha256sum is None:
+        if (sha256sum := json.get('sha256sum')) is None:
             raise Error('No SHA-256 sum provided.', status=400)
 
-        ctime = json.get('ctime')
-
-        if ctime is None:
+        if (ctime := json.get('ctime')) is None:
             raise Error('No CTIME provided.', status=400)
 
         return cls(sha256sum, datetime.fromtimestamp(ctime))

@@ -19,8 +19,6 @@ NO_UPDATE_AVAILABLE = ('No update available.', 204)
 def update() -> Response:
     """Returns an update of the digital signage client iff available."""
 
-    current_file = FileInfo.from_request()
-
     try:
         path = Path(get_config().get('digsigclt', 'path'))
     except (KeyError, TypeError, ValueError):
@@ -31,7 +29,7 @@ def update() -> Response:
     except FileNotFoundError:
         return ('Latest file not found on server.', 500)
 
-    if latest_file > current_file:
+    if latest_file > FileInfo.from_request():
         with path.open('rb') as file:
             return Binary(file.read())
 
