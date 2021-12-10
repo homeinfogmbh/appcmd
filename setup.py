@@ -35,6 +35,6 @@ setup(
         'timelib',
         'wsgilib',
     ],
-    packages=['appcmd', 'appcmd.dom', 'appcmd.update'],
+    packages=['appcmd', 'appcmd.update'],
     description='Digital Signange Flash Application communication interface.'
 )
