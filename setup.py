@@ -32,8 +32,7 @@ setup(
         'setuptools',
         'tenant2landlord',
         'tenant2tenant',
-        'timelib',
-        'wsgilib',
+        'wsgilib'
     ],
     packages=['appcmd', 'appcmd.update'],
     description='Digital Signange Flash Application communication interface.'

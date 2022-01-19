@@ -12,7 +12,6 @@ from bookings import DurationTooShort
 from bookings import Bookable
 from bookings import Booking
 from mdb import Company, Customer
-from timelib import strpdatetime
 from wsgilib import Error, OK, XML
 
 from appcmd.functions import get_json, get_customer
@@ -55,18 +54,22 @@ def make_booking(bookable: Bookable, json: dict) -> Booking:
     """Adds a booking."""
 
     try:
-        start = strpdatetime(json['start'])
+        start = datetime.fromisoformat(json['start'])
     except KeyError:
         raise Error('No start datetime specified.') from None
     except ValueError:
         raise Error('Datetime must be in ISO format.') from None
+    except TypeError:
+        start = None
 
     try:
-        end = strpdatetime(json['end'])
+        end = datetime.fromisoformat(json['end'])
     except KeyError:
         raise Error('No end datetime specified.') from None
     except ValueError:
         raise Error('Datetime must be in ISO format.') from None
+    except TypeError:
+        end = None
 
     rentee = json.get('rentee') or None
     purpose = json.get('purpose') or None
