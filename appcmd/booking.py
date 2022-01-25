@@ -125,7 +125,7 @@ def book() -> Union[Error, OK]:
         return Error('No bookable specified.')
 
     booking = make_booking(bookable, json)
-     //email(booking)
+    email(booking)
     return OK(f'{booking.id}')
 
 
