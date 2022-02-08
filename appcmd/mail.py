@@ -1,7 +1,6 @@
 """Contact form E-Mail API."""
 
 from __future__ import annotations
-from contextlib import suppress
 from datetime import datetime
 from typing import Union
 
