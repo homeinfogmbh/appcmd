@@ -75,7 +75,7 @@ def send_contact_mail() -> Union[str, Error]:
 
     email = ContactFormEmail.from_json(get_json())
 
-    if get_mailer().send(email):
+    if get_mailer().send([email]):
         return f'Sent email to: {email.recipient}'
 
     return Error('Could not send email.', status=500)
