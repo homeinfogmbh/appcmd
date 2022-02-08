@@ -18,8 +18,14 @@ def get_departures() -> Union[JSON, JSONMessage, XML]:
     """Returns stops for the respective system."""
 
     try:
-        return get_response(get_lpt_address(), stops=get_max_stops(),
-                            departures=get_max_departures())
+        return get_response(
+            get_lpt_address(),
+            stops=get_max_stops(),
+            departures=get_max_departures()
+        )
     except NoGeoCoordinatesForAddress as error:
-        return JSONMessage('No geo coordinates for address.',
-                           address=error.address, status=404)
+        return JSONMessage(
+            'No geo coordinates for address.',
+            address=error.address,
+            status=404
+        )
