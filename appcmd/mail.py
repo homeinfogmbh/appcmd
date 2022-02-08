@@ -86,16 +86,12 @@ class ContactFormEmail(EMail):
     """An email for the contact form."""
 
     @classmethod
-    def from_json(cls, dictionary: dict) -> ContactFormEmail:
+    def from_json(cls, params: dict) -> ContactFormEmail:
         """Creates a new email from the provided dictionary."""
-        email = cls(
+        return cls(
             (config := get_config()).get('EMail', 'subject'),
             config.get('EMail', 'sender'),
-            dictionary['empfaenger'],
-            plain=get_text(dictionary)
+            params['empfaenger'],
+            reply_to=params.get('email'),
+            plain=get_text(params)
         )
-
-        with suppress(KeyError):
-            email['Reply-To'] = dictionary['email']
-
-        return email
