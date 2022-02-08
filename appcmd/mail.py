@@ -55,19 +55,19 @@ def bool2lang(boolean: bool, *, true: str = 'ja', false: str = 'nein') -> str:
     return true if boolean else false
 
 
-def get_text(dictionary: dict, template: str = EMAIL_TEMP) -> str:
+def get_text(params: dict, template: str = EMAIL_TEMP) -> str:
     """Returns the formatted text template."""
 
     return template.format(
         datum=datetime.strftime(datetime.now(), '%d.%m.%Y %H:%M:%S'),
-        objektnr=dictionary.get('objektnummer', 'unbekannt'),
-        name=dictionary.get('name'),
-        telefon=dictionary.get('telefon', 'nicht angegeben'),
-        email=dictionary.get('email', 'nicht angegeben'),
-        freitext=dictionary.get('freitext'),
-        rueckruf=bool2lang(dictionary.get('rueckruf')),
-        besichtigungstermin=bool2lang(dictionary.get('besichtigungstermin')),
-        objektbeschreibung=bool2lang(dictionary.get('objektbeschreibung'))
+        objektnr=params.get('objektnummer', 'unbekannt'),
+        name=params.get('name'),
+        telefon=params.get('telefon', 'nicht angegeben'),
+        email=params.get('email', 'nicht angegeben'),
+        freitext=params.get('freitext'),
+        rueckruf=bool2lang(params.get('rueckruf')),
+        besichtigungstermin=bool2lang(params.get('besichtigungstermin')),
+        objektbeschreibung=bool2lang(params.get('objektbeschreibung'))
     )
 
 
