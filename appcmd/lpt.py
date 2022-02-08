@@ -1,12 +1,12 @@
 """Local public transportation API."""
 
-from flask import Response
+from typing import Union
 
 from lptlib import NoGeoCoordinatesForAddress
 from lptlib import get_response
 from lptlib import get_max_departures
 from lptlib import get_max_stops
-from wsgilib import JSONMessage
+from wsgilib import JSON, JSONMessage, XML
 
 from appcmd.functions import get_lpt_address
 
@@ -14,7 +14,7 @@ from appcmd.functions import get_lpt_address
 __all__ = ['get_departures']
 
 
-def get_departures() -> Response:
+def get_departures() -> Union[JSON, JSONMessage, XML]:
     """Returns stops for the respective system."""
 
     try:
