@@ -5,6 +5,6 @@ __all__ = ['online_check']
 
 
 def online_check() -> str:
-    """Return the current datetime."""
+    """Return a dummy message."""
 
     return "Congratulations, you're online."
