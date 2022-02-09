@@ -9,6 +9,7 @@ from appcmd.garbage_pickup import garbage_pickup
 from appcmd.logger import init_logger
 from appcmd.lpt import get_departures
 from appcmd.mail import send_contact_mail
+from appcmd.online_check import online_check
 from appcmd.poll import cast_vote
 from appcmd.proxy import proxy
 from appcmd.statistics import add_statistics
@@ -32,6 +33,7 @@ PRIVATE_ROUTES = [
     ('GET', '/deployment', deployment_info),
     ('GET', '/garbage-pickup', garbage_pickup),
     ('GET', '/lpt', get_departures),
+    ('GET', '/online-check', online_check),
     ('GET', '/tenantcalendar', list_events),
     ('POST', '/cleaning', add_cleaning),
     ('POST', '/contactform', send_contact_mail),
@@ -42,7 +44,10 @@ PRIVATE_ROUTES = [
     ('POST', '/tenant2landlord', tenant2landlord),
     ('POST', '/tenant2tenant', tenant2tenant)
 ]
-PUBLIC_ROUTES = [('POST', '/proxy', proxy)]
+PUBLIC_ROUTES = [
+    ('POST', '/proxy', proxy),
+    ('GET', '/online-check', online_check)
+]
 PRIVATE.add_routes(PRIVATE_ROUTES)
 PUBLIC.add_routes(PUBLIC_ROUTES)
 PRIVATE.before_first_request(init_logger)
