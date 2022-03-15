@@ -18,7 +18,8 @@ def tenant2tenant(maxlen: Optional[int] = None) -> tuple[str, int]:
     """Stores tenant info."""
 
     maxlen = maxlen or get_config().getint(
-        'TenantToTenant', 'max_msg_size', fallback=2048)
+        'TenantToTenant', 'max_msg_size', fallback=2048
+    )
 
     try:
         message = request.get_data().decode()
