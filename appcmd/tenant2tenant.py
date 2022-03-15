@@ -23,13 +23,13 @@ def tenant2tenant(maxlen: Optional[int] = None) -> tuple[str, int]:
     try:
         message = request.get_data().decode()
     except UnicodeDecodeError:
-        return ('Non-UTF-8 text provided. Refusing.', 415)
+        return 'Non-UTF-8 text provided. Refusing.', 415
 
     if not message:
-        return ('Refusing to add empty message.', 406)
+        return 'Refusing to add empty message.', 406
 
     if len(message) > maxlen:
-        return ('Maximum text length exceeded.', 413)
+        return 'Maximum text length exceeded.', 413
 
     deployment = get_deployment()
     record = TenantMessage.from_deployment(deployment, message)
@@ -42,4 +42,4 @@ def tenant2tenant(maxlen: Optional[int] = None) -> tuple[str, int]:
 
     record.save()
     email(record)
-    return ('Tenant message added.', 201)
+    return 'Tenant message added.', 201
