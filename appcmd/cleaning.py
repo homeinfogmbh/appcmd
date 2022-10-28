@@ -39,7 +39,7 @@ def add_cleaning() -> tuple[str, int]:
         json = {}
 
     if (user_timestamp := json.get('userTimestamp')) is not None:
-        user_timestamp = datetime.fromisoformat(user_timestamp)
+        user_timestamp = datetime.fromisoformat(user_timestamp[:-1])
 
     CleaningDate.add(
         user,
