@@ -1,5 +1,7 @@
 """Cleaning submission and retrieval."""
 
+from datetime import datetime
+
 from flask import request, Response
 
 from cleaninglog import by_deployment, CleaningUser, CleaningDate
@@ -31,9 +33,17 @@ def add_cleaning() -> tuple[str, int]:
     try:
         json = get_json()
     except ValueError:
-        annotations = None
-    else:
-        annotations = json.get('annotations')
+        json = {}
 
-    CleaningDate.add(user, deployment, annotations=annotations)
+    annotations = json.get('annotations')
+
+    if (user_timestamp := json.get('userTimestamp')) is not None:
+        user_timestamp = datetime.fromisoformat(user_timestamp)
+
+    CleaningDate.add(
+        user,
+        deployment,
+        annotations=annotations,
+        user_timestamp=user_timestamp
+    )
     return ('Cleaning date added.', 201)
