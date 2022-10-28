@@ -1,10 +1,12 @@
 """Cleaning submission and retrieval."""
 
 from datetime import datetime
+from typing import Union
 
-from flask import request, Response
+from flask import request
 
 from cleaninglog import by_deployment, CleaningUser, CleaningDate
+from wsgilib import JSON, XML
 
 from appcmd.functions import get_json, get_deployment
 
@@ -12,7 +14,7 @@ from appcmd.functions import get_json, get_deployment
 __all__ = ['list_cleanings', 'add_cleaning']
 
 
-def list_cleanings() -> Response:
+def list_cleanings() -> Union[JSON, XML]:
     """Lists cleaning entries for the respective system."""
 
     return by_deployment(get_deployment())
@@ -26,9 +28,10 @@ def add_cleaning() -> tuple[str, int]:
     try:
         user = CleaningUser.get(
             (CleaningUser.pin == request.args['pin']) &
-            (CleaningUser.customer == deployment.customer))
+            (CleaningUser.customer == deployment.customer)
+        )
     except CleaningUser.DoesNotExist:
-        return ('Invalid PIN.', 403)
+        return 'Invalid PIN.', 403
 
     try:
         json = get_json()
@@ -46,4 +49,4 @@ def add_cleaning() -> tuple[str, int]:
         annotations=annotations,
         user_timestamp=user_timestamp
     )
-    return ('Cleaning date added.', 201)
+    return 'Cleaning date added.', 201
