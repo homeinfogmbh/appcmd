@@ -38,15 +38,13 @@ def add_cleaning() -> tuple[str, int]:
     except ValueError:
         json = {}
 
-    annotations = json.get('annotations')
-
     if (user_timestamp := json.get('userTimestamp')) is not None:
         user_timestamp = datetime.fromisoformat(user_timestamp)
 
     CleaningDate.add(
         user,
         deployment,
-        annotations=annotations,
+        annotations=json.get('annotations'),
         user_timestamp=user_timestamp
     )
     return 'Cleaning date added.', 201
