@@ -48,7 +48,7 @@ def get_choices(json: dict, mode: PollMode) -> list[int]:
 def get_poll_and_choices(json: dict) -> tuple[Poll, list[int]]:
     """Returns the poll and choices."""
 
-    return poll := get_poll(json), get_choices(json, poll.mode)
+    return (poll := get_poll(json)), get_choices(json, poll.mode)
 
 
 def get_options(poll: Poll, choices: Iterable[int]) -> Iterator[PollOption]:
