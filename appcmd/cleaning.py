@@ -27,8 +27,8 @@ def add_cleaning() -> tuple[str, int]:
 
     try:
         user = CleaningUser.get(
-            (CleaningUser.pin == request.args['pin']) &
-            (CleaningUser.customer == deployment.customer)
+            (CleaningUser.pin == request.args['pin'])
+            & (CleaningUser.customer == deployment.customer)
         )
     except CleaningUser.DoesNotExist:
         return 'Invalid PIN.', 403
