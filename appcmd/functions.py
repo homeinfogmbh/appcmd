@@ -131,6 +131,6 @@ def parse_datetime(string: str) -> datetime:
 
     if string.endswith('Z'):
         return datetime.fromisoformat(string[:-1]).replace(
-            tzinfo=timezone.utc).astimezone(None)
+            tzinfo=timezone.utc).astimezone(None).replace(tzinfo=None)
 
     return datetime.fromisoformat(string)
