@@ -35,7 +35,8 @@ def get_cached_pickups(location: Location, house_number: str) -> list[Pickup]:
         return locations[location]
     except KeyError:
         locations[location] = pickups = list(
-            get_pickups(location, house_number))
+            get_pickups(location, house_number)
+        )
         return pickups
 
 
@@ -49,8 +50,10 @@ def garbage_pickup() -> Union[JSON, JSONMessage]:
     except NoLocationFound:
         return JSONMessage('No matching locations found.')
     except AmbiguousLocations as locations:
-        return JSONMessage('Multiple matching locations found.',
-                           locations=[l.name for l in locations])
+        return JSONMessage(
+            'Multiple matching locations found.',
+            locations=[location.name for location in locations]
+        )
 
     try:
         pickups = get_cached_pickups(location, address.house_number)
