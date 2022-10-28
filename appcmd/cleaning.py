@@ -1,6 +1,5 @@
 """Cleaning submission and retrieval."""
 
-from datetime import datetime
 from typing import Union
 
 from flask import request
@@ -8,7 +7,7 @@ from flask import request
 from cleaninglog import by_deployment, CleaningUser, CleaningDate
 from wsgilib import JSON, XML
 
-from appcmd.functions import get_json, get_deployment
+from appcmd.functions import get_json, get_deployment, parse_datetime
 
 
 __all__ = ['list_cleanings', 'add_cleaning']
@@ -39,7 +38,7 @@ def add_cleaning() -> tuple[str, int]:
         json = {}
 
     if (user_timestamp := json.get('userTimestamp')) is not None:
-        user_timestamp = datetime.fromisoformat(user_timestamp[:-1])
+        user_timestamp = parse_datetime(user_timestamp)
 
     CleaningDate.add(
         user,

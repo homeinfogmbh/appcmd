@@ -1,6 +1,7 @@
 """Common functions."""
 
 from contextlib import suppress
+from datetime import datetime, timezone
 from ipaddress import IPv4Address
 from ipaddress import IPv6Address
 from ipaddress import IPv4Network
@@ -22,7 +23,8 @@ __all__ = [
     'get_deployment',
     'get_customer',
     'get_address',
-    'get_lpt_address'
+    'get_lpt_address',
+    'parse_datetime'
 ]
 
 
@@ -122,3 +124,13 @@ def get_lpt_address() -> Address:
     system = get_system()
     deployment = system.dataset or system.deployment
     return deployment.lpt_address or deployment.address
+
+
+def parse_datetime(string: str) -> datetime:
+    """Parse a datetime."""
+
+    if string.endswith('Z'):
+        return datetime.fromisoformat(string[:-1]).replace(
+            tzinfo=timezone.utc).astimezone(None)
+
+    return datetime.fromisoformat(string)
