@@ -6,7 +6,7 @@ from wsgilib import XML
 from appcmd.functions import get_customer
 
 
-__all__ = ['list_events']
+__all__ = ["list_events"]
 
 
 def list_events() -> XML:

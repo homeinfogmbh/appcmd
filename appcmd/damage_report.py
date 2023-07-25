@@ -7,10 +7,10 @@ from wsgilib import Error
 from appcmd.functions import get_json, get_customer, get_address
 
 
-__all__ = ['damage_report']
+__all__ = ["damage_report"]
 
 
-ALLOWED_FIELDS = {'message', 'name', 'contact', 'damage_type'}
+ALLOWED_FIELDS = {"message", "name", "contact", "damage_type"}
 
 
 def damage_report() -> tuple[str, int]:
@@ -18,9 +18,10 @@ def damage_report() -> tuple[str, int]:
 
     try:
         record = DamageReport.from_json(
-            get_json(), get_customer(), get_address(), only=ALLOWED_FIELDS)
+            get_json(), get_customer(), get_address(), only=ALLOWED_FIELDS
+        )
     except InvalidKeys as invalid_keys:
-        raise Error(f'Invalid keys: {invalid_keys.invalid_keys}.') from None
+        raise Error(f"Invalid keys: {invalid_keys.invalid_keys}.") from None
     except FieldNotNullable as fnn:
         raise Error(f'Field "{fnn.field}" is not nullable.') from None
     except FieldValueError as fve:
@@ -28,4 +29,4 @@ def damage_report() -> tuple[str, int]:
 
     record.save()
     email(record)
-    return ('Damage report added.', 201)
+    return ("Damage report added.", 201)

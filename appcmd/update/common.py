@@ -13,7 +13,7 @@ from flask import request
 from wsgilib import Error
 
 
-__all__ = ['FileInfo']
+__all__ = ["FileInfo"]
 
 
 @total_ordering
@@ -38,20 +38,20 @@ class FileInfo(NamedTuple):
     def from_request(cls) -> FileInfo:
         """Returns the file info from the current request context."""
         if (json := request.json) is None:
-            raise Error('Outdated protocol.', status=204)
+            raise Error("Outdated protocol.", status=204)
 
-        if (sha256sum := json.get('sha256sum')) is None:
-            raise Error('No SHA-256 sum provided.', status=400)
+        if (sha256sum := json.get("sha256sum")) is None:
+            raise Error("No SHA-256 sum provided.", status=400)
 
-        if (ctime := json.get('ctime')) is None:
-            raise Error('No CTIME provided.', status=400)
+        if (ctime := json.get("ctime")) is None:
+            raise Error("No CTIME provided.", status=400)
 
         return cls(sha256sum, datetime.fromtimestamp(ctime))
 
     @classmethod
     def from_file(cls, filename: Path) -> FileInfo:
         """Returns the file info from the provided file name or path."""
-        with open(filename, 'rb') as file:
+        with open(filename, "rb") as file:
             sha256sum = sha256(file.read()).hexdigest()
 
         return cls(sha256sum, datetime.fromtimestamp(getctime(filename)))

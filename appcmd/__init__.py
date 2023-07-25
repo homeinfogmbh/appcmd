@@ -5,4 +5,4 @@ on Digital Signage Systems.
 from appcmd.wsgi import PRIVATE, PUBLIC
 
 
-__all__ = ['PRIVATE', 'PUBLIC']
+__all__ = ["PRIVATE", "PUBLIC"]

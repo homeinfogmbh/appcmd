@@ -18,18 +18,18 @@ from wsgilib import Error
 
 
 __all__ = [
-    'get_json',
-    'get_system',
-    'get_deployment',
-    'get_customer',
-    'get_address',
-    'get_lpt_address',
-    'parse_datetime'
+    "get_json",
+    "get_system",
+    "get_deployment",
+    "get_customer",
+    "get_address",
+    "get_lpt_address",
+    "parse_datetime",
 ]
 
 
-INTRANET_IPV4 = IPv4Network('10.200.200.0/24')
-INTRANET_IPV6 = IPv6Network('fdbc:83e9:4512:ea57::/64')
+INTRANET_IPV4 = IPv4Network("10.200.200.0/24")
+INTRANET_IPV6 = IPv6Network("fdbc:83e9:4512:ea57::/64")
 
 
 def is_intranet(ip_addr: Union[IPv4Address, IPv6Address]) -> bool:
@@ -41,7 +41,7 @@ def is_intranet(ip_addr: Union[IPv4Address, IPv6Address]) -> bool:
     if isinstance(ip_addr, IPv6Address):
         return ip_addr in INTRANET_IPV6
 
-    raise TypeError('ip_addr must be IPv4Address or IPv6Address.')
+    raise TypeError("ip_addr must be IPv4Address or IPv6Address.")
 
 
 def get_json() -> Union[dict, list]:
@@ -64,7 +64,7 @@ def get_system_by_ip() -> System:
     elif isinstance(address, IPv6Address):
         condition = System.ipv6address == address
     else:
-        raise TypeError('Unexpected IP type:', type(address))
+        raise TypeError("Unexpected IP type:", type(address))
 
     return System.select(cascade=True).where(condition).get()
 
@@ -73,19 +73,19 @@ def get_system_by_args() -> System:
     """Returns the respective system."""
 
     if not is_intranet(ip_address(request.remote_addr)):
-        raise Error('Can only query system by ID from within the intranet.')
+        raise Error("Can only query system by ID from within the intranet.")
 
     try:
-        system = int(request.args['system'])
+        system = int(request.args["system"])
     except KeyError:
-        raise Error('No system ID specified.') from None
+        raise Error("No system ID specified.") from None
     except ValueError:
-        raise Error('System ID is not an integer.') from None
+        raise Error("System ID is not an integer.") from None
 
     try:
         return System.select(cascade=True).where(System.id == system).get()
     except System.DoesNotExist:
-        raise Error('No such system.', status=404) from None
+        raise Error("No such system.", status=404) from None
 
 
 def get_system() -> System:
@@ -101,7 +101,7 @@ def get_deployment() -> Deployment:
     """Returns the respective deployment."""
 
     if (deployment := get_system().deployment) is None:
-        raise Error('System is not deployed.')
+        raise Error("System is not deployed.")
 
     return deployment
 
@@ -129,8 +129,12 @@ def get_lpt_address() -> Address:
 def parse_datetime(string: str) -> datetime:
     """Parse a datetime."""
 
-    if string.endswith('Z'):
-        return datetime.fromisoformat(string[:-1]).replace(
-            tzinfo=timezone.utc).astimezone(None).replace(tzinfo=None)
+    if string.endswith("Z"):
+        return (
+            datetime.fromisoformat(string[:-1])
+            .replace(tzinfo=timezone.utc)
+            .astimezone(None)
+            .replace(tzinfo=None)
+        )
 
     return datetime.fromisoformat(string)

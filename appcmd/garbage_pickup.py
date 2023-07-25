@@ -8,7 +8,7 @@ from wsgilib import JSON, JSONMessage
 from appcmd.functions import get_address
 
 
-__all__ = ['garbage_pickup']
+__all__ = ["garbage_pickup"]
 
 
 def garbage_pickup() -> Union[JSON, JSONMessage]:

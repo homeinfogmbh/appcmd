@@ -3,7 +3,7 @@
 from flask import Response
 
 
-__all__ = ['update']
+__all__ = ["update"]
 
 
 def update() -> Response:

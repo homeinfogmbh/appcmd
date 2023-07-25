@@ -5,7 +5,7 @@ from wsgilib import JSON
 from appcmd.functions import get_deployment
 
 
-__all__ = ['deployment_info']
+__all__ = ["deployment_info"]
 
 
 def deployment_info() -> JSON:

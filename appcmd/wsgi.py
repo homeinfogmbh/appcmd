@@ -19,35 +19,32 @@ from appcmd.tenant2tenant import tenant2tenant
 from appcmd.tenantcalendar import list_events
 
 
-__all__ = ['PRIVATE', 'PUBLIC']
+__all__ = ["PRIVATE", "PUBLIC"]
 
 
-PRIVATE = Application('private', cors=True)
-PUBLIC = Application('public', cors=True)
+PRIVATE = Application("private", cors=True)
+PUBLIC = Application("public", cors=True)
 PRIVATE_ROUTES = [
-    ('GET', '/bookables', list_bookables),
-    ('GET', '/bookings', list_bookings),
-    ('POST', '/bookings', book),
-    ('DELETE', '/bookings/<int:ident>', cancel),
-    ('GET', '/cleaning', list_cleanings),
-    ('GET', '/deployment', deployment_info),
-    ('GET', '/garbage-pickup', garbage_pickup),
-    ('GET', '/lpt', get_departures),
-    ('GET', '/online-check', online_check),
-    ('GET', '/tenantcalendar', list_events),
-    ('POST', '/cleaning', add_cleaning),
-    ('POST', '/contactform', send_contact_mail),
-    ('POST', '/damagereport', damage_report),
-    ('POST', '/poll', cast_vote),
-    ('POST', '/proxy', proxy),
-    ('POST', '/statistics', add_statistics),
-    ('POST', '/tenant2landlord', tenant2landlord),
-    ('POST', '/tenant2tenant', tenant2tenant)
+    ("GET", "/bookables", list_bookables),
+    ("GET", "/bookings", list_bookings),
+    ("POST", "/bookings", book),
+    ("DELETE", "/bookings/<int:ident>", cancel),
+    ("GET", "/cleaning", list_cleanings),
+    ("GET", "/deployment", deployment_info),
+    ("GET", "/garbage-pickup", garbage_pickup),
+    ("GET", "/lpt", get_departures),
+    ("GET", "/online-check", online_check),
+    ("GET", "/tenantcalendar", list_events),
+    ("POST", "/cleaning", add_cleaning),
+    ("POST", "/contactform", send_contact_mail),
+    ("POST", "/damagereport", damage_report),
+    ("POST", "/poll", cast_vote),
+    ("POST", "/proxy", proxy),
+    ("POST", "/statistics", add_statistics),
+    ("POST", "/tenant2landlord", tenant2landlord),
+    ("POST", "/tenant2tenant", tenant2tenant),
 ]
-PUBLIC_ROUTES = [
-    ('POST', '/proxy', proxy),
-    ('GET', '/online-check', online_check)
-]
+PUBLIC_ROUTES = [("POST", "/proxy", proxy), ("GET", "/online-check", online_check)]
 PRIVATE.add_routes(PRIVATE_ROUTES)
 PUBLIC.add_routes(PUBLIC_ROUTES)
 PRIVATE.before_first_request(init_logger)

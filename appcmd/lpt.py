@@ -11,7 +11,7 @@ from wsgilib import JSON, JSONMessage, XML
 from appcmd.functions import get_lpt_address
 
 
-__all__ = ['get_departures']
+__all__ = ["get_departures"]
 
 
 def get_departures() -> Union[JSON, JSONMessage, XML]:
@@ -19,13 +19,9 @@ def get_departures() -> Union[JSON, JSONMessage, XML]:
 
     try:
         return get_response(
-            get_lpt_address(),
-            stops=get_max_stops(),
-            departures=get_max_departures()
+            get_lpt_address(), stops=get_max_stops(), departures=get_max_departures()
         )
     except NoGeoCoordinatesForAddress as error:
         return JSONMessage(
-            'No geo coordinates for address.',
-            address=error.address,
-            status=404
+            "No geo coordinates for address.", address=error.address, status=404
         )
