@@ -32,6 +32,6 @@ setup(
         "tenant2tenant",
         "wsgilib",
     ],
-    packages=["appcmd", "appcmd.update"],
+    packages=["appcmd"],
     description="Digital Signange Flash Application communication interface.",
 )
